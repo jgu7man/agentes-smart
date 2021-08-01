@@ -1,0 +1,72 @@
+<mat-toolbar
+  id="navbar"
+  [mxBackground]="view == 'Dashboard' ? 'dark1' : 'white'"
+  class="mat-elevation-z5"
+>
+
+
+  <!-- ## Logo -->
+  <span [routerLink]="['/inicio']" class="logo-area">
+    <div class="app-logo">
+      <img src="/assets/icons/as-iso@0.5x.png" alt="Logo Agente Smart" />
+    </div>
+    <p
+      class="logo-text"
+      [mxColor]="view == 'Dashboard' ? 'ligth1' : 'dark1'"
+    >
+      Agente Smart
+    </p>
+  </span>
+  <!-- !## Logo -->
+
+  <!-- # Espace -->
+  <span class="espacio"></span>
+
+
+  <!-- ## Mobile Menu -->
+  <button
+  mat-icon-button
+  class="hide-on-large-only mobile-menu"
+  [mat-menu-trigger-for]="navbarMenu"
+  >
+    <i class="fas fa-bars"></i>
+  </button>
+  <mat-menu #navbarMenu="matMenu">
+    <a mat-menu-item [routerLink]="['/inicio']"
+    routerLinkActive="active"> Inicio </a>
+    <a mat-menu-item [routerLink]="['/academia']"
+    routerLinkActive="active">Academia</a>
+    <a mat-menu-item [routerLink]="['/docs']"
+    routerLinkActive="active">Documentación</a>
+    <a mat-menu-item [routerLink]="['/precios']"
+    routerLinkActive="active">Precios</a>
+  </mat-menu>
+
+  <!-- !## Mobile menu -->
+  <!-- MENÚ DESKTOP -->
+  <span class="nav_menu hide-on-med-and-down">
+    <div class="main_menu">
+      <a [routerLink]="['/inicio']" routerLinkActive="active">Inicio</a>
+      <a [routerLink]="['/academia']" routerLinkActive="active">Academia</a>
+      <a [routerLink]="['/docs']" routerLinkActive="active">Documentación</a>
+      <a [routerLink]="['/precios']" routerLinkActive="active">Precios</a>
+    </div>
+  </span>
+
+
+ <!-- ## Profile zone -->
+  <div class="col right user_log" *ngIf="user; else unlogged">
+    <mat-menu #menuProfile="matMenu">
+      <button mat-menu-item [routerLink]="['/dashboard']">Dashboard</button>
+      <button mat-menu-item (click)="auth_.signOut()">Cerrar sesión</button>
+    </mat-menu>
+    <div class="imgProfileContainer" [matMenuTriggerFor]="menuProfile">
+      <img src="{{ user.photoURL }}" alt="" />
+    </div>
+  </div>
+  <ng-template #unlogged>
+    <button mat-raised-button (click)="openDialog()" color="primary">Ingresar</button>
+  </ng-template>
+<!-- !## Profile zone -->
+
+</mat-toolbar>

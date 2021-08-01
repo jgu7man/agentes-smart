@@ -1,1 +1,59 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cuprum:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
+@import '~@marxa/devkit/styles/all.scss';
+@import '~@angular/material/theming';
+@import './assets/as-palette.scss';
+@include mat-core();
+
+$agente-smart-primary: mat-palette($as-blueagent,500, 800, A400);
+$agente-smart-accent: mat-palette($as-yellowagent, 500, 200, 300);
+$agente-smart-warn: mat-palette($mat-red);
+
+$agente-smart-background: map_get($as-blueagent, 100);
+$agente-smart-foreground: mat-palette($as-darkagent, 400);
+
+$agente-smart-typography: mat-typography-config(
+  $font-family: 'Montserrat',
+);
+
+$agente-smart-theme: mat-light-theme((
+  color: (
+    primary: $agente-smart-primary,
+    accent: $agente-smart-accent,
+    warn: $agente-smart-warn,
+  ),
+  background: $agente-smart-background,
+  foreground: $agente-smart-foreground,
+  typography: $agente-smart-typography,
+));
+
+// $background: map-get($agente-smart-theme, background);
+// $background: map_merge($background, (background: $agente-smart-background));
+
+@include angular-material-theme($agente-smart-theme);
+
+
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+h1 { font-weight: 800; font-size: 3em}
+h2 { font-size: 2.5em}
+h3 { font-weight: 700;}
+h4 { font-weight: 600; font-size: 1.7rem;}
+h5 { font-size: 1.3rem;}
+
+h2, h4,  h5 {
+    font-family: 'Cuprum', sans-serif;
+    font-weight: bold;
+}
+
+// p { color:mat-color($agente-smart-foreground, text) }

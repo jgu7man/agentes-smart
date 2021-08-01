@@ -1,0 +1,17 @@
+td {
+    min-width: 160px;
+}
+
+tr{ 
+    td:nth-child(2), td:nth-child(3), td:nth-child(4) {
+        text-align: center;
+    }
+}
+
+.prices-table {
+    margin-bottom: 10em;
+}
+
+::ng-deep .wpbtn span {
+    color: white !important;
+}

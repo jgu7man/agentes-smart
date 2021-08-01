@@ -1,0 +1,119 @@
+.espacio {
+    flex: 1 1 auto;
+}
+
+.home_bar {
+    position: fixed;
+    top: 0;
+}
+
+.nav_menu {
+    min-width: 50%;
+    .main_menu {
+        display: flex;
+        justify-content: space-around;
+        a {
+            font-weight: 400;
+            font-size: medium;
+        }
+        .active {
+            border-bottom: solid 3px;
+        }
+    }
+}
+
+.user_log {
+    display: flex;
+    justify-content: space-around;
+    a {
+        font-weight: 400;
+        font-size: medium;
+    }
+}
+
+.logo-area{
+    display: flex;
+    align-items: center;
+    padding: 0em;
+    transition: all .3s ease-out;
+    cursor: pointer;
+    .app-logo {
+        width: 60px;
+        display: flex;
+        justify-content: center;
+        padding: 1em .5em 1em 0;
+        img {
+            width: 100%;
+        }
+    }
+    .logo-text {
+        font-family: "Poiret One", cursive;
+        color: #fff;
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+}
+
+// .home_init {
+//     transform: scale(1.8) translate(40%, 60%);
+// }
+
+
+
+.user-profile{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row-reverse;
+}
+
+.imgProfileContainer {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    margin: 0 1em;
+    cursor: pointer;
+    img {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        top: 50%;
+        left: 50%;
+    }
+}
+
+.fa-chevron-circle-down {
+    font-size: 1.3em;
+}
+
+.userName {
+    text-transform: capitalize;
+    color: white;
+    font-weight: 500;
+    text-align: right;
+    margin-right: 1em;
+}
+
+mat-toolbar {
+    background: white;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+    z-index: 100;
+    position: relative;
+}
+
+
+@media screen and (max-width: 450px) {
+    .userName {
+        display: none;
+    }
+
+    #navbar {
+        padding: 0 0 0 16px !important;
+    }
+
+    span.hide-on-large-only.mobile-menu {
+        margin-right: 1em;
+    }
+}

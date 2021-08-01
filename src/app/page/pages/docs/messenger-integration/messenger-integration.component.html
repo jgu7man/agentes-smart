@@ -1,0 +1,173 @@
+<div class="container">
+    <div class="row">
+        <div class="col s12 ">
+
+
+            <h1>Integración de tu agente con Messenger</h1>
+            <p>
+                Para configurar tu agente con messenger es necesario cumplir con los siguientes requisitos.
+            </p>
+            <p>
+                <b>NOTA:</b>Si ya cuentas con una app de facebook puedes continuar directamente a la configuración.
+            </p>
+            <h2>Requisitos</h2>
+            <ol type="1">
+                <li>
+                    <b>Página de Facebook:</b>
+                    Se utilizará una página de Facebook como la identidad del agente. Cuando las personas chateen
+                    con en tu página de facebook verán el nombre de la página y la foto del perfil de esta. Para
+                    crear
+                    una página nueva, ve a
+                    <a href="https://www.facebook.com/pages/create.">https://www.facebook.com/pages/create.</a>
+                </li>
+                <li>
+                    <b>Cuenta de desarrollador de Facebook:</b>
+                    Tu cuenta de desarrollador es necesaria para conectar con los servicios de Facebook de manera
+                    externa.
+                    <ol type="a">
+                        <li>Para crear una nueva cuenta de desarrollador, visita el sitio web de
+                            <a href="https://developers.facebook.com">Facebook Developers </a> y haz clic en el
+                            botón
+                            "Empezar".
+                            <div class="row">
+                                <div class="col s12">
+                                    <img style="width:100%;" src="app/public/components/pages/docs/messenger-integration/img/1.1.png" alt="">
+                                </div>
+                            </div>
+                        </li>
+                        <li>Confirma tu registro. Si no has iniciado sesión en tu ordenador, tendrás que hacerlo
+                            desde la misma ventana.
+                            <div class="row">
+                                <div class="col s12">
+                                    <img style="width:100%;" src="app/public/components/pages/docs/messenger-integration/img/2.png" alt="">
+                                </div>
+                            </div>
+                        </li>
+                        <li>Confirma la cuenta con la que iniciar sesión. Si no has iniciado sesión
+                            anteriormente en tu ordenador, deberás confirmar con un código a tu cuenta de
+                            correo electrónico.
+                        </li>
+                        <li>Elige tu perfil como propietario
+                            <div class="row">
+                                <div class="col s12">
+                                    <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/3.3.png" alt="">
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    <p>
+                        <b>Aplicación de Facebook:</b>
+                        la aplicación de Facebook contiene la configuración del bot de Messenger,
+                        incluidos los tokens de acceso. Para crear una aplicación nueva, visita el panel de
+                        aplicaciones.
+                    </p>
+                    <ol type="a">
+                        <li>En el panel de aplicaciones da click en el botón verde “Crear Aplicación”
+                            <div class="row">
+                                <div class="col s12">
+                                    <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/5.5.png" alt="">
+                                </div>
+                            </div>
+                        </li>
+                        <li>Elige la primera opción en el tipo de aplicación y al botón continuar.
+                            <div class="row">
+                                <div class="col s12">
+                                    <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/6.6.png" alt="">
+                                </div>
+                            </div>
+                        <li>Llena los siguientes campos.
+                            <ol type="i">
+                                <li>En el campo de nombre puedes elegir poner el mismo nombre de tu
+                                    página de facebook o el nombre de tu negocio O EL QUE TÚ QUIERAS.</li>
+                                <li>En el campo de correo electrónico puedes poner el correo en el cual se
+                                    pueden poner en contacto contigo.</li>
+                                <li>El propósito debe ser “Tú mismo o tu propia empresa”</li>
+                                <li>Si cuentas con una cuenta de Business Manager tal vez te gustaría
+                                    elegirla, pues esto te dará algunos otros beneficios como métricas o
+                                    permisos.</li>
+                                <li>Por último en el botón “Crear aplicación”</li>
+                                <div class="col s12">
+                                    <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/7.7.png" alt="">
+                                </div>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+
+            <h2>Configuración</h2>
+            <p>Una vez que tengas todos los requisitos antes mencionados, te decimos cómo configurar tu
+                app de facebook para conectarla con tu agente y que este comience a atender tus mensajes
+                entrantes.</p>
+            <ol type="1">
+                <li>Agrega la plataforma de Messenger a tu aplicación de Facebook</li>
+                <ol type="a">
+                    <li> En la barra lateral de la configuración de tu aplicación, ve a "PRODUCTOS" y
+                        haz clic en "+ Agregar producto".</li>
+                        <div class="row">
+                            <div class="col s6">
+                                <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/8.8.png" alt="">
+                            </div>
+                        </div>
+                    <li>Pasa el mouse por "Messenger" para visualizar las opciones y haz clic en el
+                        botón "Configurar".
+                        <div class="col s12">
+                            <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/9.1.png" alt="">
+                        </div>
+                    </li>
+                </ol>
+                <li>Configura el webhook para la aplicación</li>
+                <ol type="a">
+                    <li>En la sección "Webhooks" de la consola de configuración de Messenger, haz
+                        clic en el botón "Añadir URL de devolución de llamada.</li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/10.1.png" alt="">
+                    </div>
+                    <li>En el campo "URL de devolución de llamada", ingresa la URL pública del
+                        webhook. En el campo "Identificador de verificación" ingresa el id de proyecto
+                        y a continuación presiona el botón “Verificar y guardar”.</li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/11.11.png" alt="">
+                    </div>
+                    <li>
+                        Una vez verificado aparecerá un botón nuevo de “Añadir o eliminar página”.
+                    </li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/12.1.png" alt="">
+                    </div>
+                    <li>Deberás permitir permisos con tu cuenta para que a continuación, del listado
+                        de páginas, elijas aquella que desees que sea atendida por tu agente.</li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/13.1.png" alt="">
+                    </div>
+                    <li>Brinda todos los permisos</li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/14.1.png" alt="">
+                    </div>
+                    <li>
+                        A continuación agrega suscripciones en el botón “Añadir suscripciones”.
+                    </li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/15.1.png" alt="">
+                    </div>
+                    <li>En "Campos de suscripción", selecciona los eventos del webhook
+                        “messages” y “messaging_postbacks” y haz clic en el botón "Guardar".
+                        <b>NOTA:</b> Ningún otro evento es admitido por el agente smart, por lo que no
+                        tiene sentido habilitar otros más.
+                    </li>
+                    <div class="col s12">
+                        <img style="width:100%" src="app/public/components/pages/docs/messenger-integration/img/16.1.png" alt="">
+                    </div>
+                </ol>
+                <li>Prueba la suscripción de la aplicación</li>
+            </ol>
+            <ol type="a">
+                <li>Para probar que la aplicación se configuró correctamente, envía un mensaje
+                    a la página desde facebook.com o en Messenger. Si el webhook recibe un
+                    evento, configuraste bien la aplicación.</li>
+            </ol>
+        </div>
+    </div>
+</div>

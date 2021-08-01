@@ -1,0 +1,29 @@
+.container {
+    padding: 5% 0;
+}
+
+#foot {
+    min-height: 15em;
+}
+
+.footer_logo {
+    position: relative;
+    top: 2.5%;
+    img {width: 100%;}
+}
+
+.collection-item {
+    color: aliceblue;
+}
+
+.social {
+    display: flex;
+    justify-content: space-around;
+    margin: 1em;
+    a {
+        font-weight: 400;
+        i {
+            color: aliceblue;
+        }
+    }
+}

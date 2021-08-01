@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "main-agentesmart": {
+      "hosting": {
+        "agente-smart": [
+          "main-agentesmart"
+        ]
+      }
+    }
+  }
+}
