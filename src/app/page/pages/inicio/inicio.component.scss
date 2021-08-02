@@ -1,7 +1,7 @@
 #home{
     // scroll-snap-type: y mandatory;
     // height: 100vh;
-    overflow-y: scroll;
+    // overflow-y: scroll;
     .home_sec {
         align-items: center;
         display: flex;
@@ -42,7 +42,11 @@
     }
 }
 
-h1 { font-size: 4em;}
+h1 {
+  font-size: 4em;
+  font-weight: 900;
+  line-height: 1
+}
 
 
 #hero_row {

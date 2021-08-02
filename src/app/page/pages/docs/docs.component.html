@@ -1,7 +1,19 @@
-<div class="container">
-    <div class="row">
+<mat-drawer-container [hasBackdrop]="false">
+  <mat-drawer #drawer=matDrawer
+  [position]="'start'"
+  [mode]="'side'"
+  [opened]="true">
+
+  </mat-drawer>
+  <mat-drawer-content>
+
+    <div class="container">
+      <div class="row">
         <div class="col s12 m8">
-            <router-outlet></router-outlet>
+          <router-outlet></router-outlet>
         </div>
+      </div>
     </div>
-</div>
+
+  </mat-drawer-content>
+</mat-drawer-container>

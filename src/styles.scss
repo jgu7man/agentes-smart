@@ -14,7 +14,8 @@ $agente-smart-background: map_get($as-blueagent, 100);
 $agente-smart-foreground: mat-palette($as-darkagent, 400);
 
 $agente-smart-typography: mat-typography-config(
-  $font-family: 'Montserrat',
+  $font-family: "Montserrat, sans-serif ",
+
 );
 
 $agente-smart-theme: mat-light-theme((
@@ -38,21 +39,25 @@ html, body {
   height: 100%;
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 body {
   margin: 0;
   font-family: "Montserrat", sans-serif;
 }
 
-h1 { font-weight: 800; font-size: 3em}
+h1 { font-weight: 800; font-size: 3em;}
 h2 { font-size: 2.5em}
 h3 { font-weight: 700;}
 h4 { font-weight: 600; font-size: 1.7rem;}
 h5 { font-size: 1.3rem;}
 
+h1, h3 {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+}
 h2, h4,  h5 {
-    font-family: 'Cuprum', sans-serif;
+    font-family: 'Cuprum', sans-serif !important;
     font-weight: bold;
 }
 

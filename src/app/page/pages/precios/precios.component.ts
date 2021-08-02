@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from 'src/app/admin/auth/auth.service';
+import { MxAuth } from '@marxa/auth';
 
 @Component({
   templateUrl: './precios.component.html',
@@ -8,7 +8,7 @@ import { AuthService } from 'src/app/admin/auth/auth.service';
 export class PreciosComponent implements OnInit {
 
     constructor (
-      public _auth: AuthService
+      public _auth: MxAuth
   ) { }
 
   ngOnInit(): void {
