@@ -2,9 +2,9 @@ import { Subscription } from 'rxjs';
 import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { MxLoading, MxResponsive } from '@marxa/devkit';
+import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from '../services/dashboard.service';
-import { ChatService } from '../chat/chat.service';
+import firebase from 'firebase/app'
 
 @Component({
     // selector: 'as-dashboard',
@@ -15,24 +15,37 @@ export class DashboardComponent implements OnInit, OnDestroy{
   /** Almacena el valor de la sección y define si se habilita el ChatTester */
   public section: string = '';
   public page: string = ''
-  private sidenavSubs?: Subscription
-  private routeDataSubs?: Subscription
-  @ViewChild('sidenav') private sidenav!: MatDrawer
-  private inisializationSubs?: Subscription
+
+  public clientId: string = '';
+  public projectId: string = '';
+
+  private projectIdSubs!: Subscription;
+  private sidenavSubs!: Subscription
+  private routeDataSubs!: Subscription
+  private inisializationSubs!: Subscription
+
+  @ViewChild( 'sidenav' ) private sidenav!: MatDrawer
 
   constructor(
     public responsive_: MxResponsive,
     public dashboard_: DashboardService,
-    public chat_: ChatService,
     private _loading: MxLoading,
-    private _title: Title
+    private _title: Title,
+    private _cache: MxCache,
   ) {
     this.setTitles()
     this.listenNavbarToggle()
     this.inisializationSubs = this.dashboard_.initializeDashboard().subscribe()
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    let user = await this._cache.getAsyncKey<firebase.User>('user')
+    this.clientId = user?.uid || ''
+
+    this.projectIdSubs =
+      this._cache.listenForChanges<string>( 'projectId' )
+        .subscribe( project => { this.projectId = project })
+  }
 
   // # SET TITLE
   /** Toma los datos de las rutas y define títulos de la página */
@@ -56,9 +69,10 @@ export class DashboardComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy() {
-    if (this.sidenavSubs) this.sidenavSubs.unsubscribe()
-    if (this.routeDataSubs) this.routeDataSubs.unsubscribe()
-    if (this.inisializationSubs) this.inisializationSubs.unsubscribe()
+    this.sidenavSubs.unsubscribe()
+    this.routeDataSubs.unsubscribe()
+    this.inisializationSubs.unsubscribe()
+    this.projectIdSubs.unsubscribe()
   }
 
 }

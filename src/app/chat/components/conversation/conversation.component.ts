@@ -1,3 +1,4 @@
+import { EventEmitter, OnDestroy, Output } from '@angular/core';
 import {
   Component,
   OnInit,
@@ -7,7 +8,7 @@ import {
   Input,
 } from '@angular/core';
 import { MxLoading, MxText } from '@marxa/devkit';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { CardButton, Suggest } from 'src/app/models/dialogflow-responses.model';
 import { Image, Interaction, QuickResponse } from '../../chat.model';
 import { ChatService } from '../../chat.service';
@@ -17,29 +18,22 @@ import { ChatService } from '../../chat.service';
   templateUrl: './conversation.component.html',
   styleUrls: ['./conversation.component.scss'],
 })
-export class ConversationComponent implements OnInit, AfterViewInit {
+export class ConversationComponent implements OnInit, AfterViewInit, OnDestroy {
   messages: Interaction[] = [];
-  // private _conv : BehaviorSubject<Interaction[]> = new BehaviorSubject([]);
-  // @Input() set conv(conver: Interaction[]) { this._conv.next(conver); }
-  // get conv() { return this._conv.getValue()}
+  @ViewChild( 'messagesContainer' ) public messagesContainer!: ElementRef;
 
-  @ViewChild('messagesContainer') public messagesContainer!: ElementRef;
 
   constructor(
     private _text: MxText,
-    private _loading: MxLoading,
-    public chat: ChatService
-  ) {}
+    public chat: ChatService,
+  ) {
+
+  }
 
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    // this._conv.subscribe( async conv => {
-    //   this.messages = conv
-    //   await this._loading.waitFor(100)
-    //   this.messagesContainer.nativeElement.scrollTop =
-    //     this.messagesContainer.nativeElement.scrollHeight + 50
-    // })
+
   }
 
   messageType(msg: string | QuickResponse[] | Image | CardButton[]) {
@@ -76,5 +70,8 @@ export class ConversationComponent implements OnInit, AfterViewInit {
         fecha
       )} - ${this._text.stringifyTime(fecha)}`;
     }
+  }
+
+  ngOnDestroy() {
   }
 }

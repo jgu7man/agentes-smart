@@ -30,35 +30,23 @@ import { ChatSessionModel, Interaction, iSessionResponse, QuickResponse } from '
 })
 export class ChatService {
   conversation: Interaction[] = [];
-  conversation$: BehaviorSubject<Interaction[]> = new BehaviorSubject(<Interaction[]>[])
-  panelOpened: boolean = false;
   sendMessage$: Subject<string> = new Subject();
+  messageSended$: Subject<boolean> = new Subject();
+  messageSuccess$: Subject<boolean> = new Subject()
 
   private _function =
     'https://us-central1-main-agentesmart.cloudfunctions.net/dialogflow/';
   private _localhost =
     'http://localhost:5001/main-agentesmart/us-central1/rest/';
   private _url = environment.restURL + 'session';
-  private _projectId: string | null
   private _sessionId?: string | null;
-  private _clientId?: string
+
 
   constructor(
     private _cache: MxCache,
     private _http: HttpClient,
     private _alert: MxAlert,
-  ) {
-    this.sendMessage();
-    this._projectId = this._cache.getDataKey<string>('projectId');
-    const user = this._cache.getDataKey<firebase.User>('user');
-    this._clientId = user ? user.uid : undefined;
-  }
-
-  // opened = this._store.select('chat').pipe(map((chat) => chat.isOpened));
-
-  toggleChatbox() {
-    this.panelOpened = !this.panelOpened;
-  }
+  ) {}
 
 
 
@@ -72,27 +60,24 @@ export class ChatService {
     });
   }
 
-  sendMessage(): Subscription {
-    // this._store.pipe(
-    //     tap(r => console.log(r))
-    // ).subscribe(act => console.log(act))
-
+  listenForMessage(clientId: string, projectId: string, userId: string ): Subscription {
+    this.messageSended$.next(false)
     return this.sendMessage$.pipe(
-      map( ( message: string ) => {
-        if ( !this._projectId ) {
+      map<string, ChatSessionModel>( ( message: string ) => {
+        // Listen for forbbiden data
+        if ( !projectId ) {
           let error = new MxErrorAlertModel(`No se tiene el project id`,'sendMessage')
-          return throwError( error )
-        } else if ( !this._clientId ) {
+          throw error
+        } else if ( !clientId ) {
           let error = new MxErrorAlertModel(`No se tiene el client id`,'sendMessage')
-          return throwError( error )
+          throw error
         } else {
 
-          this.conversation.push(new Interaction(message, 'this'))
+          // BUILD BODY REQUEST
           let request = new ChatSessionModel(
-            this._projectId, this._clientId,
-            {userId: 'TEST'}, message
+            projectId, clientId,
+            {userId: userId }, message
           )
-
           // search for sessionId in storage
           this._sessionId = this._cache.getDataKey<string>( 'currentSession' );
           if (this._sessionId) request.sessionId = this._sessionId;
@@ -103,23 +88,34 @@ export class ChatService {
           console.log( request );
           return request
         }
-      })
-      ).subscribe( body => {
-        this._http
-          .post( this._url, body, { responseType: 'json' } ).pipe(
-            map( res => res as iSessionResponse ),
-            catchError( error => {
-              throw this._alert.error( `Error en servidor al enviar mensaje`, error )
-            } )
-          ).subscribe( response => {
-            console.log( response );
-            // save the sessionId in storage
-            this._cache.updateData('currentSession', response['session']);
-            // save the contexts in storage
-            this._cache.updateData('inputContexts', response['contextos']);
+      } )
+    ).subscribe( ( body: ChatSessionModel ) => {
+      // Update conversation state
+      let requestMessage = new Interaction( body.textInput, 'this', true )
+      this.conversation.push(requestMessage)
+      this.messageSended$.next( true )
+      this.messageSuccess$.next( false )
 
-            this.reciveMessage(response['respuestas']);
-          });
+      // Send message to API request
+      this._http.post( this._url, body, { responseType: 'json' } ).pipe(
+        take(1),
+        map( res => res as iSessionResponse ),
+        catchError( error => {
+          throw this._alert.error( `Error en servidor al enviar mensaje`, error )
+        } ),
+      ).subscribe( response => {
+        // Reciving message
+        console.log( response );
+        this.conversation.map( m => m.id === requestMessage.id
+          ? {...m, success: true} : m )
+        this.messageSuccess$.next( true )
+        // save the sessionId in storage
+        this._cache.updateData('currentSession', response['session']);
+        // save the contexts in storage
+        this._cache.updateData('inputContexts', response['contextos']);
+
+        this.reciveMessage(response['respuestas']);
+      });
 
     }, error =>{
         if ( 'message' in error ) {
@@ -177,6 +173,8 @@ export class ChatService {
     if ( card.buttons )
       this.conversation.push( new Interaction( card.buttons, 'that' ) );
   }
+
+
 
 
 }

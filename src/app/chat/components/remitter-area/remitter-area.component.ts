@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ChatService } from '../../chat.service';
 
 @Component({
@@ -8,6 +8,7 @@ import { ChatService } from '../../chat.service';
 })
 export class RemitterAreaComponent implements OnInit {
 
+  @Output() closeChatWindow: EventEmitter<void> = new EventEmitter()
   constructor (
     public chat_: ChatService
   ) { }

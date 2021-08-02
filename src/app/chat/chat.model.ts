@@ -25,38 +25,45 @@ export interface iSessionResponse {
 
 export class Interaction {
 
-    public message: string | QuickResponse[] | Image | CardButton[]
-    public emiter: 'this' | 'that'
-    public time: Date
+  public message: string | QuickResponse[] | Image | CardButton[]
+  public emiter: 'this' | 'that'
+  public time: Date
+  public sended: boolean
+  public success: boolean
+  public id: string
 
-    constructor (
-        message: string | QuickResponse[] | Image | CardButton[],
-        emiter: 'this' | 'that'
-    ) {
-        this.message = message
-        this.emiter = emiter
-        this.time = new Date()
-    }
+  constructor (
+    message: string | QuickResponse[] | Image | CardButton[],
+    emiter: 'this' | 'that',
+    sended?: boolean
+  ) {
+    this.message = message
+    this.emiter = emiter
+    this.time = new Date()
+    this.id = `${new Date().getTime()}`
+    this.sended = sended || false
+    this.success = false
+  }
 
 }
 
 export class ConversationItem {
-    constructor (
-        public message: string | QuickResponse[] | Image ,
-        public emiter?: 'this' | 'that',
-        public time?: Date,
-    ){}
+  constructor (
+    public message: string | QuickResponse[] | Image ,
+    public emiter?: 'this' | 'that',
+    public time?: Date,
+  ){}
 }
 
 export type MessageType = string | QuickResponse | Image
 
 
 export interface QuickResponse {
-    displayText: string,
-    value: string
+  displayText: string,
+  value: string
 }
 
 export interface Image {
-    src: string,
-    alt: string
+  src: string,
+  alt: string
 }

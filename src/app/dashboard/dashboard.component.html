@@ -30,13 +30,13 @@ class="dash-container"
     >
       <ng-container *ngIf="!responsive_.med; else icon">
         <button mat-raised-button color="accent" (click)="testChat.open()"
-        [disabled]="section != 'Agente'">
+        [disabled]="!projectId">
           Probar chat
         </button>
       </ng-container>
       <ng-template #icon>
         <button mat-mini-fab color="accent" (click)="testChat.open()"
-        [disabled]="section != 'agente'">
+        [disabled]="!projectId">
           <i class="fas fa-comment-dots"></i>
         </button>
       </ng-template>
@@ -52,7 +52,11 @@ class="dash-container"
 
   <!-- # Test chat -->
   <mat-drawer #testChat class="test-chat" mode="over" position="end">
-    <as-chat></as-chat>
+    <as-chat
+    *ngIf="projectId"
+    [clientId]="clientId"
+    [projectId]="projectId"
+    ></as-chat>
   </mat-drawer>
 
 </mat-drawer-container>
