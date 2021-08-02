@@ -1,0 +1,74 @@
+#dashboard_container {
+    height: 100vh;
+}
+
+#dashboard_area {
+    overflow: auto !important;
+    background: #e7f4f7 !important;
+}
+
+
+.test-chat {
+    width: 350px;
+}
+
+.side-nav {
+    width: 220px;
+}
+
+@media screen and (min-width:900 ){
+    ::ng-deep {
+        .side-nav {
+           width: 80px;
+       }
+    }
+}
+
+
+::ng-deep mat-drawer-container::-webkit-scrollbar,
+.mat-drawer-content::-webkit-scrollbar,
+.mat-drawer-inner-container::-webkit-scrollbar {
+    display: none;
+}
+
+.mat-drawer-content {
+    overflow: unset !important;
+}
+
+::ng-deep .mat-drawer-inner-container {
+    contain: content;
+}
+
+
+mat-toolbar.nav-footer {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.test-chat-btn {
+    position: absolute !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+
+#footer {
+    bottom: 0%;
+    z-index: 1;
+}
+
+.container {
+    width: 95% !important;
+}
+
+
+
+
+@media screen and (max-width: 700px){
+    .nav-footer{
+        bottom: 15%;
+    }
+}

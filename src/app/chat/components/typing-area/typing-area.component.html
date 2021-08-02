@@ -1,0 +1,23 @@
+<div class="row">
+  <div class="col s10">
+    <mat-form-field appearance="outline">
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="message"
+        name="message"
+        (keyup.enter)="message ? onSend() : null"
+        #messageInput
+        cdkFocusInitial
+      />
+    </mat-form-field>
+  </div>
+  <div class="col s2">
+    <button mat-icon-button [mat-menu-trigger-for]="convMenu">
+      <i class="fas fa-bars"></i>
+    </button>
+    <mat-menu #convMenu="matMenu">
+      <button mat-menu-item (click)="cleanConversation()">Limpiar chat</button>
+    </mat-menu>
+  </div>
+</div>

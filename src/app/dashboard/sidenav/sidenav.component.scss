@@ -1,0 +1,52 @@
+.logo-container {
+  height: 60px;
+  padding: 0 1em;
+  display: flex;
+  img {
+    width: 100%;
+    margin: auto 0;
+  }
+}
+
+mat-list-item {
+    cursor: pointer;
+    transition: all .3s;
+}
+
+::ng-deep {
+    .menu-section {
+        .mat-expansion-panel-header.amber-text {
+            span{
+                color: goldenrod;
+                font-weight: 700;
+            }
+        }
+        .mat-expansion-indicator::after, .mat-panel-title{
+            color: #F3F8FF;
+        }
+        span, .collection-item {
+            color: #F3F8FF;
+        }
+
+    }
+}
+
+
+    @media screen and (min-width:900 ){
+        ::ng-deep mat-panel-title{
+            display: none !important;
+        }
+    }
+
+
+
+::ng-deep .mat-expansion-panel-body {
+    padding: 0 5px 16px !important;
+    .collection {
+        border-left: none !important;
+        border-right: none !important;
+    }
+}
+
+
+

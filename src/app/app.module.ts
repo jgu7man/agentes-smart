@@ -20,7 +20,7 @@ import { SharedModule } from './shared/shared.module';
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    SharedModule
+    SharedModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

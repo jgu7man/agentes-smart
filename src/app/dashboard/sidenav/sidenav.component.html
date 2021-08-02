@@ -1,0 +1,37 @@
+<div class="logo-container" [routerLink]="['/']">
+  <img [src]="'assets/icons/as-bco-h@0.5x.png'" [alt]="'Agente Smart Logo Negativo'">
+</div>
+<mat-accordion [displayMode]="'flat'">
+  <mat-expansion-panel
+    class="menu-section"
+    *ngFor="let parent of Sidenav"
+    [mxBackground]="'dark1'"
+    [mxColor]="'white'"
+    [expanded]="onActive(parent.routeId)"
+    [hideToggle]="true"
+  >
+    <mat-expansion-panel-header
+      [ngClass]="{ 'amber-text': onActive(parent.routeId) }"
+      [routerLink]="parent.route ? [parent.route] : []"
+    >
+      <mat-panel-title *ngIf="!checkResponsive()" [mxColor]="'ligth1'">
+        {{ parent.name }}
+      </mat-panel-title>
+      <!-- <mat-panel-description> -->
+      <i class="fas {{ parent.icon }}" [mxColor]="'ligth1'"></i>
+      <!-- </mat-panel-description> -->
+    </mat-expansion-panel-header>
+
+    <div class="collection">
+      <a
+        *ngFor="let child of parent.childs"
+        [routerLink]="[child.route]"
+        routerLinkActive="active"
+        class="collection-item"
+        [mxColor]="'white'"
+        [mxBackground]="'dark1'"
+        >{{ child.name }}</a
+      >
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>

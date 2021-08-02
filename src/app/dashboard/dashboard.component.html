@@ -1,1 +1,62 @@
-<p>dashboard works!</p>
+<!-- <aSmart-navbar></aSmart-navbar> -->
+
+<mat-drawer-container
+id="dashboard_container"
+strechHeight
+class="dash-container"
+[mxBackground]="'white'"
+[hasBackdrop]="testChat.opened">
+
+
+  <!-- ## Left sidebar -->
+  <mat-drawer
+  #sidenav
+  class="side-nav"
+  mode="side"
+  [opened]="!responsive_.small"
+  [ngStyle]="{'width': responsive_.med ? '80px': '220px'}"
+  position="start"
+  [mxBackground]="'dark1'"
+  [disableClose]="true"
+  [autoFocus]="false"
+  >
+    <!-- Routas del lado izquierdo -->
+    <as-sidenav></as-sidenav>
+
+    <!-- Botón del Chat Tester -->
+    <mat-toolbar
+    class="test-chat-btn"
+    [mxBackground]="'dark1'"
+    >
+      <ng-container *ngIf="!responsive_.med; else icon">
+        <button mat-raised-button color="accent" (click)="testChat.open()"
+        [disabled]="section != 'Agente'">
+          Probar chat
+        </button>
+      </ng-container>
+      <ng-template #icon>
+        <button mat-mini-fab color="accent" (click)="testChat.open()"
+        [disabled]="section != 'agente'">
+          <i class="fas fa-comment-dots"></i>
+        </button>
+      </ng-template>
+    </mat-toolbar>
+  </mat-drawer>
+  <!-- !## End Left Sidenav -->
+
+
+  <!-- # Dashboard -->
+  <mat-drawer-content strechHeight id="dashboard_area" [mxBackground]="'ligth1'">
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
+
+  <!-- # Test chat -->
+  <mat-drawer #testChat class="test-chat" mode="over" position="end">
+    <as-chat></as-chat>
+  </mat-drawer>
+
+</mat-drawer-container>
+
+
+
+
