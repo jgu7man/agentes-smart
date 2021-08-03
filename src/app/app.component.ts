@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MxAuth } from '@marxa/auth';
 import { MxAlert, MxColor, MxText } from "@marxa/devkit";
 
 @Component({
@@ -11,8 +12,10 @@ export class AppComponent {
   constructor(
     private _color: MxColor,
     private _text: MxText,
-    private _alert: MxAlert
+    private _alert: MxAlert,
+    private _auth: MxAuth,
   ) {
+    this._auth.userCollection = 'usuarios'
     this._alert.storeError = false
     this._text.loadFontAwesome()
     this._color.ColorPalette = {

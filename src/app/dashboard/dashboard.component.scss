@@ -1,19 +1,25 @@
 #dashboard_container {
-    height: 100vh;
+  height: 100vh;
 }
 
 #dashboard_area {
-    overflow: auto !important;
-    background: #e7f4f7 !important;
+  overflow: auto !important;
+  background: #e7f4f7 !important;
 }
 
+#loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
 .test-chat {
-    width: 350px;
+  width: 350px;
 }
 
 .side-nav {
-    width: 220px;
+  width: 220px;
 }
 
 @media screen and (min-width:900 ){

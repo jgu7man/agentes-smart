@@ -47,7 +47,14 @@ class="dash-container"
 
   <!-- # Dashboard -->
   <mat-drawer-content strechHeight id="dashboard_area" [mxBackground]="'ligth1'">
-    <router-outlet></router-outlet>
+    <ng-container *ngIf="auth.user$ | async; else unauthorized">
+      <router-outlet></router-outlet>
+    </ng-container>
+    <ng-template #unauthorized >
+      <div id="loader">
+        <mat-spinner></mat-spinner>
+      </div>
+    </ng-template>
   </mat-drawer-content>
 
   <!-- # Test chat -->

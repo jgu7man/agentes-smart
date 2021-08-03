@@ -2,9 +2,12 @@ import { Subscription } from 'rxjs';
 import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
+import { MxAlert, MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from '../services/dashboard.service';
 import firebase from 'firebase/app'
+import { MxAuth } from '@marxa/auth';
+import { take } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
     // selector: 'as-dashboard',
@@ -29,19 +32,33 @@ export class DashboardComponent implements OnInit, OnDestroy{
   constructor(
     public responsive_: MxResponsive,
     public dashboard_: DashboardService,
+    public auth: MxAuth,
     private _loading: MxLoading,
-    private _title: Title,
+    private _router: Router,
     private _cache: MxCache,
+    private _alert: MxAlert,
+    private _title: Title,
   ) {
     this.setTitles()
     this.listenNavbarToggle()
+    this.listenForProjectId()
     this.inisializationSubs = this.dashboard_.initializeDashboard().subscribe()
+    this.auth.user$.pipe(
+      take(1)
+    ).subscribe( user => {
+      console.log( user )
+      this._alert.notify('Necesitas iniciar sesión')
+      if (!user) this._router.navigate(['/'])
+    })
   }
 
   async ngOnInit() {
     let user = await this._cache.getAsyncKey<firebase.User>('user')
     this.clientId = user?.uid || ''
 
+  }
+
+  listenForProjectId() {
     this.projectIdSubs =
       this._cache.listenForChanges<string>( 'projectId' )
         .subscribe( project => { this.projectId = project })

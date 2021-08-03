@@ -61,7 +61,8 @@
       <button mat-menu-item (click)="auth_.signOut()">Cerrar sesión</button>
     </mat-menu>
     <div class="imgProfileContainer" [matMenuTriggerFor]="menuProfile">
-      <img src="{{ user.photoURL }}" alt="" />
+      <!-- <img src="{{ user.photoURL }}" alt="" /> -->
+      <button mat-raised-button color='primary' >Menu</button>
     </div>
   </div>
   <ng-template #unlogged>
