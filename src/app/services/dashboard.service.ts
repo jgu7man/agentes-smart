@@ -32,7 +32,7 @@ export class DashboardService {
       <firebase.User>('user').pipe(
         // tap(console.log),
         filter(user => !!user),
-        flatMap<firebase.User, Observable<AgenteModel[]>>( user => this._agentes.listenAgentes( user.uid ) ),
+        flatMap<firebase.User, Observable<AgenteModel[]>>( user => this._agentes.list( user.uid ) ),
         catchError(error => {throw this._alert.error(`Error en cargando los agentes`, error)}),
         distinctUntilChanged<AgenteModel[]>((x, y) => x.length === y.length)
 

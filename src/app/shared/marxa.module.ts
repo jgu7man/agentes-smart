@@ -6,6 +6,7 @@ import {
   MxDateTimeModule,
   MxTextModule,
 } from "@marxa/devkit";
+import { MxStorageModule } from '@marxa/storage';
 
 @NgModule({
   exports: [
@@ -13,6 +14,7 @@ import {
     MxResponsiveModule,
     MxDateTimeModule,
     MxTextModule,
+    MxStorageModule
   ]
 })
 export class MarxaModule {}

@@ -1,0 +1,124 @@
+<div class="container">
+  <div class="row">
+    <div class="col s12">
+      <mat-card class="plain">
+        <mat-card-title> Crear agente </mat-card-title>
+        <mat-card-subtitle>
+          Puedes crear un agente de ventas nuevo o agregar algún agente de
+          DialogFlow para admisitrarlo aquí
+        </mat-card-subtitle>
+        <mat-card-content>
+          <form class="row" [formGroup]="agenteForm">
+
+            <!-- Nombre -->
+            <mat-form-field appearance="outline" class="col s12">
+              <mat-label>Nombre</mat-label>
+              <input
+              matInput
+              type="text"
+              name="displayName"
+              formControlName="displayName"
+              required
+              >
+              <mat-error *ngIf="agenteForm.hasError('required', 'displayName')">
+               El nombre del agente es necesario
+              </mat-error>
+            </mat-form-field>
+
+            <!-- select de lenguajes -->
+            <mat-form-field class="col s12 m6" appearance="outline">
+              <mat-label>Lenguaje</mat-label>
+              <mat-select
+                name="language"
+                id="language"
+                formControlName="defaultLanguageCode"
+              >
+                <mat-option
+                  *ngFor="let lenguaje of zoneConfig.languages"
+                  [value]="lenguaje.code"
+                >
+                  {{ lenguaje.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="agenteForm.hasError('required', 'defaultLanguageCode')">
+                Es necesario que elijas el idioma en que entenderá tu agente
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Zona horaria -->
+            <mat-form-field class="col s12 m6" appearance="outline">
+              <mat-label>Zona horaria</mat-label>
+              <mat-select
+                name="timeZone"
+                id="timeZone"
+                formControlName="timeZone"
+              >
+                <mat-option
+                  *ngFor="let zona of zoneConfig.timeZones"
+                  [value]="zona.value"
+                >
+                  {{ zona.display }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="agenteForm.hasError('required', 'timeZone')">
+                Elige una zona horaria por favor
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Descripción -->
+            <mat-form-field class="col s12">
+              <mat-label>Descripción</mat-label>
+              <textarea
+                formControlName="description"
+                matInput
+                name="description"
+                id="description"
+                cols="30"
+                placeholder="Opcionalmente puedes agregar una descripción de tu agente"
+              ></textarea>
+            </mat-form-field>
+
+            <div class="row">
+              <!-- Avatar -->
+              <p><b>Avatar</b></p>
+              <mat-hint>
+                Agrega la URL de una imagen o cárgala. Puede ser el logotipo de
+                tu negocio, por ejemplo. Es opcional
+              </mat-hint>
+              <mat-form-field class="col s12 m6">
+                <mat-label
+                  matTooltip="Imagen o logo de tu agente"
+                  [matTooltipPosition]="'above'"
+                  >Avatar</mat-label
+                >
+                <input
+                  formControlName="avatarUri"
+                  name="avatarUri"
+                  id="avatarUri"
+                  matInput
+                  placeholder="https://..."
+                />
+              </mat-form-field>
+
+              <div class="col s12 m6">
+                <mx-files-picker
+                [path]="folder"
+                toggleButtonLabel="Cargar imagen"
+                [multiple]="false"
+                [uploadButton]="false"
+                [disable]="avatarCtrl.value !== ''"
+                ></mx-files-picker>
+              </div>
+            </div>
+
+            <mat-action-row>
+              <button mat-raised-button color="accent" (click)="onSubmit()">
+                Crear
+              </button>
+            </mat-action-row>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

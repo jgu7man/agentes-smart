@@ -1,0 +1,46 @@
+#agente-container {
+    overflow: hidden;
+}
+
+
+.agentInfo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    position: absolute;
+    left: 2em;
+}
+
+.imgAgentAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    img {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        top: 50%;
+        left: 50%;
+    }
+}
+
+.fa-chevron-circle-down {
+    font-size: 1.3em;
+}
+
+.agentName {
+    text-transform: capitalize;
+    font-weight: 500;
+    text-align: left;
+    margin-left: 1em;
+}
+
+.agentNav{
+    min-height: 50px;
+    z-index: 2;
+}
+
+

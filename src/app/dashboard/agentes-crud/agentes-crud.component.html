@@ -1,0 +1,64 @@
+<div class="container" id="agentes-container">
+  <div class="row" *ngIf="agentes_.agentes$ | async as agentes">
+    <!-- ## Si hay agentes -->
+    <ng-container *ngIf="agentes.length > 0; else noAgentes">
+      <div class="col s12 m6 l4 agente-box" *ngFor="let agente of agentes">
+        <!-- # Tarjeta de agente -->
+        <mat-card>
+          <mat-card-header>
+            <!-- # Icono del agente -->
+            <div
+              mat-card-avatar
+              class="avatar-img"
+              [ngStyle]="{
+                'background-image': 'url(' + agente.avatarUri.url + ')'
+              }"
+              [routerLink]="['/dashboard/agente/', agente.projectId]"
+            ></div>
+
+            <!-- Nombre del agente -->
+            <mat-card-title
+              [routerLink]="['/dashboard/agente/', agente.projectId]"
+              >{{ agente.displayName }}
+            </mat-card-title>
+
+            <!-- Descripción -->
+            <mat-card-subtitle> {{ agente.description }} </mat-card-subtitle>
+
+            <!-- Opciones -->
+            <button class="card-menu" mat-button [matMenuTriggerFor]="menu">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button
+                mat-menu-item
+                [routerLink]="['/dashboard/editar_agente', agente.projectId]"
+              >
+                Editar
+              </button>
+              <button mat-menu-item (click)="deleteAgente(agente.projectId)">
+                Eliminar
+              </button>
+            </mat-menu>
+          </mat-card-header>
+        </mat-card>
+      </div>
+    </ng-container>
+
+    <!-- Si no hay agentes -->
+    <ng-template #noAgentes>
+      <div class="col s12 center">
+        <p class="center grey-text">Aún no tienes agentes creados.</p>
+        <i class="fas fa-robot fa-10x grey-text"></i>
+        <p>Crea una agente para empezar a programarlo</p>
+        <button
+          mat-raised-button
+          color="primary"
+          [routerLink]="['/dashboard/crear_agente']"
+        >
+          Crear agente
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

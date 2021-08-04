@@ -1,0 +1,19 @@
+<p mat-dialog-title class="center">¿Eliminar este agente?</p>
+<mat-dialog-content>
+  <p class="center">
+    La acción que piensar realizar no puede revertirse.
+    <br>
+    Se eliminará el agente con todas sus confiuguraciones, conversaciones, contextos y entidades en dialogflow y local.
+  </p>
+  <p class="center">¿Seguro que deseas eliminar este agente?</p>
+</mat-dialog-content>
+<mat-dialog-actions
+style="display: flex; justify-content: space-around;">
+    <button mat-raised-button
+    (click)="dialog.close()"
+    >Cancelar</button>
+    <button mat-raised-button
+    (click)="dialog.close(true)"
+    color="warn"
+    ></button>
+</mat-dialog-actions>
