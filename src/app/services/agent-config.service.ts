@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
-import { IntentModel } from '../dashboard/agente/mensajes/mensaje.model';
-import { MensajesService } from '../dashboard/agente/mensajes/mensajes.service';
+import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
+import { DialogflowIntentModel, iDialogflowIntent } from '../models/mensaje.model';
+import { MensajesService } from './mensajes.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,20 +18,20 @@ export class AgentConfigService {
   {}
 
   async restoreDefaultIntent(
-    intent:
+    displayName:
       | 'Default Welcome Intent'
       | 'Default Fallback Intent'
       | 'Default Context Intent'
   ) {
     // Init process
     this._loading.toggleWaiting('open');
-    var intentList: IntentModel[] =
-      (await this._cache.getAsyncKey<IntentModel[]>('intents')) || [];
+    var intentList: iDialogflowIntent[] =
+      (await this._cache.getAsyncKey<iDialogflowIntent[]>('intents')) || [];
 
     console.log('Search for intent');
     if (intentList && intentList.length > 0) {
-      var defaultIntent: IntentModel | undefined = intentList.find(
-        (i) => i.displayName == intent
+      var defaultIntent: iDialogflowIntent | undefined = intentList.find(
+        (i) => i.displayName == displayName
       );
 
       if (defaultIntent) {
@@ -40,32 +40,37 @@ export class AgentConfigService {
         // this._mensaje.delete(defaultIntent.name)
       }
     }
+    let projectId = this._cache.getDataKey<string>( 'projectId' )
+    if ( !projectId ) {
+      throw new MxErrorAlertModel(`No se encontró el projectId`, 'restoreDefaultIntet')
+    } else {
+      let intent = new DialogflowIntentModel(projectId, displayName)
+      console.log('Create in dialogflow');
+      defaultIntent = await this._mensajes.createNewIntent(intent);
+      console.log('Intent seted: ', defaultIntent);
 
-    console.log('Create in dialogflow');
-    defaultIntent = await this._mensajes.createNewIntent({
-      displayName: intent,
-    });
-    console.log('Intent seted: ', defaultIntent);
+      console.log('Get the ID');
+      const resourceID = defaultIntent?.name?.slice(
+        defaultIntent.name.lastIndexOf('/') + 1
+      );
 
-    console.log('Get the ID');
-    const resourceID = defaultIntent.name?.slice(
-      defaultIntent.name.lastIndexOf('/') + 1
-    );
+      console.log('Save on firestore');
+      let path = this._cache.getDataKey<string>('agentePath');
+      await this._af
+        .collection(path + '/mensajes')
+        .doc(resourceID)
+        .set({
+          name: resourceID,
+          displayName: defaultIntent?.displayName,
+        });
 
-    console.log('Save on firestore');
-    let path = this._cache.getDataKey<string>('agentePath');
-    await this._af
-      .collection(path + '/mensajes')
-      .doc(resourceID)
-      .set({
-        name: resourceID,
-        displayName: defaultIntent.displayName,
-      });
+      console.log('Process finished');
+      this._mensajes.getDialogFlowIntents();
 
-    console.log('Process finished');
-    this._mensajes.getDialogFlowIntents();
+      this._loading.toggleWaiting('close');
+      this._alerts.notify(displayName + ' creado');
 
-    this._loading.toggleWaiting('close');
-    this._alerts.notify(intent + ' creado');
+    }
+
   }
 }

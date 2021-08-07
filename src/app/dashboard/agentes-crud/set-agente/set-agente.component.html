@@ -66,7 +66,7 @@
             </mat-form-field>
 
             <!-- Descripción -->
-            <mat-form-field class="col s12">
+            <mat-form-field class="col s12" appearance="outline">
               <mat-label>Descripción</mat-label>
               <textarea
                 formControlName="description"
@@ -74,41 +74,41 @@
                 name="description"
                 id="description"
                 cols="30"
+                rows="5"
                 placeholder="Opcionalmente puedes agregar una descripción de tu agente"
               ></textarea>
             </mat-form-field>
 
-            <div class="row">
-              <!-- Avatar -->
-              <p><b>Avatar</b></p>
-              <mat-hint>
-                Agrega la URL de una imagen o cárgala. Puede ser el logotipo de
-                tu negocio, por ejemplo. Es opcional
-              </mat-hint>
-              <mat-form-field class="col s12 m6">
-                <mat-label
-                  matTooltip="Imagen o logo de tu agente"
-                  [matTooltipPosition]="'above'"
-                  >Avatar</mat-label
-                >
-                <input
-                  formControlName="avatarUri"
-                  name="avatarUri"
-                  id="avatarUri"
-                  matInput
-                  placeholder="https://..."
-                />
-              </mat-form-field>
+            <!-- Avatar -->
+            <div class="col s12" [style.margin-bottom]="'2em'">
+                <mat-form-field class="col s12 m6 l8 " appearance="outline">
+                  <mat-hint>
+                    Agrega la URL de una imagen o cárgala. Puede ser el logotipo de
+                    tu negocio, por ejemplo. Es opcional
+                  </mat-hint>
+                  <mat-label
+                    matTooltip="Imagen o logo de tu agente"
+                    [matTooltipPosition]="'above'"
+                    >Avatar</mat-label
+                  >
+                  <input
+                    formControlName="avatarUri"
+                    name="avatarUri"
+                    id="avatarUri"
+                    matInput
+                    placeholder="https://..."
+                  />
+                </mat-form-field>
 
-              <div class="col s12 m6">
-                <mx-files-picker
-                [path]="folder"
-                toggleButtonLabel="Cargar imagen"
-                [multiple]="false"
-                [uploadButton]="false"
-                [disable]="avatarCtrl.value !== ''"
-                ></mx-files-picker>
-              </div>
+                <div class="col s12 m6 l4">
+                  <mx-files-picker
+                  [path]="folder"
+                  toggleButtonLabel="Cargar imagen"
+                  [multiple]="false"
+                  [uploadButton]="false"
+                  [disable]="avatarCtrl.value !== ''"
+                  ></mx-files-picker>
+                </div>
             </div>
 
             <mat-action-row>

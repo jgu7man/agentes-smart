@@ -1,4 +1,4 @@
-<div class="logo-container" [routerLink]="['/']">
+<div class="logo-container" [routerLink]="['/dashboard']">
   <img [src]="'assets/icons/as-bco-h@0.5x.png'" [alt]="'Agente Smart Logo Negativo'">
 </div>
 <mat-accordion [displayMode]="'flat'">
@@ -32,6 +32,34 @@
         [mxBackground]="'dark1'"
         >{{ child.name }}</a
       >
+    </div>
+  </mat-expansion-panel>
+  <mat-expansion-panel
+    class="menu-section"
+    [mxBackground]="'dark1'"
+    [mxColor]="'white'"
+    [expanded]="onActive('cuenta')"
+    [hideToggle]="true"
+  >
+    <mat-expansion-panel-header
+      [ngClass]="{ 'amber-text': onActive('cuenta') }"
+    >
+      <mat-panel-title *ngIf="!checkResponsive()" [mxColor]="'ligth1'">
+        Cuenta
+      </mat-panel-title>
+      <!-- <mat-panel-description> -->
+      <i class="fas fa-receipt" [mxColor]="'ligth1'"></i>
+      <!-- </mat-panel-description> -->
+    </mat-expansion-panel-header>
+
+    <div class="collection">
+      <a
+        routerLinkActive="active"
+        class="collection-item"
+        [mxColor]="'white'"
+        [mxBackground]="'dark1'"
+        (click)="auth.signOut()"
+        >Cerrar Sesión</a>
     </div>
   </mat-expansion-panel>
 </mat-accordion>

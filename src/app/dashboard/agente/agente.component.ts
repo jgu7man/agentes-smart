@@ -1,14 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CurrentAgenteService } from './current-agente.service';
-import { CurrentMensajeService } from './mensajes/mensaje/current-mensaje.service';
 import { Subscription } from 'rxjs';
-import { ContextosService } from './contextos/contextos.service';
 import { take } from 'rxjs/operators';
 import { AgenteModel } from 'src/app/models/agente.model';
 import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from 'src/app/services/dashboard.service';
 import { iNavlink } from 'src/app/models/navlink.interface';
+import { CurrentAgenteService } from 'src/app/services/current-agente.service';
+import { ContextosService } from 'src/app/services/contextos.service';
 
 @Component({
   selector: 'aSmart-agente',

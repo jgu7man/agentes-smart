@@ -1,13 +1,13 @@
-import { Subscription } from 'rxjs';
-import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
 import { MxAlert, MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from '../services/dashboard.service';
-import firebase from 'firebase/app'
 import { MxAuth } from '@marxa/auth';
-import { take } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { filter, map, take, tap } from 'rxjs/operators';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import firebase from 'firebase/app'
 
 @Component({
     // selector: 'as-dashboard',
@@ -19,8 +19,8 @@ export class DashboardComponent implements OnInit, OnDestroy{
   public section: string = '';
   public page: string = ''
 
-  public clientId: string = '';
-  public projectId: string = '';
+  public clientId!: string;
+  public projectId?: string;
 
   private projectIdSubs!: Subscription;
   private sidenavSubs!: Subscription
@@ -38,24 +38,27 @@ export class DashboardComponent implements OnInit, OnDestroy{
     private _cache: MxCache,
     private _alert: MxAlert,
     private _title: Title,
+    private _route: ActivatedRoute,
   ) {
-    this.setTitles()
     this.listenNavbarToggle()
-    this.listenForProjectId()
-    this.inisializationSubs = this.dashboard_.initializeDashboard().subscribe()
+    this.setTitles()
+    // this.inisializationSubs = this.dashboard_.initializeDashboard().subscribe()
     this.auth.user$.pipe(
       take(1)
-    ).subscribe( user => {
-      console.log( user )
-      this._alert.notify('Necesitas iniciar sesión')
-      if (!user) this._router.navigate(['/'])
-    })
+    ).subscribe( (user: firebase.User) => {
+      // console.log( user )
+      if ( !user ) {
+        this._alert.notify('Necesitas iniciar sesión')
+        this._router.navigate( [ '/' ] )
+      } else {
+        this._cache.updateData('clientId', user.uid)
+        this.clientId = user.uid
+      }
+    } )
   }
 
   async ngOnInit() {
-    let user = await this._cache.getAsyncKey<firebase.User>('user')
-    this.clientId = user?.uid || ''
-
+    this.listenForProjectId()
   }
 
   listenForProjectId() {
@@ -67,8 +70,9 @@ export class DashboardComponent implements OnInit, OnDestroy{
   // # SET TITLE
   /** Toma los datos de las rutas y define títulos de la página */
   setTitles() {
-    this.routeDataSubs =this._loading.collectRouteData()
-      .subscribe((routeData: any) => {
+    this.routeDataSubs =this.dashboard_.collectRouteData()
+      .subscribe( ( routeData: any ) => {
+        // console.log( routeData )
         var section = routeData.data['section'];
         var page = routeData.data['page'];
         // console.log( page, section )
@@ -76,6 +80,7 @@ export class DashboardComponent implements OnInit, OnDestroy{
         this.section = section;
       });
   }
+
 
 
   // # LISTEN NAVBAR TOGGLE
@@ -88,7 +93,7 @@ export class DashboardComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.sidenavSubs.unsubscribe()
     this.routeDataSubs.unsubscribe()
-    this.inisializationSubs.unsubscribe()
+    // this.inisializationSubs.unsubscribe()
     this.projectIdSubs.unsubscribe()
   }
 

@@ -1,6 +1,6 @@
 <mat-toolbar
   id="navbar"
-  [mxBackground]="view == 'Dashboard' ? 'dark1' : 'white'"
+  [mxBackground]="'white'"
   class="mat-elevation-z5"
 >
 
@@ -12,7 +12,7 @@
     </div>
     <p
       class="logo-text"
-      [mxColor]="view == 'Dashboard' ? 'ligth1' : 'dark1'"
+      [mxColor]="'dark1'"
     >
       Agente Smart
     </p>
@@ -55,15 +55,15 @@
 
 
  <!-- ## Profile zone -->
-  <div class="col right user_log" *ngIf="user; else unlogged">
+  <div class="col right user_log" *ngIf="(auth_.user$ | async) as user; else unlogged">
     <mat-menu #menuProfile="matMenu">
       <button mat-menu-item [routerLink]="['/dashboard']">Dashboard</button>
       <button mat-menu-item (click)="auth_.signOut()">Cerrar sesión</button>
     </mat-menu>
-    <div class="imgProfileContainer" [matMenuTriggerFor]="menuProfile">
-      <!-- <img src="{{ user.photoURL }}" alt="" /> -->
-      <button mat-raised-button color='primary' >Menu</button>
-    </div>
+    <button mat-raised-button [matMenuTriggerFor]="menuProfile" color='accent' >Menu</button>
+    <!-- <div class="imgProfileContainer" [matMenuTriggerFor]="menuProfile">
+      <img src="{{ user.photoURL }}" alt="" />
+    </div> -->
   </div>
   <ng-template #unlogged>
     <button mat-raised-button (click)="openDialog()" color="primary">Ingresar</button>

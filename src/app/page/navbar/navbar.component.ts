@@ -24,7 +24,7 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     public auth_: MxAuth,
-    public dashboard: DashboardService,
+    // public dashboard: DashboardService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _loading: MxLoading,

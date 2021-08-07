@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { MxAuth } from '@marxa/auth';
 import { MxAlert, MxColor, MxText } from "@marxa/devkit";
+import { DashboardService } from './services/dashboard.service';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,10 @@ export class AppComponent {
     private _text: MxText,
     private _alert: MxAlert,
     private _auth: MxAuth,
+    private _afAuth: AngularFireAuth,
+    private _dashboard: DashboardService
   ) {
+    this._afAuth.setPersistence('local')
     this._auth.userCollection = 'usuarios'
     this._alert.storeError = false
     this._text.loadFontAwesome()
@@ -28,6 +33,7 @@ export class AppComponent {
       ligth2: '#FFF4E6',
       ligth3: '#F3F8FF',
     }
+    // this._dashboard.collectRouteData().subscribe()
   }
 
 

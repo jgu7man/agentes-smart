@@ -1,12 +1,13 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { catchError, distinctUntilChanged, filter, flatMap } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, flatMap, map } from 'rxjs/operators';
 import { iNavlink } from '../models/navlink.interface';
 import firebase from 'firebase/app'
 import { AgenteModel } from '../models/agente.model';
 import { AgentesService } from './agentes.service';
 import { MxAlert, MxCache } from '@marxa/devkit';
 import { ProductsService } from './products.service';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 
 @Injectable({providedIn: 'root'})
 export class DashboardService {
@@ -20,23 +21,25 @@ export class DashboardService {
 
 
   constructor(
-    private _agentes: AgentesService,
+    // private _agentes: AgentesService,
     private _cache: MxCache,
     private _alert: MxAlert,
+    private _router: Router,
+    private _route: ActivatedRoute,
   ) {
 
    }
 
   initializeDashboard() {
-    return this._cache.listenForChanges
-      <firebase.User>('user').pipe(
-        // tap(console.log),
-        filter(user => !!user),
-        flatMap<firebase.User, Observable<AgenteModel[]>>( user => this._agentes.list( user.uid ) ),
-        catchError(error => {throw this._alert.error(`Error en cargando los agentes`, error)}),
-        distinctUntilChanged<AgenteModel[]>((x, y) => x.length === y.length)
+    // return this._cache.listenForChanges
+    //   <firebase.User>('user').pipe(
+    //     // tap(console.log),
+    //     filter(user => !!user),
+    //     flatMap<firebase.User, Observable<AgenteModel[]>>( user => this._agentes.list$() ),
+    //     catchError(error => {throw this._alert.error(`Error en cargando los agentes`, error)}),
+    //     distinctUntilChanged<AgenteModel[]>((x, y) => x.length === y.length)
 
-      )
+    //   )
   }
 
 
@@ -51,6 +54,41 @@ export class DashboardService {
   switchMobileMenu() {
     this.toggleMobileMenu.emit(true)
   }
+
+  collectRouteData(): Observable<{
+    data: Object,
+    params: Object,
+    queryParams: Object
+  }> {
+    return this._router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this._route),
+      map( ( route ) => {
+        const routeData = { data: {}, params: {}, queryParams: {} };
+
+        while ( route.firstChild ) {
+          route = route.firstChild;
+          routeData.data = {
+            ...routeData.data,
+            ...route.snapshot.data,
+          };
+          routeData.params = {
+            ...routeData.params,
+            ...route.snapshot.params,
+          };
+          routeData.queryParams = {
+            ...routeData.queryParams,
+            ...route.snapshot.queryParams,
+          };
+
+
+        }
+        return routeData;
+      })
+      // filter(route => route.outlet === "primary")
+    );
+  }
+
 
 }
 

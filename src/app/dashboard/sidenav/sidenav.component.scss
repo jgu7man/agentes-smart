@@ -43,8 +43,11 @@ mat-list-item {
 ::ng-deep .mat-expansion-panel-body {
     padding: 0 5px 16px !important;
     .collection {
-        border-left: none !important;
-        border-right: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      .collection-item {
+        cursor: pointer;
+      }
     }
 }
 

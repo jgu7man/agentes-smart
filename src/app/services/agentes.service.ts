@@ -10,7 +10,7 @@ import { AgenteModel } from '../models/agente.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import firebase from 'firebase/app';
 import { MatDialog } from '@angular/material/dialog';
-import { CreatingAgenteDialog } from '../dashboard/agente/creating-agente/creating-agente.dialog';
+import { CreatingAgenteDialog } from '../dashboard/agentes-crud/creating-agente/creating-agente.dialog';
 import { MxAuth } from '@marxa/auth';
 import { of } from 'rxjs';
 import { throwError } from 'rxjs';
@@ -20,7 +20,7 @@ import { AgentConfigService } from './agent-config.service';
 export class AgentesService {
   /**
    * Observable de los agentes en FIRESTORE*/
-  public agentes$ = new Observable<AgenteModel[]>();
+  public list$ = new Observable<AgenteModel[]>();
   private restURL = environment.restURL;
   private _user?: firebase.User
 
@@ -35,18 +35,15 @@ export class AgentesService {
     private _text: MxText,
     private _config: AgentConfigService,
   ) {
-    this.agentes$ = this._cache
-      .listenForChanges<AgenteModel[]>('agentes')
-      .pipe();
+    this.list$ = this.listenList()
   }
 
   /** Establece la suscripción a los agentes */
-  list(userId: string): Observable<AgenteModel[]> {
+  listenList(): Observable<AgenteModel[]> {
+    const userId = this._cache.getDataKey<string>('clientId')
     if (!userId) {
       let error: MxErrorAlertModel = new MxErrorAlertModel(
-        `El parámetro 'userId' tiene un valor inválido: ${userId}`,
-        `listenAgentes`
-      );
+        `El parámetro 'userId' tiene un valor inválido: ${userId}`);
       throw this._alert.error(error.message, error);
     } else {
       return this._af
@@ -262,7 +259,7 @@ export class AgentesService {
   }
 
 
-  async removeFromFirestore( uid: string, projectId: string) {
+  private async removeFromFirestore( uid: string, projectId: string) {
     try {
       const batch = this._af.firestore.batch()
       const agenteRef = this._af.doc( `usuarios/${ uid }/agentes/${ projectId }` )

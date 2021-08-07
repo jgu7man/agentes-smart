@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { AgentesService } from 'src/app/services/agentes.service';
-import { MxResponsive } from '@marxa/devkit';
+import { MxCache, MxResponsive } from '@marxa/devkit';
+import { MxAuth } from '@marxa/auth';
 
 @Component({
   selector: 'as-sidenav',
@@ -15,8 +16,11 @@ export class SidenavComponent implements OnInit {
   constructor(
     private location: Location,
     public _agentes: AgentesService,
-    public responsive: MxResponsive
+    public responsive: MxResponsive,
+    public auth: MxAuth,
+    private _cache: MxCache,
   ) {
+    this.auth.unloggedPath = '/'
     this.agenteRoutes = [];
   }
 
@@ -30,6 +34,12 @@ export class SidenavComponent implements OnInit {
 
   checkResponsive() {
     return this.responsive.med || this.responsive.small;
+  }
+
+  onSignOut() {
+    this._cache.deleteDataKey( 'user' )
+    this._cache.deleteDataKey( 'clientId')
+    this.auth.signOut()
   }
 
   setSidenav() {
@@ -84,12 +94,19 @@ export class SidenavComponent implements OnInit {
         routeId: 'clientes',
         icon: 'fa-users',
       },
-      {
-        name: 'Cuenta',
-        route: 'cuenta',
-        routeId: 'cuenta',
-        icon: 'fa-receipt',
-      },
+      // {
+      //   name: 'Cuenta',
+      //   route: 'cuenta',
+      //   routeId: 'cuenta',
+      //   icon: 'fa-receipt',
+      //   childs: [
+      //     {
+      //       name: 'Cerrar sesión',
+      //       route: '/dashboard/crear_agente',
+      //       routeId: 'crear_agente',
+      //     },
+      //   ]
+      // },
     ];
   }
 }

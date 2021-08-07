@@ -26,7 +26,8 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.listSubscription =
-    this.agentes_.agentes$.subscribe(list => {
+      this.agentes_.list$.subscribe( list => {
+      console.log( list )
       if (list.length > 0) {
         this._router.navigate(['/dashboard/agente/', list[0].projectId])
       } else {
