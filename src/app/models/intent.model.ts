@@ -1,4 +1,4 @@
-import { ContextoModel } from './contexto.model';
+import { iContext } from './context.model';
 import { RespuestaMensaje } from './dialogflow-responses.model';
 
 export class IntentModel {
@@ -15,9 +15,7 @@ export class IntentModel {
     contexto?: string,
     indexContexto?: number,
   ) {
-    this.name = intent.name?.slice(
-      intent.name.lastIndexOf('/') + 1
-    ) || ''
+    this.name = extractIntentId(this.intent.name) || ''
     this.displayName = intent.displayName
     if (index || index === 0) this.index = index
     this.contexto = contexto || ''
@@ -25,7 +23,7 @@ export class IntentModel {
     this.unsaved = false
   }
 }
-export interface iIntent extends IntentModel {}
+export interface iIntentState extends IntentModel {}
 
 export class DialogflowIntentModel {
   public rootContext?: string
@@ -55,20 +53,20 @@ export class DialogflowIntentModel {
 export interface iDialogflowIntent {
   name: string,
   displayName: string,
-  webhookState?: 'WEBHOOK_STATE_ENABLED_FOR_SLOT_FILLING',
-  priority?: number,
+  webhookState: 'WEBHOOK_STATE_ENABLED_FOR_SLOT_FILLING',
+  priority: number,
   isFallback?: boolean,
   mlDisabled?: boolean,
   liveAgentHandoff?: boolean,
   endInteraction?:boolean,
-  inputContextNames?: string[],
+  inputContextNames: string[],
   events?: string[],
-  trainingPhrases?: iTrainingPhrase[],
+  trainingPhrases: iTrainingPhrase[],
   action?: string,
-  outputContexts?: ContextoModel[],
+  outputContexts: iContext[],
   resetContexts?: boolean,
-  parameters?: iParameter[],
-  messages?: RespuestaMensaje[],
+  parameters: iParameter[],
+  messages: RespuestaMensaje[],
   defaultResponsePlatforms?: string[],
   rootFollowupIntentName?: string,
   parentFollowupIntentName?: string,
@@ -93,19 +91,23 @@ export interface iTrainingPhrase {
   }
 
 export interface iParameter {
-  name?: string,
+  name: string,
   displayName: string,
   mandatory?: boolean,
   value?: string,
   defaultValue?: string,
   isList?: boolean
-  entityTypeDisplayName?: string,
+  entityTypeDisplayName: string,
   prompts?: string[],
 }
 
 export interface iFollowupIntentInfo {
   followupIntentName: string,
   parentFollowupIntentName: string
+}
+
+export function extractIntentId( intentName: string ): string {
+  return intentName.slice( intentName.lastIndexOf('/') + 1 )
 }
 
 function normalize(text: string) {

@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { AgenteModel } from '../models/agente.model';
+import { AgenteModel } from '../models/agent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import firebase from 'firebase/app';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,7 +17,7 @@ import { throwError } from 'rxjs';
 import { AgentConfigService } from './agent-config.service';
 
 @Injectable({ providedIn: 'root' })
-export class AgentesService {
+export class AgentsService {
   /**
    * Observable de los agentes en FIRESTORE*/
   public list$ = new Observable<AgenteModel[]>();

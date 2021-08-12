@@ -6,7 +6,7 @@ import { DashboardComponent } from './dashboard.component';
 import { SharedModule } from '../shared/shared.module';
 import { SidenavComponent } from './sidenav/sidenav.component';
 import { ChatModule } from '../chat/chat.module';
-// import { AgenteComponent } from './agente/agente.component';
+import { AgenteComponent } from './agente/agente.component';
 import { CreatingAgenteDialog } from './agentes-crud/creating-agente/creating-agente.dialog';
 import { AgentesCrudComponent } from './agentes-crud/agentes-crud.component';
 import { SetAgenteComponent } from './agentes-crud/set-agente/set-agente.component';
@@ -18,7 +18,7 @@ import { DeleteAgenteDialog } from './agentes-crud/delete-agente/delete-agente.d
   declarations: [
     DashboardComponent,
     SidenavComponent,
-    // AgenteComponent,
+    AgenteComponent,
     CreatingAgenteDialog,
     AgentesCrudComponent,
     SetAgenteComponent,

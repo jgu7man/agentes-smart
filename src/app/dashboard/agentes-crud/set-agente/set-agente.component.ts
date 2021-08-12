@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AgenteModel, iAgente, ImageUri } from 'src/app/models/agente.model';
-import { AgentesService } from 'src/app/services/agentes.service';
+import { AgentsService } from 'src/app/services/agentes.service';
 import firebase from 'firebase/app'
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -23,7 +23,7 @@ export class SetAgenteComponent implements OnInit {
   agenteForm: FormGroup
 
   constructor(
-    private _agentes: AgentesService,
+    private _agentes: AgentsService,
     private _cache: MxCache,
     private _alert: MxAlert,
     private _storage: MxStorage,

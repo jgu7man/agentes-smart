@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { AgentesService } from 'src/app/services/agentes.service';
+import { AgentsService } from 'src/app/services/agentes.service';
 import { MxCache, MxResponsive } from '@marxa/devkit';
 import { MxAuth } from '@marxa/auth';
 
@@ -15,7 +15,7 @@ export class SidenavComponent implements OnInit {
   Sidenav: PARENT[] = [];
   constructor(
     private location: Location,
-    public _agentes: AgentesService,
+    public _agentes: AgentsService,
     public responsive: MxResponsive,
     public auth: MxAuth,
     private _cache: MxCache,

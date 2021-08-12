@@ -2,10 +2,10 @@ import { OnDestroy } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { MxAlert } from '@marxa/devkit';
+import { MxAlert, MxCache } from '@marxa/devkit';
 import { Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
-import { AgentesService } from 'src/app/services/agentes.service';
+import { AgentsService } from 'src/app/services/agents.service';
 import { DeleteAgenteDialog } from './delete-agente/delete-agente.dialog';
 
 @Component({
@@ -18,15 +18,16 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
   private listSubscription!: Subscription;
 
   constructor (
-    public agentes_: AgentesService,
+    public agents: AgentsService,
     private _alerts: MxAlert,
     private _router: Router,
-    private _dialog: MatDialog
+    private _dialog: MatDialog,
+    private _cache: MxCache
   ) {}
 
   async ngOnInit() {
     this.listSubscription =
-      this.agentes_.list$.subscribe( list => {
+      this.agents.list$.subscribe( list => {
       console.log( list )
       if (list.length > 0) {
         this._router.navigate(['/dashboard/agente/', list[0].projectId])
@@ -36,12 +37,17 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
     })
   }
 
+  onSelectAgent(projectId: string):void {
+    this._cache.updateData( 'projectId', projectId )
+    this._router.navigate(['/dashboard/agente/', projectId])
+  }
 
-  deleteAgente( projectId: string ) {
+
+  deleteAgent( projectId: string ) {
     this._dialog.open( DeleteAgenteDialog ).afterClosed().pipe( take( 1 ) )
       .subscribe( confirmation => {
         if ( confirmation ) {
-          this.agentes_.delete( projectId )
+          this.agents.delete( projectId )
             .pipe(first()).subscribe(() =>
               this._alerts.notify('Agente Eliminando')
             )

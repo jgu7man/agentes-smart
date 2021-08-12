@@ -18,7 +18,7 @@ import {
   ResultResponse,
   Sugerencia,
   RespuestaBuscarModel,
-} from '../models/respuesta.model';
+} from '../models/intent-response.model';
 import { RespuestaCard } from '../models/dialogflow-responses.model';
 import { environment } from 'src/environments/environment';
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';

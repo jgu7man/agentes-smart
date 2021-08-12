@@ -3,8 +3,8 @@ import { Observable, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, filter, flatMap, map } from 'rxjs/operators';
 import { iNavlink } from '../models/navlink.interface';
 import firebase from 'firebase/app'
-import { AgenteModel } from '../models/agente.model';
-import { AgentesService } from './agentes.service';
+import { AgenteModel } from '../models/agent.model';
+import { AgentsService } from './agents.service';
 import { MxAlert, MxCache } from '@marxa/devkit';
 import { ProductsService } from './products.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';

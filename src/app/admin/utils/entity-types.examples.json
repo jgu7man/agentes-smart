@@ -1,0 +1,181 @@
+[
+  [
+    "Spanish (es)",
+    "@sys.date-time",
+    "2:30 pm",
+    "13 de julio",
+    "abril",
+    "esta mañana",
+    "mañana a las 4:30 de la tarde",
+    "mañana por la tarde",
+    "\"2018-04-05T14:30:00-06:00\"<br>\"2018-07-13T18:00:00-06:00\"<br>{\"startDate\":\"2018-04-01T12:00:00-06:00\",\"endDate\":\"2018-04-30T12:00:00-06:00\"}<br>{\"startTime\":\"2018-04-06T08:00:00-06:00\",\"endTime\":\"2018-04-06T12:00:00-06:00\"}<br>{\"date_time\":\"2018-04-06T16:30:00-06:00\"}<br>{\"startDateTime\":\"2018-04-06T12:00:00-06:00\",\"endDateTime\":\"2018-04-06T16:00:00-06:00\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.date",
+    "mañana",
+    "2018-04-06T12:00:00-06:00"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.date-period",
+    "abril",
+    "{\"endDate\":\"2018-04-30T12:00:00-06:00\",\"startDate\":\"2018-04-01T12:00:00-06:00\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.time",
+    "4:30 PM",
+    "2018-04-05T16:30:00-06:00"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.time-period",
+    "tarde",
+    "{\"startTime\":\"2018-04-05T12:00:00-06:00\",\"endTime\":\"2018-04-05T16:00:00-06:00\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.number",
+    "uno",
+    "1"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.flight-number",
+    "LH4234",
+    "LH 4234"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.unit-currency",
+    "5 dólares<br>25 libras",
+    "{\"amount\":5,\"currency\":\"USD\"}<br>{\"amount\":25,\"currency\":\"GBP\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.percentage",
+    "50%<br>25 por ciento",
+    "\"50%\"<br>\"25%\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.duration",
+    "10 minutos<br>5 días",
+    "{\"amount\":10,\"unit\":\"min\"}<br>{\"amount\":5,\"unit\":\"día\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.currency-name",
+    "dólares<br>libras",
+    "\"USD\"<br>\"GBP\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.address",
+    "Plaza Pablo Ruiz Picasso, I Madrid 28020, España",
+    "Plaza Pablo Ruiz Picasso, I Madrid 28020, España"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.zip-code",
+    "46011<br>06000<br>X5003",
+    "\"46011\"<br>\"06000\"<br>\"X5003\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.geo-capital",
+    "París<br>Roma",
+    "\"París\"<br>\"Roma\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.geo-country",
+    "Estados Unidos<br>Gran Bretaña",
+    "\"Estados Unidos de América\"<br>\"Reino Unido\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.geo-city",
+    "Nueva York<br>París",
+    "\"Nueva York\"<br>\"París\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.geo-state",
+    "Andalucía<br>Jalisco",
+    "\"Andalucía\"<br>\"Jalisco\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.location",
+    "Plaza Pablo Ruiz Picasso, I<br>Madrid 28020, España",
+    "{<br>  \"admin-area\": \"\",<br>  \"business-name\": \"\",<br>  \"city\": \"Madrid\",<br>  \"country\": \"España\",<br>  \"island\": \"\",<br>  \"shortcut\": \"\",<br>  \"street-address\": \"Plaza Pablo Ruiz Picasso, I\",<br>  \"subadmin-area\": \"\",<br>  \"zip-code\": \"28020\"<br>}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.email",
+    "user@example.com<br>example arroba gmail punto com",
+    "\"user@example.com\"<br>\"example@gmail.com\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.phone-number",
+    "(123) 456 7890<br>+1 (123) 456-7890",
+    "\"1234567890\"<br>\"+11234567890\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.given-name",
+    "Javier<br>Rosa",
+    "\"Javier\"<br>\"Rosa\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.last-name",
+    "García<br>Martinez",
+    "\"García\"<br>\"Martinez\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.person",
+    "Rosa García<br>Rosa<br>García",
+    "{\"name\": \"Rosa García\"}<br>{\"name\": \"Rosa\"}<br>{\"name\": \"García\"}"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.music-artist",
+    "Beatles<br>RHCP<br>David DeMaría",
+    "\"The Beatles\"<br>\"Red Hot Chili Peppers\"<br>\"David DeMaría\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.music-genre",
+    "clásica",
+    "clásica"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.color",
+    "verde<br>magenta",
+    "\"verde\"<br>\"magenta\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.language",
+    "Inglés<br>Japonés",
+    "\"Inglés\"<br>\"Japonés\""
+  ],
+  [
+    "Spanish (es)",
+    "@sys.any",
+    "flor",
+    "flor"
+  ],
+  [
+    "Spanish (es)",
+    "@sys.url",
+    "www.dialogflow.com",
+    "www.dialogflow.com"
+  ]
+]

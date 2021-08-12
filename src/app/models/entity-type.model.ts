@@ -1,4 +1,4 @@
-export class TipoEntidadModel {
+export class EntityTypeModel {
     constructor (
         public displayName: string,
         public kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP',
@@ -48,9 +48,9 @@ export interface iEntityType {
   name?: string,
 }
 
-export interface SystemEntitieModel {
+export interface iSystemEntity  {
     displayName: string,
-    ejemplos?:SystemEntitieExample[]
+    examples?:SystemEntitieExample[]
     } export interface SystemEntitieExample {
         request?: string,
         result?:string[]
@@ -60,4 +60,22 @@ export interface SystemEntitieModel {
 export interface iEntity {
     value: string,
     synonyms?: string[],
+}
+
+export function extractTypeId( typeName: string ): string {
+  return typeName.slice( typeName.lastIndexOf('/') + 1 )
+}
+
+
+export class EntityTypeState {
+  saved: boolean
+  selected: boolean
+  body: iEntityType
+  name: string
+   constructor( body: iEntityType ) {
+       this.saved = true
+       this.body = body
+       this.name = body.name || ''
+       this.selected = false
+   }
 }

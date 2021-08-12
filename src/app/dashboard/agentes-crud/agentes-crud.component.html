@@ -1,24 +1,24 @@
-<div id="agentes-container" class="row" *ngIf="(agentes_.list$ | async) as agentes">
-  <!-- ## Si hay agentes -->
-  <ng-container *ngIf="agentes.length > 0; else noAgentes">
-    <div class="col s12 m6 l4 agente-box" *ngFor="let agente of agentes">
-      <!-- # Tarjeta de agente -->
+<div id="agents-container" class="row" *ngIf="(agents.list$ | async) as agents">
+  <!-- ## Si hay agents -->
+  <ng-container *ngIf="agents.length > 0; else noAgents">
+    <div class="col s12 m6 l4 agent-box" *ngFor="let agent of agents">
+      <!-- # Tarjeta de agent -->
       <mat-card>
         <mat-card-header>
-          <!-- # Icono del agente -->
+          <!-- # Icono del agent -->
           <div
             mat-card-avatar
             class="avatar-img"
             [ngStyle]="{
-              'background-image': 'url(' + agente.avatarUri.url + ')'
+              'background-image': 'url(' + agent.avatarUri.url + ')'
             }"
-            [routerLink]="['/dashboard/agente/', agente.projectId]"
+            (click)="onSelectAgent(agent.projectId)"
           ></div>
 
           <!-- Nombre del agente -->
           <mat-card-title
-            [routerLink]="['/dashboard/agente/', agente.projectId]"
-            >{{ agente.displayName }}
+            (click)="onSelectAgent(agent.projectId)"
+            >{{ agent.displayName }}
           </mat-card-title>
 
           <!-- Descripción -->
@@ -30,27 +30,27 @@
           <mat-menu #menu="matMenu">
             <button
             mat-menu-item
-            [routerLink]="['/dashboard/editar_agente', agente.projectId]"
+            [routerLink]="['/dashboard/editar_agente', agent.projectId]"
             >
-            Editar
+              Editar
             </button>
-            <button mat-menu-item (click)="deleteAgente(agente.projectId)">
+            <button mat-menu-item (click)="deleteAgent(agent.projectId)">
               Eliminar
             </button>
           </mat-menu>
         </mat-card-header>
         <mat-card-content>
-          <mat-card-subtitle> {{ agente.description }} </mat-card-subtitle>
+          <mat-card-subtitle> {{ agent.description }} </mat-card-subtitle>
 
         </mat-card-content>
       </mat-card>
     </div>
   </ng-container>
 
-  <!-- Si no hay agentes -->
-  <ng-template #noAgentes>
+  <!-- Si no hay agents -->
+  <ng-template #noAgents>
     <div class="col s12 center">
-      <p class="center grey-text">Aún no tienes agentes creados.</p>
+      <p class="center grey-text">Aún no tienes agents creados.</p>
       <i class="fas fa-robot fa-10x grey-text"></i>
       <p>Crea una agente para empezar a programarlo</p>
       <button

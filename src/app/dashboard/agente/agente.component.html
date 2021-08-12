@@ -64,11 +64,11 @@
   [mxBackground]="'acent'"
   mat-tab-nav-bar
 >
-  <button mat-button (click)="dashboard_.toggleSidenav$.next()">Menú</button>
+  <button mat-button (click)="dashboard.toggleSidenav$.next()">Menú</button>
 
   <a
     mat-tab-link
-    *ngFor="let item of dashboard_.mobileNavbar$ | async"
+    *ngFor="let item of dashboard.mobileNavbar$ | async"
     [routerLink]="['/dashboard/agente/', projectId, item.path]"
     routerLinkActive="active"
     #rla="routerLinkActive"

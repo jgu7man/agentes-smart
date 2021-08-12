@@ -1,13 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { AgenteModel } from 'src/app/models/agente.model';
+import { AgenteModel } from 'src/app/models/agent.model';
 import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from 'src/app/services/dashboard.service';
 import { iNavlink } from 'src/app/models/navlink.interface';
-import { CurrentAgenteService } from 'src/app/services/current-agente.service';
-import { ContextosService } from 'src/app/services/contextos.service';
 
 @Component({
   selector: 'aSmart-agente',
@@ -18,33 +14,24 @@ export class AgenteComponent implements OnInit, OnDestroy {
 
   public agente!: AgenteModel | null
   public projectId!: string
-  private _agenteSubscription!: Subscription
+  // private _agenteSubscription!: Subscription
 
   constructor (
-    private _agente: CurrentAgenteService,
     private _cache: MxCache,
     private _route: ActivatedRoute,
     private _router: Router,
-    public dashboard_: DashboardService,
+    public dashboard: DashboardService,
     public responsive: MxResponsive,
-    public _loading: MxLoading,
-    private _contexts: ContextosService
+    public loading: MxLoading,
   ) {
 
     // ANCHOR GET THE CURRENT PROJECT ID
     // NOTE INIZIALITE THE CURRENT AGENT
-    this._route.params.subscribe(async params => {
-      this._agenteSubscription =
-      ( await this._agente.setCurrentAgente(params['id'])
-      ).subscribe(() => {
-        const url = this._router.url
-        if ( url.slice(url.lastIndexOf('/') + 1) == params['id']) {
-          this._router.navigate([`/dashboard/agente/${params['id']}/flujo`])
-          this._contexts.getAllContexts().pipe(take(1)).subscribe()
-        }
-      })
-    })
-
+    this.projectId = this._route.snapshot.params['id']
+    const url = this._router.url
+    if ( url.slice(url.lastIndexOf('/') + 1) == this.projectId) {
+      this._router.navigate([`/dashboard/agente/${this.projectId}/flujo`])
+    }
   }
 
 
@@ -52,7 +39,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAgente()
     if ( this.responsive.small ) {
-      this.dashboard_.setMobileNavbar(this.agentLinks)
+      this.dashboard.setMobileNavbar(this.agentLinks)
     }
 
   }
@@ -78,17 +65,17 @@ export class AgenteComponent implements OnInit, OnDestroy {
   ]
 
     ngOnDestroy() {
-      this._agente.current = {} as AgenteModel
-      this._agente.unsubscribeIntentList()
-      // this._agente.firestoreIntentListSubs.unsubscribe()
-      if (this._agente.coleccionesSubs)
-        this._agente.coleccionesSubs.unsubscribe()
-        // this._agente.tiposSubs.unsubscribe()
-      if(this._agente.contextosSubs)
-        this._agente.contextosSubs.unsubscribe()
-      if(this._agente.tarjetasSubs)
-        this._agente.tarjetasSubs.unsubscribe()
-      this._agenteSubscription.unsubscribe()
+      // this._agente.current = {} as AgenteModel
+      // this._agente.unsubscribeIntentList()
+      // // this._agente.firestoreIntentListSubs.unsubscribe()
+      // if (this._agente.coleccionesSubs)
+      //   this._agente.coleccionesSubs.unsubscribe()
+      //   // this._agente.tiposSubs.unsubscribe()
+      // if(this._agente.contextosSubs)
+      //   this._agente.contextosSubs.unsubscribe()
+      // if(this._agente.tarjetasSubs)
+      //   this._agente.tarjetasSubs.unsubscribe()
+      // this._agenteSubscription.unsubscribe()
     }
 
 }

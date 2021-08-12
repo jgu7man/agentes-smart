@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
-import { DialogflowIntentModel, iDialogflowIntent } from '../models/mensaje.model';
-import { MensajesService } from './mensajes.service';
+import { DialogflowIntentModel, iDialogflowIntent } from '../models/intent.model';
+import { IntentsService } from './intents.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AgentConfigService {
   constructor(
-    private _mensajes: MensajesService,
+    private _mensajes: IntentsService,
     private _af: AngularFirestore,
     private _loading: MxLoading,
     private _alerts: MxAlert,
@@ -46,7 +46,7 @@ export class AgentConfigService {
     } else {
       let intent = new DialogflowIntentModel(projectId, displayName)
       console.log('Create in dialogflow');
-      defaultIntent = await this._mensajes.createNewIntent(intent);
+      defaultIntent = await this._mensajes.createDialogflowIntent(intent);
       console.log('Intent seted: ', defaultIntent);
 
       console.log('Get the ID');
@@ -65,7 +65,7 @@ export class AgentConfigService {
         });
 
       console.log('Process finished');
-      this._mensajes.getDialogFlowIntents();
+      this._mensajes.updateIntents();
 
       this._loading.toggleWaiting('close');
       this._alerts.notify(displayName + ' creado');

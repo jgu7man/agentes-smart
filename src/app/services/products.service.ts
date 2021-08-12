@@ -8,8 +8,8 @@ import { environment } from 'src/environments/environment';
 import firebase from 'firebase/app';
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { ProductModel } from '../models/product.model';
-import { iEntity, iEntityType, TipoEntidadModel } from '../models/tipo.model';
-import { AgenteModel } from '../models/agente.model';
+import { iEntity, iEntityType, EntityTypeModel } from '../models/entity-type.model';
+import { AgenteModel } from '../models/agent.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
@@ -171,7 +171,7 @@ export class ProductsService {
 
         if (typeRef) {
           var typesDoc = await  typeRef.get()
-          let productType = typesDoc.data() as TipoEntidadModel;
+          let productType = typesDoc.data() as EntityTypeModel;
           productType.entities = [
             ...productType.entities.filter(e => e.value != productClase.value),
             productClase
@@ -181,7 +181,7 @@ export class ProductsService {
           await (await this.productTypeRef())?.update({ entities: productType.entities })
         } else {
           console.log('No existen tipos');
-          let newTipo: iEntityType = new TipoEntidadModel(
+          let newTipo: iEntityType = new EntityTypeModel(
             'productos',
             'KIND_MAP',
             'AUTO_EXPANSION_MODE_DEFAULT',
@@ -212,7 +212,7 @@ export class ProductsService {
 /** Crea el entity en el backend */
 private _createProductsEntity(
   productsEntity: iEntityType
-): Promise<TipoEntidadModel> {
+): Promise<EntityTypeModel> {
   return new Promise((resolve, reject) => {
     this._http.post(
         `${this._url}/${this.projectId}`,
