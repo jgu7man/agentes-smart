@@ -14,7 +14,7 @@ import { AgentsService } from './agents.service';
 import { DashboardService } from './dashboard.service';
 import { IntentsService } from './intents.service';
 import { TiposService } from './entitiy-types.service';
-import { AgenteModel } from '../models/agent.model';
+import {  iAgente } from '../models/agent.model';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +24,7 @@ export class CurrentAgenteService {
 
   // # CURRENT AGENT
   /** Estado presente del agente actual */
-  public current?: AgenteModel;
+  public current?: iAgente;
   // # PROJECT ID
   /** Almacena el ID de projecto actual */
   // public projectId: string;
@@ -51,11 +51,11 @@ export class CurrentAgenteService {
 
 
   constructor(
-    private fs: AngularFirestore,
+    private _afs: AngularFirestore,
     private _cache: MxCache,
     private router: Router,
     private _http: HttpClient,
-    private _alerts: MxAlert,
+    private _alert: MxAlert,
     private _loading: MxLoading,
     private _contexts: ContextsService,
     private _agentes: AgentsService,
@@ -70,6 +70,52 @@ export class CurrentAgenteService {
     // this.tarjetasList$ = this.setObservables('taretas')
     // this.coleccionesList$ = this.setObservables('colecciones')
 
+  }
+
+
+  projectPath(functionName?: string): string {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const clientId = this._cache.getDataKey<string>( 'clientId' )
+
+    if ( !clientId ) {
+      throw new MxErrorAlertModel( `No se encontró el clientId`, `current-agent.service#${functionName}` )
+    } else if ( !projectId ) {
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `current-agent.service#${functionName}` )
+    } else {
+      return `usuarios/${clientId}/agentes/${ projectId }`
+    }
+  }
+
+  /** Obtiene un agente llamado por id
+   * @param {string} projectId
+   * @return {iAgente} Agente o null
+   */
+  async get( projectId: string ): Promise<iAgente | null> {
+    const clientId = this._cache.getDataKey<string>( 'clientId' )
+
+    try {
+      if ( !clientId ) {
+        throw new MxErrorAlertModel( `No se encontró el clientId`, 'get')
+      } else if (!projectId) {
+        throw new MxErrorAlertModel( `No se pudo obtener 'projectId': ${projectId}`, 'get' );
+      } else {
+        const agentDoc = await this._afs.doc<iAgente>
+          ( `usuarios/${ clientId }/agentes/${ projectId }` )
+          .ref.get()
+
+        if (agentDoc.exists) {
+          return agentDoc.data() as iAgente;
+        } else {
+          throw new MxErrorAlertModel( `No se encontró el agente ${projectId}`, 'get' );
+        }
+      }
+    } catch (error) {
+      console.error( error );
+      if ( 'message' in error ) {
+        this._alert.error(error.message, error)
+      } else this._alert.error('Error en la base de datos', error);
+      return null;
+    }
   }
 
   async setCurrentAgente(projectId: string) {
@@ -231,7 +277,7 @@ export class CurrentAgenteService {
   cleanTestChat() {
     let clientId = this._cache.getDataKey('clientId');
     const path = `usuarios/${clientId}/clientes/TEST`;
-    this.fs.doc(path).update({
+    this._afs.doc(path).update({
       outputContexts: firebase.firestore.FieldValue.delete(),
       sessionId: firebase.firestore.FieldValue.delete(),
       sessionParams: firebase.firestore.FieldValue.delete(),

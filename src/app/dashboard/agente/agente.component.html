@@ -5,16 +5,16 @@
     class="agentNav"
     mat-tab-nav-bar
     mat-align-tabs="end"
-    *ngIf="agente"
+    *ngIf="agent"
   >
     <!-- Imagen y nombre -->
     <div class="agentInfo hide-on-med-and-down">
       <div class="imgAgentAvatar">
-        <img [src]="agente.avatarUri?.url" alt="" />
+        <img [src]="agent.avatarUri?.url" alt="" />
       </div>
 
       <p gdev-color [mxColor]="'dark1'" class="agentName">
-        {{ agente.displayName }}
+        {{ agent.displayName }}
       </p>
     </div>
 

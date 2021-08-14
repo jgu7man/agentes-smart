@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MxSEO } from '@marxa/devkit';
 
 @Component({
   templateUrl: './inicio.component.html',
@@ -6,7 +7,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class InicioComponent implements OnInit {
 
-  constructor() { }
+  constructor (
+    private _seo: MxSEO
+  ) { }
 
   ngOnInit(): void {
   }

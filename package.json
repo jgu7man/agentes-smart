@@ -23,7 +23,7 @@
     "@angular/platform-browser-dynamic": "~11.2.14",
     "@angular/router": "~11.2.14",
     "@marxa/auth": "^0.0.6",
-    "@marxa/devkit": "^1.1.8",
+    "@marxa/devkit": "^1.1.10",
     "@marxa/storage": "^0.0.19",
     "firebase": "^7.0 || ^8.0",
     "lodash": "^4.17.21",

@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { AgenteModel } from '../models/agent.model';
+import { AgenteModel, iAgente } from '../models/agent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import firebase from 'firebase/app';
 import { MatDialog } from '@angular/material/dialog';
@@ -20,7 +20,7 @@ import { AgentConfigService } from './agent-config.service';
 export class AgentsService {
   /**
    * Observable de los agentes en FIRESTORE*/
-  public list$ = new Observable<AgenteModel[]>();
+  // public list$ = new Observable<AgenteModel[]>();
   private restURL = environment.restURL;
   private _user?: firebase.User
 
@@ -35,11 +35,11 @@ export class AgentsService {
     private _text: MxText,
     private _config: AgentConfigService,
   ) {
-    this.list$ = this.listenList()
+    // this.list$ = this.listenList()
   }
 
   /** Establece la suscripción a los agentes */
-  listenList(): Observable<AgenteModel[]> {
+  listenList(): Observable<iAgente[]> {
     const userId = this._cache.getDataKey<string>('clientId')
     if (!userId) {
       let error: MxErrorAlertModel = new MxErrorAlertModel(
@@ -49,7 +49,7 @@ export class AgentsService {
       return this._af
         .collection('usuarios')
         .doc(userId)
-        .collection<AgenteModel>('agentes')
+        .collection<iAgente>('agentes')
         .valueChanges()
         .pipe(
           debounceTime(1000),
@@ -59,7 +59,6 @@ export class AgentsService {
               error
             );
           }),
-          tap((agentes) => this._cache.updateData('agentes', agentes))
         );
     }
   }

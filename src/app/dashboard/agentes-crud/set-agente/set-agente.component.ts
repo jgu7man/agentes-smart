@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AgenteModel, iAgente, ImageUri } from 'src/app/models/agente.model';
-import { AgentsService } from 'src/app/services/agentes.service';
 import firebase from 'firebase/app'
+import { Component, Input, OnInit } from '@angular/core';
+import { AgenteModel, iAgente, ImageUri } from 'src/app/models/agent.model';
+import { AgentsService } from 'src/app/services/agents.service';
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ZoneConfigService } from 'src/app/admin/utils/zone-config.service';
@@ -23,7 +23,7 @@ export class SetAgenteComponent implements OnInit {
   agenteForm: FormGroup
 
   constructor(
-    private _agentes: AgentsService,
+    private _agents: AgentsService,
     private _cache: MxCache,
     private _alert: MxAlert,
     private _storage: MxStorage,
@@ -52,7 +52,7 @@ export class SetAgenteComponent implements OnInit {
   async ngOnInit() {
     let agenteId = this._route.snapshot.params['id']
     if ( agenteId ) {
-      this.agente = await this._agentes.loadOne(agenteId)
+      this.agente = await this._agents.loadOne(agenteId)
       if ( this.agente ) {
         this.agenteForm.patchValue( this.agente )
       }
@@ -74,9 +74,9 @@ export class SetAgenteComponent implements OnInit {
             }
 
             if ( this.agente ) {
-              this._agentes.edit(agente)
+              this._agents.edit(agente)
             } else {
-              this._agentes.saveAgent(agente)
+              this._agents.saveAgent(agente)
             }
 
           } else {
@@ -96,9 +96,9 @@ export class SetAgenteComponent implements OnInit {
       })
     } else {
       if ( this.agente ) {
-        this._agentes.edit(agente)
+        this._agents.edit(agente)
       } else {
-        this._agentes.saveAgent(agente)
+        this._agents.saveAgent(agente)
       }
     }
   }

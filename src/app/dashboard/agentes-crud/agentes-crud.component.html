@@ -1,7 +1,7 @@
-<div id="agents-container" class="row" *ngIf="(agents.list$ | async) as agents">
+<div id="agents-container" class="row" *>
   <!-- ## Si hay agents -->
-  <ng-container *ngIf="agents.length > 0; else noAgents">
-    <div class="col s12 m6 l4 agent-box" *ngFor="let agent of agents">
+  <ng-container *ngIf="agentList.length > 0; else noAgents">
+    <div class="col s12 m6 l4 agent-box" *ngFor="let agent of agentList">
       <!-- # Tarjeta de agent -->
       <mat-card>
         <mat-card-header>
@@ -12,12 +12,12 @@
             [ngStyle]="{
               'background-image': 'url(' + agent.avatarUri.url + ')'
             }"
-            (click)="onSelectAgent(agent.projectId)"
+            [routerLink]="['/dashboard/agente', agent.projectId]"
           ></div>
 
           <!-- Nombre del agente -->
           <mat-card-title
-            (click)="onSelectAgent(agent.projectId)"
+            [routerLink]="['/dashboard/agente', agent.projectId]"
             >{{ agent.displayName }}
           </mat-card-title>
 

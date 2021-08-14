@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { MxAlert, MxCache } from '@marxa/devkit';
 import { Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
+import { iAgente } from 'src/app/models/agent.model';
 import { AgentsService } from 'src/app/services/agents.service';
 import { DeleteAgenteDialog } from './delete-agente/delete-agente.dialog';
 
@@ -16,6 +17,7 @@ import { DeleteAgenteDialog } from './delete-agente/delete-agente.dialog';
 export class AgentesCrudComponent implements OnInit, OnDestroy {
 
   private listSubscription!: Subscription;
+  public agentList: iAgente[] = [];
 
   constructor (
     public agents: AgentsService,
@@ -27,20 +29,16 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.listSubscription =
-      this.agents.list$.subscribe( list => {
-      console.log( list )
-      if (list.length > 0) {
-        this._router.navigate(['/dashboard/agente/', list[0].projectId])
-      } else {
-        this._router.navigate(['/dashboard/crear_agente'])
-      }
+      this.agents.listenList().subscribe( list => {
+        if ( list.length == 0 ) this._router.navigate( [ '/dashboard/crear_agente' ] )
+        else this.agentList = list
     })
   }
 
-  onSelectAgent(projectId: string):void {
-    this._cache.updateData( 'projectId', projectId )
-    this._router.navigate(['/dashboard/agente/', projectId])
-  }
+  // onSelectAgent(projectId: string):void {
+  //   this._cache.updateData( 'projectId', projectId )
+  //   this._router.navigate(['/dashboard/agente/', projectId])
+  // }
 
 
   deleteAgent( projectId: string ) {
