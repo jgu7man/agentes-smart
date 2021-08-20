@@ -1,0 +1,73 @@
+<div class="container" strechHeight>
+  <div class="row">
+    <div class="col s12">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title> ¡Empecemos! </mat-card-title>
+          <mat-card-subtitle
+            >Empieza con las configuraciones básicas y necesarias para empezar a
+            entrenar a tu agente</mat-card-subtitle
+          >
+        </mat-card-header>
+
+        <mat-card-content>
+          <mat-horizontal-stepper #stepper>
+            <!-- Primer paso -->
+            <mat-step [stepControl]="firstFormGroup">
+              <form [formGroup]="firstFormGroup">
+                <ng-template matStepLabel>Contextos</ng-template>
+                <p>
+                  Primero creemos algunas palabras claves que definan contextos
+                  de los que quieras que tu agente pueda reconocer en una
+                  primera interacción.
+                </p>
+                <p>
+                  <b>Por ejemplo:</b> Si tu agente va atender una heladería. Una
+                  contexto sería el <i>sabores de los helados</i>, entonces la
+                  palabra clave sería
+                  <span class="gold-text"><b>sabores</b></span
+                  >, por que probablemente utilicen esta palabra en un primer
+                  mensaje de inicio de conversación. Ej: ¿De qué
+                  <b>sabores</b> tiene los helados?
+                </p>
+
+                <aSmart-start-tipo
+                  (tipoAdded)="stepper.next()"
+                ></aSmart-start-tipo>
+
+                <div>
+                  <!-- <button mat-button matStepperNext>Siguiente</button> -->
+                </div>
+              </form>
+            </mat-step>
+
+            <!-- Segundo paso -->
+            <mat-step>
+              <ng-template matStepLabel>Frases de entrenamiento</ng-template>
+              <aSmart-start-frases
+                (saved)="stepper.next()"
+              ></aSmart-start-frases>
+            </mat-step>
+
+            <mat-step>
+              <ng-template matStepLabel>Listo</ng-template>
+              <p>
+                Hemos terminado, ahora ve a la sección de <b>Bienvenida</b> para
+                configurar algunas respuestas
+              </p>
+              <div>
+                <button
+                  mat-button
+                  (click)="currentAgent.setAsStarted()"
+                  [routerLink]="['../bienvenida']"
+                >
+                  Ir a bienvenida
+                </button>
+              </div>
+            </mat-step>
+          </mat-horizontal-stepper>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

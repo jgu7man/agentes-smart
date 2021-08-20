@@ -4,8 +4,8 @@ import { debounceTime, map, take,  } from 'rxjs/operators';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { MxAlert, MxCache, MxColor, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { IntentsService } from './intents.service';
-import { TiposService } from './entitiy-types.service';
-import { CurrentTipoService } from './current-entity-type.service';
+import { EntityTypesService } from './entitiy-types.service';
+import { CurrentEntityTypeService } from './current-entity-type.service';
 import { iContext, iContextList } from '../models/context.model';
 import { extractIntentId, iDialogflowIntent, iIntentState } from '../models/intent.model';
 import { EntityTypeModel } from '../models/entity-type.model';
@@ -37,8 +37,8 @@ export class ContextsService {
     private _loading: MxLoading,
     private _intents: IntentsService,
     private _http: HttpClient,
-    private _tipos: TiposService,
-    private _tipo: CurrentTipoService,
+    private _tipos: EntityTypesService,
+    private _tipo: CurrentEntityTypeService,
   ) {
     // Obtiene el contexto de la ruta actual
     this.currentctxSubscription =

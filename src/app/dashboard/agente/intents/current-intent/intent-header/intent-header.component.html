@@ -1,0 +1,57 @@
+<div
+  class="mat-elevation-z4"
+  id="intent-header"
+  *ngIf="currentIntent.current$ | async as intent"
+>
+  <div class="row align-cols">
+    <div class="col s2 m1 goback-btn">
+      <button mat-button (click)="location.back()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+    <div class="col s7 m9">
+      <!-- <aSmart-breadcums [intentIndex]="intent.index"></aSmart-breadcums> -->
+    </div>
+    <div class="col s2">
+      <button
+        style="float: right"
+        mat-raised-button
+        color="primary"
+        (click)="currentIntent.update()"
+        [disabled]="!unsaved"
+      >
+        Guardar
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s10 m11">
+      <ng-container *ngIf="!switchEdit; else editIntent">
+        <h4>{{ intent.displayName }}</h4>
+      </ng-container>
+      <ng-template #editIntent>
+        <mat-form-field>
+          <input
+            matInput
+            type="text"
+            name="displayName"
+            id="displayName"
+            #displayName
+            (keyup.enter)="updateDisplayName()"
+            (blur)="updateDisplayName()"
+            [formControl]="intentNameCtrl"
+          />
+        </mat-form-field>
+      </ng-template>
+    </div>
+    <div class="col s2 m1 menu-btn">
+      <button mat-button [mat-menu-trigger-for]="menuIntent">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <mat-menu #menuIntent>
+        <button mat-menu-item (click)="switchEdit = true">Editar</button>
+        <button mat-menu-item (click)="toDelIntent()">Eliminar</button>
+      </mat-menu>
+    </div>
+  </div>
+</div>

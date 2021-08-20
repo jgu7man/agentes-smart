@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Agregar interacción</h2>
+<mat-dialog-content style="min-height: 20vh">
+  <as-context-selector
+    (contextSelected)="catchContextSelected($event)"
+  ></as-context-selector>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre</mat-label>
+    <input
+      matInput
+      type="text"
+      name="intentName"
+      id="intentName"
+      #intentNuevo
+      [(ngModel)]="newIntent"
+    />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions style="display: flex; justify-content: space-around">
+  <button mat-raised-button (click)="dialog.close()">Cancelar</button>
+  <button mat-raised-button (click)="onAddIntent()">Crear</button>
+</mat-dialog-actions>

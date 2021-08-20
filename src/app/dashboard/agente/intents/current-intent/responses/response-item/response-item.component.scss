@@ -1,0 +1,76 @@
+.row {
+  margin-bottom: 0
+}
+
+.res-actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+mat-card {
+  min-height: 5em;
+  transition: all .3s;
+  margin-bottom: 2em;
+  min-width: 350px;
+  mat-card-content {
+      padding-left: 2em;
+  }
+}
+
+.card-closed {
+  .res-ref{
+      cursor: pointer;
+  }
+  padding-left: 3em;
+  cursor: grab;
+}
+
+
+::ng-deep {
+  .resp-input {
+      box-shadow: inset 0px 0px 5px rgba($color: #000000, $alpha: .2);
+      padding: .5em !important;
+  }
+  .resp-label {
+      font-weight: 700;
+  }
+}
+
+.type-icon-closed {
+  top: 0 !important;
+}
+
+.res-type-icon {
+  transition: all .3s;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  left: 3em;
+  position: relative;
+  z-index: 2;
+  top: 2em;
+  cursor: default;
+  pointer-events: none;
+  i {
+      color: #fff;
+      font-size: 1.5em;
+  }
+  .fa-code-branch {
+      transform: rotate(90deg);
+  }
+}
+
+
+#siguiente {
+  margin-bottom: 1.5em;
+}
+
+#acciones {
+  .toggle {
+      float: right;
+  }
+}
+
+#tipo-select {
+  margin-bottom: 1.5em;
+}

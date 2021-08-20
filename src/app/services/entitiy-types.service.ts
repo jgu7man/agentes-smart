@@ -8,14 +8,14 @@ import { difference } from 'lodash';
 import { EntityTypeModel, extractTypeId, iEntity, iEntityType, iSystemEntity } from '../models/entity-type.model';
 import { MxAlert, MxCache, MxColor, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { SystemEntitiesService } from '../admin/utils/system-entities.service';
-import { CurrentTipoService } from './current-entity-type.service';
+import { CurrentEntityTypeService } from './current-entity-type.service';
 import { iContext } from '../models/context.model';
 import { CommonsService } from '../shared/commons.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TiposService {
+export class EntityTypesService {
   /** Almacena la ruta del proyecto actual a la collection de tipos  */
   // private tiposPath: string;
   /** Almacena la ruta a los intent */
@@ -39,7 +39,7 @@ export class TiposService {
     private _color: MxColor,
     private _common: CommonsService,
     private _systemEntites: SystemEntitiesService,
-    private _currentEntityType: CurrentTipoService
+    private _currentEntityType: CurrentEntityTypeService
   ) {
     this.listen().subscribe(this.list$)
   }

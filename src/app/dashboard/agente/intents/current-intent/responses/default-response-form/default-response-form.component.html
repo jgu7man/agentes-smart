@@ -1,0 +1,44 @@
+<!-- Respuesta -->
+<div class="row">
+  <div class="col s12 resp-label">
+      Respuesta
+      <i style="font-size:smaller" class="fas fa-info-circle"
+      matTooltip="El mensaje que tu agente responderá"
+      ></i>
+  </div>
+  <div class="col s12">
+      <div class="row text-box">
+          <as-text-response [text]="result.text" (onTextEvent)="catchText($event)"></as-text-response>
+      </div>
+  </div>
+</div>
+<div class="row" id="sugerencias">
+  <div class="col s8 resp-label">
+      Activar sugerencias
+      <i style="font-size:smaller" class="fas fa-info-circle"
+      matTooltip="Opciones de respuesta que tu cliente puede elegir en la conversación"
+      ></i>
+  </div>
+  <div class="col s2 toggle" *ngIf="result.suggestions">
+      <mat-slide-toggle [checked]="result.suggestions.length > 0
+      " (change)="toggleSuggestions($event)"></mat-slide-toggle>
+  </div>
+</div>
+<div class="row" *ngIf="switchSuggestions">
+  <as-suggest-response
+  (onSugerenciasChange)="catchSugerencias($event)"
+  [sugerencias]="result.suggestions"
+  ></as-suggest-response>
+</div>
+<div class="row" id="asDefault">
+  <div class="col s8 resp-label">
+      Como default
+      <i style="font-size:smaller" class="fas fa-info-circle"
+      matTooltip="Si activas esta opción, esta respuesta sólo se mostrará si alguna otra no se reconoce"
+      ></i>
+  </div>
+  <div class="col s2 toggle" >
+      <mat-slide-toggle [checked]="result.asDefault"
+      (change)="toggleAsdefault($event)" ></mat-slide-toggle>
+  </div>
+</div>

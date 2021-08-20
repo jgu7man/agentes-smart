@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Subject, Subscription, forkJoin, Observable, BehaviorSubject, of } from 'rxjs';
 import { map, pluck, tap, debounceTime, flatMap, filter, take, catchError, mergeMap } from 'rxjs/operators';
-import { iDialogflowIntent, iIntentState, IntentModel, iParameter } from '../models/intent.model';
+import { emptyIntent, iDialogflowIntent, iIntentState, IntentStateModel, iParameter } from '../models/intent.model';
 import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { IntentsService } from './intents.service';
 import { RespuestaModel } from '../models/intent-response.model';
@@ -15,9 +15,11 @@ import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root',
 })
-export class CurrentMensajeService {
+export class CurrentIntentService {
   /** Informa cuando el intent actual ha cambiado */
-  public current$ =  new BehaviorSubject<iIntentState | null>(null);
+  public current$ = new BehaviorSubject<IntentStateModel>(
+    new IntentStateModel(emptyIntent)
+  );
   /** Contiene el intent actual y sus cambios */
   // public current: IntentModel;
   /** Contiene el nombre del contexto actual */
@@ -205,7 +207,7 @@ export class CurrentMensajeService {
 
   /** Actualiza el intent actual en DIALOGFLOW a través de la API
    * @private
-   * @param {IntentModel} intent
+   * @param {IntentStateModel} intent
    * @returns {*}  {Promise<IntentModel>}
    */
   updateIntentApiRequest(intent: iDialogflowIntent): Promise<iDialogflowIntent> {
@@ -247,18 +249,32 @@ export class CurrentMensajeService {
    * @param {string} intentName name del intent
    * @returns {*}
    */
-  async delete(intentName: string) {
-    //params intentName (ultima cadena)
-    // REVIEW Falta testear esta función.
-    const projectId = this._cache.getDataKey<string>('projectId');
-    let path = `${this.projectPath('delete')}/intents/${intentName}`;
+  async delete( intentName: string ) {
+    const batch = this._afs.firestore.batch()
+    const path = `${ this.projectPath( 'delete' ) }/intents/${ intentName }`;
+    const intentRef = this._afs.doc(path).ref
 
-    await this.deleteIntentRequest( intentName );
-    await this._afs.doc(path).ref.delete();
-    await this._router.navigateByUrl( `/dashboard`, { skipLocationChange: true } );
-    this._router.navigate( [ `/dashboard/agente/${ projectId }/mensajes` ] );
+    try {
+      await this.deleteIntentRequest( intentName );
+      const intentDoc = await intentRef.get()
 
-    return;
+      const responses = await intentDoc.ref.collection( 'responses' ).get()
+      await this._loading.asyncForEach( responses.docs, response => {
+        batch.delete( response.ref)
+      })
+
+      batch.delete( intentRef )
+      await batch.commit()
+
+      return;
+    } catch (error) {
+      if ('mensaje' in error) {
+        this._alerts.error(error.message, error)
+      } else {
+        this._alerts.error(``, error)
+      }
+      return console.error(error)
+    }
   }
 
   /**
@@ -291,7 +307,7 @@ export class CurrentMensajeService {
 
     this._cache.deleteDataKey('currentIntent');
     this._cache.deleteDataKey('currentRespuestas');
-    this.current$.next(null)
+    this.current$.next(new IntentStateModel(emptyIntent))
     // if (this.respuestasSubs) {
     //   this.respuestasSubs.unsubscribe();
     // }

@@ -1,0 +1,29 @@
+#intent-header {
+  .row{
+    margin: 0 !important;
+    h4 {
+      margin-top: 0;
+      font-size: 1.7rem;
+    }
+  }
+}
+
+#displayName {
+  font-size: 2.28rem;
+}
+
+.goback-btn, .menu-btn {
+  button {
+    padding: 0 5px;
+    min-width: 40px;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  #intent-header{
+    display: block;
+    .row {
+      margin: 0;
+    }
+  }
+}

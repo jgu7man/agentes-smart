@@ -1,0 +1,49 @@
+<!-- Parámetro -->
+<div class="row" *ngIf="(mensaje_.current$|async) as mensaje">
+  <div class="col s4 resp-label">
+      Guardar
+  </div>
+  <div class="col s8">
+      <mat-select placeholder="parámetro" [(ngModel)]="dataForm.parametro" name="param"
+      (selectionChange)="edited.emit(dataForm)">
+          <mat-option *ngFor="let param of mensaje.intent.parameters" [value]="param.displayName">
+              {{param.displayName}}
+          </mat-option>
+      </mat-select>
+  </div>
+</div>
+
+
+
+
+<!-- Grupo de datos -->
+<!-- <div class="row">
+  <div class="col s4 resp-label">
+      En colección
+  </div>
+  <div class="col s8">
+      <mat-select placeholder="coleccion" [(value)]="dataForm.coleccion" name="grupo" (selectionChange)="edited.emit(dataForm)"
+      (selectionChange)="catchColSelected($event)"
+      (click)="validateColeccionOnClick()">
+          <mat-option *ngFor="let group of colecciones" [value]="group.name">
+              {{group.name}}
+          </mat-option>
+      </mat-select>
+  </div>
+</div> -->
+
+
+<!-- Key to catch -->
+<!-- <div class="row">
+  <div class="col s4 resp-label">
+      es:
+  </div>
+  <div class="col s8">
+      <mat-select placeholder="Dato esperado" [(value)]="dataForm.key" name="key" (selectionChange)="edited.emit(dataForm)"
+      (click)="validateKeySpectedOnClick()">
+          <mat-option *ngFor="let item of colSelected.saveKeys" [value]="item.param">
+              {{item.param}}
+          </mat-option>
+      </mat-select>
+  </div>
+</div> -->

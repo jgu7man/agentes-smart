@@ -4,12 +4,11 @@ import { AgenteModel } from 'src/app/models/agent.model';
 import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from 'src/app/services/dashboard.service';
 import { iNavlink } from 'src/app/models/navlink.interface';
-import { CurrentAgenteService } from 'src/app/services/current-agent.service';
+import { CurrentAgentService } from 'src/app/services/current-agent.service';
 import { AgentsService } from 'src/app/services/agents.service';
 import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
-  selector: 'aSmart-agente',
   templateUrl: './agente.component.html',
   styleUrls: ['./agente.component.scss']
 })
@@ -23,7 +22,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
     private _cache: MxCache,
     private _route: ActivatedRoute,
     private _router: Router,
-    private _agent: CurrentAgenteService,
+    private _agent: CurrentAgentService,
     public dashboard: DashboardService,
     public responsive: MxResponsive,
     public loading: MxLoading,

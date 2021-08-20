@@ -1,7 +1,7 @@
 import { iContext } from './context.model';
 import { RespuestaMensaje } from './dialogflow-responses.model';
 
-export class IntentModel {
+export class IntentStateModel {
   name: string
   displayName: string
   public index?: number
@@ -23,7 +23,7 @@ export class IntentModel {
     this.unsaved = false
   }
 }
-export interface iIntentState extends IntentModel {}
+export interface iIntentState extends IntentStateModel {}
 
 export class DialogflowIntentModel {
   public rootContext?: string
@@ -54,7 +54,7 @@ export interface iDialogflowIntent {
   name: string,
   displayName: string,
   webhookState: 'WEBHOOK_STATE_ENABLED_FOR_SLOT_FILLING',
-  priority: number,
+  priority?: number,
   isFallback?: boolean,
   mlDisabled?: boolean,
   liveAgentHandoff?: boolean,
@@ -71,7 +71,17 @@ export interface iDialogflowIntent {
   rootFollowupIntentName?: string,
   parentFollowupIntentName?: string,
   followupIntentInfo?: iFollowupIntentInfo[]
+}
 
+export const emptyIntent: iDialogflowIntent = {
+  name: '',
+  displayName: '',
+  webhookState: 'WEBHOOK_STATE_ENABLED_FOR_SLOT_FILLING',
+  inputContextNames: [],
+  trainingPhrases: [],
+  outputContexts: [],
+  parameters: [],
+  messages: [],
 }
 
 
@@ -80,7 +90,7 @@ export interface iTrainingPhrase {
   name?: string,
   timesAddedCount?: number,
   parts: iPhrasePart[],
-}
+  }
   export interface iPhrasePart {
     text: string,
     entityType?: string,
@@ -88,18 +98,54 @@ export interface iTrainingPhrase {
     userDefined?: boolean,
     // selected?: boolean,
     // paramName?: string
+}
+
+export const emptyTraningPhrase: iTrainingPhrase = {
+  type: 'EXAMPLE',
+  parts: [],
+}
+
+
+export class ParameterModel {
+  mandatory: boolean
+  isList: boolean
+  defaultValue?: string
+  prompts?: string[]
+  constructor(
+    public displayName: string,
+    public value: string,
+    public entityTypeDisplayName: string,
+    defaultValue?: string,
+    prompts?: string[]
+  ) {
+    this.mandatory = true
+    this.isList = true
+
+    if ( defaultValue ) this.defaultValue = defaultValue
+    else delete this.defaultValue
+
+    if ( prompts ) this.prompts = prompts
+    else delete this.prompts
+
   }
+}
 
 export interface iParameter {
-  name: string,
+  name?: string,
   displayName: string,
+  value: string,
+  entityTypeDisplayName: string,
   mandatory?: boolean,
-  value?: string,
   defaultValue?: string,
   isList?: boolean
-  entityTypeDisplayName: string,
   prompts?: string[],
 }
+
+export interface iParamSelected {
+  value: string;
+  isOriginal?: boolean;
+}
+
 
 export interface iFollowupIntentInfo {
   followupIntentName: string,

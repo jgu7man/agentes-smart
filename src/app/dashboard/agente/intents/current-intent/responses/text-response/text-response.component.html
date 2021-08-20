@@ -1,0 +1,18 @@
+<mat-form-field [appearance]="'outline'">
+  <textarea matInput
+  class="dialgbox"
+  name="dialgbox"
+  id="dialgbox"
+  #dialgbox
+  matAutosize="true"
+  rows="5"
+  [(ngModel)]="text"
+
+  ></textarea>
+</mat-form-field>
+<as-param-selector
+*ngIf="selectParameter"
+[focused]="true"
+[paramSelected]="paramSelected"
+(onParamaSelected)="catchParamSelected($event)"
+></as-param-selector>

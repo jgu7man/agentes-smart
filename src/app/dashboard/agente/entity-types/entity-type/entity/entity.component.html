@@ -1,0 +1,57 @@
+<ng-container *ngIf="clase; else editClase">
+  <!-- ## READ CLASE -->
+  <ng-container *ngIf="currentEntityType.activatedToEdit != clase.value || activateEdit else editClase">
+    <!-- ## SINONIMOS -->
+    <ng-container *ngIf="kind == 'KIND_MAP'; else lista">
+      <div class="col s2 m3">
+        <span> {{ clase?.value }} </span>
+      </div>
+      <div class="col s8 m8">
+        <mat-chip-list>
+          <mat-chip *ngFor="let sinonimo of clase.synonyms">
+            {{ sinonimo }}
+          </mat-chip>
+        </mat-chip-list>
+      </div>
+      <div class="col s2 m1">
+        <button mat-icon-button [mat-menu-trigger-for]="claseMenu">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <mat-menu #claseMenu="matMenu">
+          <button mat-menu-item (click)="currentEntityType.activatedToEdit = clase.value">Editar</button>
+          <button mat-menu-item (click)="onDelClase()">Eliminar</button>
+        </mat-menu>
+      </div>
+    </ng-container>
+    <!-- !## SINONIMOS -->
+
+    <!-- ## LIST -->
+    <ng-template #lista>
+      <div class="col s10 m11">
+        <span> {{ clase.value }} </span>
+      </div>
+      <div class="col s2 m1">
+        <button mat-icon-button [mat-menu-trigger-for]="claseMenu">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <mat-menu #claseMenu="matMenu">
+          <button mat-menu-item (click)="tipo_.activatedToEdit = clase.value">Editar</button>
+          <button mat-menu-item (click)="onDelClase()">Eliminar</button>
+        </mat-menu>
+      </div>
+    </ng-template>
+    <!-- !## LIST -->
+  </ng-container>
+  <!-- !## READ CLASE -->
+
+
+</ng-container>
+<!-- ## EDIT CLASE -->
+<ng-template #editClase>
+  <aSmart-edit-clase
+    [clase]="clase"
+    [kind]="kind"
+    (claseDone)="onClaseDone()"
+  ></aSmart-edit-clase>
+</ng-template>
+

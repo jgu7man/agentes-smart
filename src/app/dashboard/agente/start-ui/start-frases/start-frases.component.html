@@ -1,0 +1,58 @@
+<div class="container">
+  <div class="row">
+    <div class="col s12">
+      <!-- ENTRENAMIENTO -->
+      <div strechHeight id="mensaje-container">
+        <div class="row mensaje-content">
+          <div id="mensaje-header">
+            <div class="row align-cols" *ngIf="intent$ | async as intent">
+              <div class="col s10"></div>
+              <div class="col s2">
+                <button
+                  style="float: right"
+                  mat-raised-button
+                  color="primary"
+                  (keydown.enter)="$event.preventDefault()"
+                  (click)="mensaje_.update()"
+                  [disabled]="!unsaved"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col s12 m6">
+              <p>
+                Agrega algunas frases de entrenamiento que tengan relación con
+                las palabras clave que agregaste. Procura agregar al menos 3
+                frases de entrenamiento diferentes por cada palabra clave que
+                agregaste para que tu agente tenga entendimiento del contexto.
+              </p>
+              <p style="font-size: x-small">
+                <b>Ejemplo: </b> Tomando en cuenta el ejemplo anterior de la
+                heladería. Escribe algunas frases como tu clientes inician una
+                conversación:
+              </p>
+              <ul style="font-size: x-small">
+                <li>Hola,¿Qué sabores tienes disponibles?</li>
+                <li>Buenas, ¿Tienes helado de sabor de chocolate?</li>
+                <li>¿Qué sabores te quedan?</li>
+              </ul>
+              <aSmart-frases-form></aSmart-frases-form>
+            </div>
+            <div class="col s12 m6">
+              <p>
+                Después de agregar algunas frases, puedes seleccionar con el
+                mouse la palabra clave, para enseñarle a tu agente como
+                identificarlas y asígnalas a un parámetro
+              </p>
+              <aSmart-parametros></aSmart-parametros>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

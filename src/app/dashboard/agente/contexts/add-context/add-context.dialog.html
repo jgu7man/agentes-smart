@@ -1,0 +1,17 @@
+<div class="contextField">
+  <mat-form-field appearence="outline">
+    <input
+    lowecase
+    matInput
+    #input
+    #contextoNuevo
+    type="text"
+    name="contextoNuevo"
+    id="contextoNuevo"
+    (keydown)="delSpaces($event)"
+    (keyup.enter)="onSetContext()"
+    (blur)="newContext == '' ? unfocus.emit(true) : onSetContext()"
+    [(ngModel)]="newContext"
+    >
+  </mat-form-field>
+</div>

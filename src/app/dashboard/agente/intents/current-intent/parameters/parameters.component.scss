@@ -1,0 +1,16 @@
+#params-head {
+  .row {
+    display: flex;
+    margin: 0;
+    font-weight: 800;
+    border-bottom: solid 1px #999;
+    }
+}
+
+::ng-deep .mat-form-field-wrapper{
+    height: 30px !important;
+}
+
+::ng-deep .mat-form-field-infix{
+    border-top: none;
+}

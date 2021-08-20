@@ -1,0 +1,34 @@
+<div class="row align-cols">
+  <div class="col s10">
+    <h5>Parámetros</h5>
+  </div>
+  <div class="col s2">
+    <button mat-button (click)="toAddParam()">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+</div>
+<div class="row">
+  <div class="col s12" id="params-head">
+    <div class="row">
+      <div class="col s4">Nombre</div>
+      <div class="col s4">Entidad</div>
+      <div class="col s3">Valor</div>
+      <div class="col s1">Req</div>
+      <div class="col s1">Lista</div>
+      <div class="col s1"></div>
+    </div>
+    </div>
+    <div class="col s12" *ngIf="switchAddParameter">
+        <as-add-parameter (closeRow)="switchAddParameter = false" ></as-add-parameter>
+    </div>
+    <div class="col s12" *ngIf="(currentIntent.current$ | async) as intent" id="params-body">
+      <ng-container *ngIf="intent.intent.parameters.length > 0; else noParams">
+        <as-param-row *ngFor="let param of intent.intent.parameters" [param]="param"></as-param-row>
+      </ng-container>
+      <ng-template #noParams>
+        <p class="center">No has agregado parametros</p>
+      </ng-template>
+
+    </div>
+</div>

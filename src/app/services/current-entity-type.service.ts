@@ -10,16 +10,16 @@ import { EntityTypeState, extractTypeId, iEntity, iEntityType } from '../models/
 @Injectable({
   providedIn: 'root'
 })
-export class CurrentTipoService {
+export class CurrentEntityTypeService {
 
   /** Estado en tiempo real del Tipo de dato seleccionado */
   current$ = new BehaviorSubject<EntityTypeState|null>(null);
   /** Obtine y almacena la ruta a la API */
   private _url = environment.restURL + 'entity';
   /** Tipo de dato que será activado */
-  // activatedToEdit: string
+  activatedToEdit?: string
   /** Activa el campo de agregado de clase */
-  // switchAddClase: boolean
+  switchAddClase: boolean = false
 
   constructor(
     private _cache: MxCache,

@@ -1,0 +1,34 @@
+<!-- Parámetro -->
+<div class="row">
+  <div class="col s4 resp-label">Criterio</div>
+  <div class="col s8">
+    <mat-select
+      (selectionChange)="catchParamSelect($event)"
+      placeholder="parámetro"
+      [(ngModel)]="response.parametro"
+      name="param"
+    >
+      <mat-option *ngFor="let param of paramList" [value]="param.displayName">
+        {{ param.displayName }}
+      </mat-option>
+    </mat-select>
+  </div>
+</div>
+
+<!-- * Colección -->
+<div class="row">
+  <div class="col s4 resp-label">Colección</div>
+  <div class="col s8">
+    <mat-select
+      (selectionChange)="catchDBSelect($event)"
+      placeholder="Colección"
+      [(value)]="response.database"
+      name="param"
+      (click)="validateColeccionOnClick()"
+    >
+      <mat-option *ngFor="let db of dataBases" [value]="db.value">
+        {{ db.displayName }}
+      </mat-option>
+    </mat-select>
+  </div>
+</div>

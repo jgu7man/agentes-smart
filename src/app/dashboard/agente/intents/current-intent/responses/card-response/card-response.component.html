@@ -1,0 +1,10 @@
+<mat-select
+placeholder="Elige una tarjeta"
+name="tarjeta"
+[(ngModel)]="card.name"
+(selectionChange)="emitCard($event)"
+>
+    <mat-option *ngFor="let tarjeta of cards.listen() | async" [value]="tarjeta.name">
+        {{ tarjeta.name }}
+    </mat-option>
+</mat-select>

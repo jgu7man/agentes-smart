@@ -1,3 +1,5 @@
+import { iIntentState } from "./intent.model";
+
 export interface iContext {
     contextName: string
     lifespanCount?: number
@@ -8,5 +10,10 @@ export interface iContext {
 }
 
 export interface iContextList {
-  [name: string]: any[]
+  [name: string]: iIntentState[]
+}
+
+export interface iContextSelected {
+  context: string,
+  continueIntents: any[]
 }

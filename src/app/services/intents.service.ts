@@ -4,7 +4,7 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { catchError, first,  map,  mergeMap,  pluck, take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { iDialogflowIntent, DialogflowIntentModel, IntentModel as IntentStateModel, iIntentState } from '../models/intent.model';
+import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel as IntentStateModel, iIntentState } from '../models/intent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { iContext } from '../models/context.model';
 import { RespuestaModel } from '../models/intent-response.model';

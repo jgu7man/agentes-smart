@@ -1,0 +1,91 @@
+<div class="container">
+
+
+    <!-- Tipo body to update -->
+    <div class="row">
+        <div class="col s12">
+
+
+            <mat-card>
+                <mat-card-content>
+                    <ul class="clase-list collection">
+
+
+                        <!-- READ CLASES DE TIPO -->
+                        <!-- Muestra la clase agregada o el input de edición -->
+                        <li class="clase-item collection-item" *ngFor="let clase of tipo.entities; index as i">
+                            <div class="row">
+                                <div class="col s10 m11">
+                                    <span> {{clase.value}} </span>
+                                </div>
+                                <div class="col s2 m1">
+                                    <button mat-icon-button [mat-menu-trigger-for]="claseMenu"
+                                    (keydown.enter)="$event.preventDefault()" >
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <mat-menu #claseMenu="matMenu">
+                                        <button mat-menu-item (click)="ClaseInput = true">Editar</button>
+                                        <button mat-menu-item (click)="onDelClase(i)">Eliminar</button>
+                                    </mat-menu>
+                                </div>
+
+                            </div>
+                        </li>
+
+                        <!-- CREATE CLASE DE TIPO -->
+                        <!-- Muestra el input para agregar, solamente -->
+                        <ng-template #addClase>
+                            <li class="clase-item collection-item" [ngClass]="{'collection-item': switchAddClase}">
+                                <div class="col s10 m11">
+                                    <mat-form-field>
+                                        <input
+                                            placeholder="nueva clase"
+                                            type="text"
+                                            name="addClaseItem"
+                                            id="addClaseItem"
+                                            matInput
+                                            [(ngModel)]="newClaseItem"
+                                            (blur)="newClaseItem ? onAddClase($event) : null"
+                                            (keyup.ENTER)="onAddClase($event); $event.target.blur()"
+                                            (keyup.esc)="switchAddClase = false"
+                                        />
+                                    </mat-form-field>
+                                </div>
+                            </li>
+                        </ng-template>
+
+                        <!-- TO CREATE -->
+                        <!-- Botón que aparece como opción de agregado de clase -->
+                        <ng-container *ngIf="!switchAddClase; else addClase">
+                            <button
+                            mat-button
+                            (click)="switchAddClase = true"
+                            (keydown.enter)="$event.preventDefault()"
+                            >
+                                Agregar nueva clase
+                            </button>
+                        </ng-container>
+                    </ul>
+                </mat-card-content>
+            </mat-card>
+
+
+        </div>
+    </div>
+
+
+    <!-- Guardar el tipo -->
+    <div class="row">
+        <div class="col s12">
+            <div class="col s2">
+            <button
+            mat-raised-button
+            [color]="'primary'"
+            (click)="onSave()"
+            [disabled]="tipo.entities.length == 0"
+            >Guardar</button>
+
+        </div>
+        </div>
+    </div>
+</div>

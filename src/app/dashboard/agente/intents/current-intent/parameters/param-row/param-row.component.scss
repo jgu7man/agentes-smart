@@ -1,0 +1,15 @@
+.row{
+  display: flex;
+  flex-flow: wrap;
+  align-items: center;
+  border-bottom: 1px solid #999;
+  min-height: 45px !important;
+}
+
+.param-entity-selector{
+overflow: hidden;
+}
+
+::ng-deep .mat-form-field-underline{
+  opacity: 0;
+}

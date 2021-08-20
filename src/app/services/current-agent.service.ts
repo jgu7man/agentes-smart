@@ -13,13 +13,13 @@ import { ContextsService } from './contexts.service';
 import { AgentsService } from './agents.service';
 import { DashboardService } from './dashboard.service';
 import { IntentsService } from './intents.service';
-import { TiposService } from './entitiy-types.service';
+import { EntityTypesService } from './entitiy-types.service';
 import {  iAgente } from '../models/agent.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class CurrentAgenteService {
+export class CurrentAgentService {
   // SECTION CURRENT AGENTE
 
   // # CURRENT AGENT
@@ -61,7 +61,7 @@ export class CurrentAgenteService {
     private _agentes: AgentsService,
     private _dashboard: DashboardService,
     private _mensajes: IntentsService,
-    private _tipos: TiposService
+    private _tipos: EntityTypesService
   ) {
 
     // this.firestoreIntentList$ = this.setObservables('mensajes')
@@ -116,6 +116,16 @@ export class CurrentAgenteService {
       } else this._alert.error('Error en la base de datos', error);
       return null;
     }
+  }
+
+
+  setAsStarted() {
+    const path = this.projectPath('setAsStarted')
+    this._afs.doc(path).update({ started: true })
+      .catch(error => {
+        console.error(error);
+        this._alert.error('No se pudo actualizar el tutorial, todo lo demás está bien', error)
+      })
   }
 
   async setCurrentAgente(projectId: string) {

@@ -1,0 +1,93 @@
+<div class="row align-cols">
+  <div class="col s10">
+    <h5>Frases de entrenamiento</h5>
+  </div>
+  <div class="col s2">
+    <button mat-button color="primary" (click)="toAddPhrase()">
+      Agregar
+    </button>
+  </div>
+</div>
+<div class="row">
+  <div class="col s12" *ngIf="($mensaje.current$ | async) as intentState">
+
+    <mat-paginator
+    *ngIf="intentState.intent.trainingPhrases"
+    [length]="intentState.intent.trainingPhrases.length"
+    [pageSize]="10"
+    [showFirstLastButtons]="true"
+    [pageIndex]="pageIndex"
+    (page)="pageEvent($event)"
+    ></mat-paginator>
+
+    <mat-divider></mat-divider>
+
+    <!-- READ Muestra las frases -->
+    <ul class="phrases-list" >
+
+      <!-- <ng-container *ngIf="Frases.length > 0 || addPhraseInput; else noPhrases"> -->
+      <mat-accordion #accordeon="matAccordion" [multi]="false">
+        <li
+        *ngFor="let frase of currentPage; index as i"
+        class="phrase-item"
+        (mouseup)="onSelect(frase, i)"
+        >
+          <mat-expansion-panel
+          #frasePanel="matExpansionPanel"
+          hideToggle
+          [disabled]="disableFrase(frase)"
+          [expanded]="validateFraseExpanded(i)"
+          (opened)="openedPanel(i)"
+          >
+            <mat-expansion-panel-header>
+              <as-phrase-item
+                [frase]="frase"
+                [index]="i"
+                (onDeleted)="onRemoveFrase(i)"
+              ></as-phrase-item>
+            </mat-expansion-panel-header>
+
+            <as-phrase-params-form
+              [fraseIndex]="i"
+              [frase]="frase"
+            ></as-phrase-params-form>
+          </mat-expansion-panel>
+        </li>
+      </mat-accordion>
+      <!-- </ng-container> -->
+
+      <!-- CREATE Agregar nueva frase -->
+      <li *ngIf="addPhraseInput; else addBtn" class="phrase-item">
+        <mat-form-field appearance="outline" class="newFrase">
+          <input
+            placeholder="Nueva frase de entrenamiento"
+            matInput
+            #newPhraseInput
+            type="text"
+            name="newPhraseInput"
+            id="newPhraseInput"
+            [formControl]="phraseCtrl"
+            (blur)="addPhraseInput = false"
+            (keyup.enter)="
+              newPhrase != '' ? onSetPhrase() : (addPhraseInput = false)
+            "
+          />
+        </mat-form-field>
+      </li>
+      <ng-template #addBtn>
+      <li  class="phrase-item no-frase" (click)="toAddPhrase()">
+        Agrega una frase
+      </li>
+      </ng-template>
+    </ul>
+
+    <mat-paginator
+    *ngIf="intentState.intent.trainingPhrases"
+      [length]="intentState.intent.trainingPhrases.length"
+      [pageSize]="10"
+      [showFirstLastButtons]="true"
+      [pageIndex]="pageIndex"
+      (page)="pageEvent($event)"
+    ></mat-paginator>
+  </div>
+</div>

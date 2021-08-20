@@ -1,0 +1,15 @@
+<div mat-dialog-content>
+  <p class="center">¿Realemente deseas eliminar esta mensaje?</p>
+</div>
+<mat-dialog-actions style="display: flex; justify-content: space-around;">
+  <button
+  mat-raised-button
+  (click)="dialog.close()"
+  >Cancelar</button>
+  <button
+  mat-raised-button
+  (click)="currentIntent.delete(intentName)"
+  [mat-dialog-close]="true"
+  color="primary"
+  >Aceptar</button>
+</mat-dialog-actions>

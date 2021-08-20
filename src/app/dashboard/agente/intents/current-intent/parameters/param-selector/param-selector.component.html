@@ -1,0 +1,15 @@
+<mat-select
+    #paramSelector="matSelect"
+    placeholder="parámetro"
+    [value]="paramSelected"
+    name="param"
+    (openedChange)="onOpenedChange($event)"
+    (selectionChange)="onParamChange($event)"
+>
+    <mat-option
+        *ngFor="let param of paramList"
+        [value]="param.displayName"
+    >
+        {{ param.displayName }}
+    </mat-option>
+</mat-select>

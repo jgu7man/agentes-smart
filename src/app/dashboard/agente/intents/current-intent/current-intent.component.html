@@ -1,0 +1,43 @@
+<div class="row">
+  <!-- <waiting-bar></waiting-bar> -->
+
+  <!-- Desktop -->
+  <ng-container *ngIf="!responsive.small; else mobileDesing">
+    <div strechHeight class="col s6" id="intent-form">
+      <div id="mensaje-container">
+        <as-intent-header></as-intent-header>
+
+        <div class="row mensaje-content" strechHeight>
+          <as-training-phrases></as-training-phrases>
+          <as-parameters></as-parameters>
+        </div>
+      </div>
+    </div>
+    <div strechHeight class="col s6" id="resp-manager" #respuestas>
+      <aSmart-respuestas
+        (lastPositionChange)="onLastChange($event)"
+      ></aSmart-respuestas>
+    </div>
+  </ng-container>
+
+  <!-- Mobile -->
+  <ng-template #mobileDesing>
+    <mat-accordion>
+      <mat-expansion-panel class="intent-panel" [expanded]="true">
+        <mat-expansion-panel-header> Mensaje </mat-expansion-panel-header>
+        <div id="mensaje-container">
+          <as-intent-header></as-intent-header>
+
+          <div class="row mensaje-content" strechHeight>
+            <as-training-phrases></as-training-phrases>
+            <as-parameters></as-parameters>
+          </div>
+        </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header> Respuestas </mat-expansion-panel-header>
+        <aSmart-respuestas></aSmart-respuestas>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </ng-template>
+</div>
