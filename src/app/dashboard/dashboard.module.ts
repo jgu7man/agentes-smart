@@ -47,6 +47,18 @@ import { ContextSelectorComponent } from './agente/contexts/context-selector/con
 import { AddContextDialog } from './agente/contexts/add-context/add-context.dialog';
 import { TextResponseComponent } from './agente/intents/current-intent/responses/text-response/text-response.component';
 import { SuggestResponseComponent } from './agente/intents/current-intent/responses/suggest-response/suggest-response.component';
+import { IntentListComponent } from './agente/intents/intent-list/intent-list.component';
+import { AddContextComponent } from './agente/contexts/add-context/add-context.component';
+import { ContextItemComponent } from './agente/contexts/context-item/context-item.component';
+import { ConfigComponent } from './agente/config/config.component';
+import { FallbackComponent } from './agente/config/fallback/fallback.component';
+import { CallContactComponent } from './agente/config/call-contact/call-contact.component';
+import { DefaultIntentsComponent } from './agente/config/default-intents/default-intents.component';
+import { InteractionsComponent } from './agente/interactions/interactions.component';
+import { IntegrationsComponent } from './agente/integrations/integrations.component';
+import { MessengerIntegrationComponent } from './agente/integrations/messenger-integration/messenger-integration.component';
+import { WhatsappIntegrationComponent } from './agente/integrations/whatsapp-integration/whatsapp-integration.component';
+import { QRCodeModule } from 'angularx-qrcode';
 
 
 @NgModule({
@@ -97,13 +109,25 @@ import { SuggestResponseComponent } from './agente/intents/current-intent/respon
     ContextSelectorComponent,
     AddContextDialog,
     TextResponseComponent,
-    SuggestResponseComponent
+    SuggestResponseComponent,
+    IntentListComponent,
+    AddContextComponent,
+    ContextItemComponent,
+    ConfigComponent,
+    FallbackComponent,
+    CallContactComponent,
+    DefaultIntentsComponent,
+    InteractionsComponent,
+    IntegrationsComponent,
+    MessengerIntegrationComponent,
+    WhatsappIntegrationComponent,
   ],
   imports: [
     CommonModule,
     DashboardRoutingModule,
     SharedModule,
     ChatModule,
+    QRCodeModule
   ]
 })
 export class DashboardModule { }

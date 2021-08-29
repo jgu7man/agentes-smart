@@ -1,1 +1,74 @@
-<p>contexts works!</p>
+<div
+  class="row"
+  id="contextos"
+  cdkDropList
+  cdkDropListOrientation="vertical"
+  (cdkDropListDropped)="drop($event)"
+>
+  <div class="col s12 en-Column">
+    <div class="row">
+      <div class="col s12">
+        <p class="contexto-name">Sin contexto</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngFor="let contexto of list">
+    <div
+      class="col s12 en-Column"
+      cdkDrag
+      cdkDragLockAxis="y"
+      *ngIf="contexto.name != 'contextos'"
+      id="context-{{ contexto }}"
+      [mxBackground]="contexto.color"
+    >
+      <!-- Titulo de contexto agregado -->
+      <div class="row">
+        <div class="col s10">
+          <as-context-item
+            cdkDragHandle
+            class="context-name"
+            [contextId]="contexto.id"
+            [contexto]="contexto"
+            (mousedown)="grabEffect($event)"
+            (mouseup)="ungrab($event)"
+          ></as-context-item>
+        </div>
+        <div class="col s2">
+          <button mat-icon-button [mat-menu-trigger-for]="contextMenu">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <mat-menu #contextMenu="matMenu">
+            <button mat-menu-item (click)="toEdit(contexto)">Editar</button>
+            <button mat-menu-item (click)="toDeleteContext(contexto)">
+              Eliminar
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Agregado de nuevo contexto -->
+  <div class="col s12 en-Column">
+    <div class="row">
+      <div class="col s12">
+        <ng-container *ngIf="!switchAddContext; else addContext">
+          <div class="addContexto">
+            <button mat-button (click)="toAddContext()">
+              Agregar contexto
+            </button>
+          </div>
+        </ng-container>
+        <ng-template #addContext>
+          <as-add-context
+            (contextAdded)="getContextos()"
+            [lastIndex]="list.length"
+            (unfocus)="switchAddContext = false"
+          >
+          </as-add-context>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

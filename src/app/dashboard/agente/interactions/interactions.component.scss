@@ -1,0 +1,11 @@
+.delIcon {
+  opacity: 0;
+  transition: all .3s;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+mat-list-option:hover .delIcon {
+  opacity: 1;
+}

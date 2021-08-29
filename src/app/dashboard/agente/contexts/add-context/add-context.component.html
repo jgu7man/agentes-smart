@@ -1,0 +1,16 @@
+<mat-form-field appearence="outline">
+  <mat-label>Nombre del contexto</mat-label>
+  <input
+  required
+  lowecase
+  matInput
+  #contextoNuevo
+  type="text"
+  name="contextoNuevo"
+  id="contextoNuevo"
+  [formControl]="contextNameCtrl"
+  (keypress)="text.onlyAllow(['letters', 'backspace'], $event)"
+  (keyup.enter)="onSetContext()"
+  (blur)="contextNameCtrl.valid  ? unfocus.emit(true) : onSetContext()"
+  >
+</mat-form-field>

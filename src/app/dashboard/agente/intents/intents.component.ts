@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ContextsService } from 'src/app/services/contexts.service';
 
 @Component({
   templateUrl: './intents.component.html',
@@ -6,7 +7,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class IntentsComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+    public contexts: ContextsService
+  ) { }
 
   ngOnInit(): void {
   }

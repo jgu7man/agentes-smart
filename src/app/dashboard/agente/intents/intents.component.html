@@ -1,1 +1,32 @@
-<p>intents works!</p>
+<!-- <aSmart-mensajes-diagram></aSmart-mensajes-diagram> -->
+<mat-drawer-container id="flow-area" [hasBackdrop]="false">
+  <!-- # CONTEXT AREA -->
+  <mat-drawer
+    id="context-list"
+    class="contextos-list-container"
+    [opened]="true"
+    mode="side"
+    gdev-color
+    [mxBackground]="'cornflowerblue'"
+  >
+    <!-- <as-contextos></aSmart-contextos> -->
+  </mat-drawer>
+
+  <!-- # INTENTS AREA -->
+  <mat-drawer-content>
+    <!-- MENSAJES SIN CONTEXTO -->
+    <div class="mensajes-container">
+      <as-intent-list></as-intent-list>
+    </div>
+
+    <!-- MENSAJES POR CONTEXTO -->
+    <ng-container *ngIf="contexts.list$ | async as contexts">
+      <div *ngFor="let contexto of contexts | sortBy: 'asc':'index'"
+      class="mensajes-container"
+      >
+        <as-intent-list [contexto]="contexto" ></as-intent-list>
+      </div>
+    </ng-container>
+
+  </mat-drawer-content>
+</mat-drawer-container>

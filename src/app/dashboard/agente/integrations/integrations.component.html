@@ -1,0 +1,33 @@
+<div class="container" strechHeight>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h2>Integraciones</h2>
+      </mat-card-title>
+      <mat-card-subtitle>
+        Realiza las configuraciones para que agente pueda atender a tus clientes
+        en la plataforma que tú elijas.
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-accordion>
+        <mat-expansion-panel class="platform-area">
+          <mat-expansion-panel-header>
+            <b>Messenger</b>
+          </mat-expansion-panel-header>
+
+          <as-messenger-integration></as-messenger-integration>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel class="platform-area">
+          <mat-expansion-panel-header>
+            <b>Whatsapp</b>
+          </mat-expansion-panel-header>
+
+          <as-whatsapp-integration></as-whatsapp-integration>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ResponseTypeDirective } from './response-type.directive';
 import { CatchContextDirective, ConditionalContextDirective, DefaultContextDirective, SearchContextDirective } from '../models/intent-response.model';
+import { DiagramElementDirective } from './diagram-element.directive';
 
 
 
@@ -11,7 +12,8 @@ import { CatchContextDirective, ConditionalContextDirective, DefaultContextDirec
     ConditionalContextDirective,
     CatchContextDirective,
     SearchContextDirective,
-    DefaultContextDirective
+    DefaultContextDirective,
+    DiagramElementDirective
   ],
   imports: [
     CommonModule
@@ -21,7 +23,8 @@ import { CatchContextDirective, ConditionalContextDirective, DefaultContextDirec
     ConditionalContextDirective,
     CatchContextDirective,
     SearchContextDirective,
-    DefaultContextDirective
+    DefaultContextDirective,
+    DiagramElementDirective
   ]
 })
 export class DirectivesModule { }

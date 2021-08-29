@@ -25,6 +25,7 @@
     "@marxa/auth": "^0.0.6",
     "@marxa/devkit": "^1.1.10",
     "@marxa/storage": "^0.0.19",
+    "angularx-qrcode": "^11.0.0",
     "firebase": "^7.0 || ^8.0",
     "lodash": "^4.17.21",
     "rxjs": "~6.6.0",

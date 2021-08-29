@@ -46,7 +46,7 @@ export class EntityTypesService {
 
   projectPath(functionName?: string) {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
 
     if ( !clientId ) {
       throw new MxErrorAlertModel( `No se encontró el clientId`,
@@ -215,7 +215,7 @@ export class EntityTypesService {
   async saveContext( entity: iEntity, index: number ) {
     let path = `${this.projectPath('saveContext')}/contexts`
     let contexto: iContext = {
-      contextName: entity.value,
+      name: entity.value,
       lifespanCount: 3,
       index: index,
       color: this._color.generateHSLcolor(50, 50),

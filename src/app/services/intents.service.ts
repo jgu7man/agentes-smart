@@ -36,7 +36,7 @@ export class IntentsService {
 
   projectPath(functionName?: string): string {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
 
     if ( !clientId ) {
       throw new MxErrorAlertModel( `No se encontró el clientId`, `itents.service#${functionName}` )
@@ -74,6 +74,7 @@ export class IntentsService {
         const dfIntent = new DialogflowIntentModel( projectId, displayName, contexto )
         const intentResult = await this.createDialogflowIntent(dfIntent);
         const intentState: IntentStateModel = new IntentStateModel(intentResult, index, contexto)
+        console.log( intentState )
 
         const intentRef = this._af.doc( `${this.projectPath('create')}/intents/${intentState.name}` )
         console.log( `Guardando intent en firestore: `, intentState );
@@ -94,7 +95,7 @@ export class IntentsService {
     }
   }
 
-  async createDialogflowIntent(
+  private async createDialogflowIntent(
     { displayName, inputContextNames }: DialogflowIntentModel
   ): Promise<iDialogflowIntent> {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
@@ -202,7 +203,9 @@ export class IntentsService {
       )
   }
 
-
+  public get list(): Promise<iIntentState[]>{
+    return this.list$.pipe( take( 1 )).toPromise()
+  }
 
 
   // # GET DIALOGFLOW INTENTS
@@ -271,13 +274,13 @@ export class IntentsService {
 
       return this._af.collection<iIntentState>( this.projectPath( 'getByContext' ),
         ref => ref
-          .where( 'contexto', '==', contexto.contextName )
+          .where( 'contexto', '==', contexto.name )
           .orderBy( 'index' )
       ).valueChanges()
         .pipe(
 
           catchError( error => {
-            new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ contexto.contextName }`, error )
+            new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ contexto.name }`, error )
             return of([])
           } )
 
@@ -346,7 +349,7 @@ export class IntentsService {
       })
   }
 
-  async orderContextIntens(list: iIntentState[]) {
+  async orderContextIntents(list: iIntentState[]) {
     try {
       const path = `${this.projectPath('orderContextIntens')}/intents`
       const intentsRef = await this._af.collection(path).ref

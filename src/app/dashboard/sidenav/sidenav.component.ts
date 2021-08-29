@@ -38,7 +38,7 @@ export class SidenavComponent implements OnInit {
 
   onSignOut() {
     this._cache.deleteDataKey( 'user' )
-    this._cache.deleteDataKey( 'clientId')
+    this._cache.deleteDataKey( 'userId')
     this.auth.signOut()
   }
 

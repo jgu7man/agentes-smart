@@ -1,56 +1,50 @@
 import { Injectable } from '@angular/core';
-import { concatMap, concatMapTo, debounceTime, mapTo, mergeMap, take } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
-import { tap, catchError } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
-import { AgenteModel, iAgente } from '../models/agent.model';
-import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
-import firebase from 'firebase/app';
-import { MatDialog } from '@angular/material/dialog';
-import { CreatingAgenteDialog } from '../dashboard/agentes-crud/creating-agente/creating-agente.dialog';
+import { Observable, of, throwError } from 'rxjs';
+import { concatMap, debounceTime, map, mapTo, mergeMap, take, catchError } from 'rxjs/operators';
+import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { MxAuth } from '@marxa/auth';
-import { of } from 'rxjs';
-import { throwError } from 'rxjs';
-import { AgentConfigService } from './agent-config.service';
+import { MxStorage } from '@marxa/storage';
+import { MatDialog } from '@angular/material/dialog';
+import { AgenteModel, iAgente, ImageUri } from '../models/agent.model';
+import { CreatingAgenteDialog } from '../dashboard/agentes-crud/creating-agente/creating-agente.dialog';
+import { environment } from 'src/environments/environment';
+import firebase from 'firebase/app';
 
 @Injectable({ providedIn: 'root' })
 export class AgentsService {
-  /**
-   * Observable de los agentes en FIRESTORE*/
-  // public list$ = new Observable<AgenteModel[]>();
+
   private restURL = environment.restURL;
-  private _user?: firebase.User
 
   constructor(
     private _af: AngularFirestore,
-    private router: Router,
-    private _cache: MxCache,
     private _alert: MxAlert,
-    private _http: HttpClient,
-    private _dialog: MatDialog,
     private _auth: MxAuth,
-    private _text: MxText,
-    private _config: AgentConfigService,
+    private _cache: MxCache,
+    private _dialog: MatDialog,
+    private _http: HttpClient,
+    private _router: Router,
+    private _storage: MxStorage,
   ) {
-    // this.list$ = this.listenList()
   }
 
-  /** Establece la suscripción a los agentes */
-  listenList(): Observable<iAgente[]> {
-    const userId = this._cache.getDataKey<string>('clientId')
+
+
+
+  /** Observable que escucha los agentes del usuario en tiempo real
+   * @returns {*}  {Observable<iAgente[]>}
+   */
+  get list$(): Observable<iAgente[]> {
+    const userId = this._cache.getDataKey<string>('userId')
     if (!userId) {
       let error: MxErrorAlertModel = new MxErrorAlertModel(
         `El parámetro 'userId' tiene un valor inválido: ${userId}`);
       throw this._alert.error(error.message, error);
     } else {
-      return this._af
-        .collection('usuarios')
-        .doc(userId)
-        .collection<iAgente>('agentes')
-        .valueChanges()
+      return this._af.collection
+        <iAgente>( `usuarios/${ userId }/agentes` ).valueChanges()
         .pipe(
           debounceTime(1000),
           catchError((error) => {
@@ -63,84 +57,45 @@ export class AgentsService {
     }
   }
 
-  /** Obtiene un agente llamado por id
-   * @param {string} projectId
-   * @return {AgenteModel} Agente o null
+
+
+
+  /** Crea un agente nuevo
+   * @param {iAgente} agent iAgente
    */
-  async loadOne(projectId: string): Promise<AgenteModel | null> {
-    const agentesList = await this._cache.getAsyncKey<AgenteModel[]>('agentes');
-
-    try {
-      if (!agentesList) {
-        const error = new MxErrorAlertModel(
-          `No se pudo obtener 'agentesList': ${agentesList}`,
-          'loadOneAgente'
-        );
-        throw this._alert.error(error.message, error);
-      } else if (!projectId) {
-        const error = new MxErrorAlertModel(
-          `No se pudo obtener 'projectId': ${projectId}`,
-          'loadOneAgente'
-        );
-        throw this._alert.error(error.message, error);
-      } else {
-        const agenteDoc = agentesList.find((a) => a.projectId == projectId);
-        if (agenteDoc) {
-          return agenteDoc;
-        } else {
-          const error = new MxErrorAlertModel(
-            `No se encontró el agente ${projectId}`,
-            'loadOneAgente'
-          );
-          throw this._alert.error(error.message, error);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      this._alert.error('Error en la base de datos', error);
-      return null;
-    }
-  }
-
-  async saveAgent( { projectId, displayName, defaultLanguageCode, timeZone }: AgenteModel ) {
+  async create( { displayName, defaultLanguageCode, timeZone, owner, description, avatarUri }: iAgente ) {
 
     const createDialog = this._dialog.open(CreatingAgenteDialog, {
       minWidth: 300,
     });
 
     this._auth.user$.pipe( take( 1 ),
+      // PREPARE AGENT TO SAVE
       concatMap<firebase.User, Observable<AgenteModel>>( user => {
         if ( !user ) {
           return throwError(
             new MxErrorAlertModel( `No está autenticado`, 'saveAgent' )
           )
         } else {
-          const agente  = new AgenteModel(projectId, displayName, defaultLanguageCode, timeZone, user.uid)
-          // Eliminar campos vacios
-          Object.keys(agente).forEach((key) => {
-            if (agente[key as keyof AgenteModel] == '' || agente[key as keyof AgenteModel] == undefined) delete agente[key as keyof AgenteModel];
-          } );
-
-          // Transformar id para generar un string único
-          var sufixId = agente.displayName.split(' ').join('-').toLowerCase();
-          agente.projectId = `${sufixId}-${this._text.generateRandomText(6)}`;
-          console.log( { projectId: agente.projectId } );
+          const agente = new AgenteModel( displayName, defaultLanguageCode, timeZone, owner, user.uid, description, avatarUri)
           return of(agente)
         }
       } ),
+
+      // SEND TO BACKEND TO CREATE PROJECT AND AGENT
       concatMap<AgenteModel, Observable<AgenteModel>>( agente =>
-        this.createNewAgent( agente ).pipe( take( 1 ), mapTo( agente ) ) ),
+        this.createNewDialogflowAgent$( agente ).pipe( take( 1 ), mapTo( agente ) ) ),
       catchError(this.handleError)
       ).subscribe( async ( agente ) => {
 
         try {
-          // Guardado a Firestore
+          // SAVE IN FIRESTORE
           let agentePath = `usuarios/${agente.owner}/agentes/${agente.projectId}`
           await this._af.doc( agentePath ).set( {
             ...agente, created: new Date()
           })
 
-          this.router.navigate( [ '/dashboard/agentes' ] );
+          this._router.navigate( [ '/dashboard/agentes' ] );
           createDialog.close();
         } catch ( error ) {
           error['agente'] = agente
@@ -152,8 +107,37 @@ export class AgentsService {
 
   }
 
-  // ? Crear proyecto
-  createNewAgent(agente: AgenteModel): Observable<any> {
+
+  private uploadAvatar(displayName: string):Observable<ImageUri> {
+    return this._storage.upload().pipe(
+      take( 1 ),
+      map( files => {
+        if ( files.length > 0 ) {
+          if ( files[ 0 ].url ) {
+            return <ImageUri> {
+              url: files[ 0 ].url,
+              alt: `${displayName} avatar`
+            }
+          } else {
+            throw new MxErrorAlertModel(`No se encontró la url del avatar para el agente`, 'onSubmit')
+          }
+        } else {
+          throw new MxErrorAlertModel(`No se cargó ningún archivo de avatar para el agente`, 'onSubmit')
+        }
+      }),
+      catchError( ( error ) => {
+        throw new MxErrorAlertModel( `Error cargando el archivo avatar para el agente`, 'onSubmit', error )
+      } ),
+    )
+  }
+
+
+  /** Crea un agente en dialogflow del proyecto asignado
+   * @private
+   * @param {AgenteModel} agente
+   * @returns {*}  {Observable<any>}
+   */
+  private createNewDialogflowAgent$(agente: AgenteModel): Observable<any> {
     const _Url = environment.restURL + 'agentes/create';
 
     let params = { ...agente };
@@ -179,9 +163,9 @@ export class AgentsService {
   }
 
   /** Edita el agente en FIRESTORE
-   * @param {AgenteModel} agent
+   * @param {iAgente} agent
    */
-  async edit(agent: AgenteModel): Promise<void> {
+  async edit(agent: iAgente): Promise<void> {
     const usuario = this._cache.getDataKey<firebase.User>('user');
 
     try {
@@ -199,8 +183,8 @@ export class AgentsService {
         throw this._alert.error(error.message, error);
       } else {
         Object.keys(agent).forEach((key) => {
-          if (agent[key as keyof AgenteModel] == undefined)
-            delete agent[key as keyof AgenteModel];
+          if (agent[key as keyof iAgente] == undefined)
+            delete agent[key as keyof iAgente];
         });
 
         const agenetRef = this._af.doc(
@@ -209,7 +193,7 @@ export class AgentsService {
 
         await agenetRef.set({ ...agent }, { merge: true });
         this._alert.notify('Agente editado');
-        this.router.navigate(['/dashboard/agentes']);
+        this._router.navigate(['/dashboard/agentes']);
         return;
       }
     } catch (error) {
@@ -218,7 +202,12 @@ export class AgentsService {
     }
   }
 
-  delete(projectId: string): Observable<any> {
+
+  /** Elimina el agente en dialogflow y si esta se ejecuta, elimina el agente en firestore
+   * @param {string} projectId
+   * @returns {*}  {Observable<any>}
+   */
+  delete$(projectId: string): Observable<any> {
     const usuario = this._cache.getDataKey<firebase.User>('user');
 
     if (!usuario) {
@@ -257,8 +246,13 @@ export class AgentsService {
     }
   }
 
-
-  private async removeFromFirestore( uid: string, projectId: string) {
+/** Elimina el agente recientemente eliminado en dialogflow con todas sus subcolecciones
+ * @private
+ * @param {string} uid string
+ * @param {string} projectId
+ * @returns {*}
+ */
+private async removeFromFirestore( uid: string, projectId: string) {
     try {
       const batch = this._af.firestore.batch()
       const agenteRef = this._af.doc( `usuarios/${ uid }/agentes/${ projectId }` )

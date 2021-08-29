@@ -5,18 +5,39 @@
   <ng-container *ngIf="!responsive.small; else mobileDesing">
     <div strechHeight class="col s6" id="intent-form">
       <div id="mensaje-container">
-        <as-intent-header></as-intent-header>
 
         <div class="row mensaje-content" strechHeight>
+          <ng-container *ngIf="intentName !== 'welcome'; else welcome">
+            <as-intent-header></as-intent-header>
+          </ng-container>
+          <ng-template #welcome >
+
+            <div id="mensaje-header">
+              <div class="row align-cols" *ngIf="(_intent.current$ | async) as intent">
+                <div class="col s10">
+                  <p class="intent-title"> Primera interacción </p>
+                </div>
+                <div class="col s2">
+                  <button style="float: right;" mat-raised-button color="primary"
+                  (keydown.enter)="$event.preventDefault()"
+                  (keydown.enter)="$event.stopImmediatePropagation()"
+                  (click)="_intent.update()"
+                  [disabled]="!intent.unsaved"
+                  >Guardar</button>
+                </div>
+              </div>
+          </div>
+
+
+          </ng-template>
+
           <as-training-phrases></as-training-phrases>
           <as-parameters></as-parameters>
         </div>
       </div>
     </div>
     <div strechHeight class="col s6" id="resp-manager" #respuestas>
-      <aSmart-respuestas
-        (lastPositionChange)="onLastChange($event)"
-      ></aSmart-respuestas>
+      <as-responses (lastPositionChange)="onLastChange($event)" ></as-responses>
     </div>
   </ng-container>
 
@@ -26,17 +47,34 @@
       <mat-expansion-panel class="intent-panel" [expanded]="true">
         <mat-expansion-panel-header> Mensaje </mat-expansion-panel-header>
         <div id="mensaje-container">
-          <as-intent-header></as-intent-header>
+          <ng-container *ngIf="intentName !== 'welcome'; else welcome">
+            <as-intent-header></as-intent-header>
+          </ng-container>
+          <ng-template #welcome >
 
-          <div class="row mensaje-content" strechHeight>
-            <as-training-phrases></as-training-phrases>
-            <as-parameters></as-parameters>
+            <div id="mensaje-header">
+              <div class="row align-cols" *ngIf="(_intent.current$ | async) as intent">
+                <div class="col s10">
+                  <p class="intent-title"> Primera interacción </p>
+                </div>
+                <div class="col s2">
+                  <button style="float: right;" mat-raised-button color="primary"
+                  (keydown.enter)="$event.preventDefault()"
+                  (keydown.enter)="$event.stopImmediatePropagation()"
+                  (click)="_intent.update()"
+                  [disabled]="!intent.unsaved"
+                  >Guardar</button>
+                </div>
+              </div>
           </div>
+
+
+          </ng-template>
         </div>
       </mat-expansion-panel>
       <mat-expansion-panel>
         <mat-expansion-panel-header> Respuestas </mat-expansion-panel-header>
-        <aSmart-respuestas></aSmart-respuestas>
+        <as-responses></as-responses>
       </mat-expansion-panel>
     </mat-accordion>
   </ng-template>

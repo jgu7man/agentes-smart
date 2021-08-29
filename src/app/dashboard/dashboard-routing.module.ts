@@ -25,7 +25,7 @@ const routes: Routes = [
     { path: 'agente/:id', component: AgenteComponent, data: {section: 'Agente'}, children: [
     //   // { path: '', redirectTo: 'flujo', pathMatch: 'full', },
     //   // { path: 'start', component: StartUiComponent },
-    //   // { path: 'filtro', component: BienvenidaComponent },
+    //   // { path: 'mensaje/bienvenida', component: BienvenidaComponent },
     //   // { path: 'flujo', component: MensajesComponent },
     //   // { path: 'mensaje/:name', component: MensajeComponent, },
     //   // { path: 'tipos', component: TiposComponent },

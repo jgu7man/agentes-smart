@@ -32,7 +32,7 @@ export class TarjetasService {
   }
 
   cardsPath(functionName?: string) {
-    const clientId = this._cache.getDataKey<string>('clientId');
+    const clientId = this._cache.getDataKey<string>('userId');
 
     if (!clientId) {
       throw new MxErrorAlertModel(

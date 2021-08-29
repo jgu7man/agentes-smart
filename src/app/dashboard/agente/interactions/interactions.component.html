@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="row">
+    <div class="col s12">
+      <mat-card class="dashboard-section-card">
+        <mat-card-header class="dashboard-section-header">
+          <mat-card-title class="dashboard-section-title">
+            <h2>Conversaciones</h2>
+          </mat-card-title>
+          <mat-card-subtitle>
+            Revisa las conversaciones que tu agente ha tenido con tus clientes y
+            continúa entranándolo para que no se le escape nada.
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <div class="row" *ngIf="interactions.length > 0; else empty">
+          <div class="col s12">
+            <mat-card *ngFor="let inter of interactions; index as i">
+              <mat-card-content>
+                <div class="row">
+                  <div class="col s12 m6">
+                    <p>
+                      <span style="font-size: x-small">Clinete</span><br />
+                      {{ inter.usuario }}
+                    </p>
+                    <p style="font-size: x-small">
+                      {{ inter.time }}
+                    </p>
+
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      [disabled]="inter.checked"
+                      (click)="
+                        saveAsTrainingPhrase(
+                          inter.id,
+                          inter.intent.intentId,
+                          inter.usuario,
+                          i
+                        )
+                      "
+                    >
+                      Guardar
+                    </button>
+
+                    <ng-container *ngIf="inter.checked; else unChecked">
+                      <button mat-mini-fab>
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                      </button>
+                    </ng-container>
+                    <ng-template #unChecked>
+                      <button mat-button (click)="setChecked(inter.id, i)">
+                        Marcar como visto
+                      </button>
+                    </ng-template>
+                  </div>
+                  <div class="col s12 m6">
+                    <p>
+                      <span style="font-size: x-small">Agente</span><br />
+                      {{ inter.agente }}
+                    </p>
+                    <p>
+                      <span style="font-size: x-small">Intent Reconocido</span
+                      ><br />
+                      {{ inter.intent.intentName }}
+                    </p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col s8"></div>
+                  <div class="col s4"></div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+        <ng-template #empty>
+          <div class="row">
+            <div class="col s12 center">
+              <p class="center grey-text">Aún no tienes conversaciones</p>
+              <i class="fas fa-robot fa-10x grey-text"></i>
+            </div>
+          </div>
+        </ng-template>
+      </mat-card>
+    </div>
+  </div>
+</div>

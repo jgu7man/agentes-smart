@@ -1,0 +1,84 @@
+<div class="intents-content">
+  <ng-container *ngIf="contexto; else withoutContext">
+    <!-- * Lista de intents -->
+    <div
+      class="intents-list"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="drop($event)"
+      [cdkDropListData]="contexto.name"
+    >
+      <mat-card
+        *ngFor="let intent of intents; trackBy: trackByName"
+        [routerLink]="['../intent', intent.name]"
+        [queryParams]="{ contexto: contexto.name }"
+        cdkDrag
+        cdkDragBoundary="intents-list"
+      >
+        <mat-card-content
+          diagramElement
+          (getDiagramData)="setDiagramaData($event, intent.name)"
+          class="intent-card"
+        >
+          <p class="intent-name">
+            <b>{{ intent.displayName }}</b>
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-container>
+
+  <ng-template #withoutContext>
+    <!-- * Lista de intents -->
+    <div class="intents-list">
+      <mat-card
+        *ngFor="let intent of intents; trackBy: trackByName"
+        [routerLink]="['../intent', intent.name]"
+      >
+        <mat-card-content
+          diagramElement
+          (getDiagramData)="setDiagramaData($event, intent.name)"
+          class="intent-card"
+        >
+          <p class="intent-name">
+            <b>{{ intent.displayName }}</b>
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-template>
+
+  <!-- * Agregado de intent nueva -->
+  <div class="row addIntent-area">
+    <div
+      class="add-intent"
+      [ngClass]="{ activate: switchAddIntent }"
+      *ngIf="!switchAddIntent; else addIntent"
+      (click)="toAddIntent()"
+    >
+      <i class="fas fa-plus"></i>
+    </div>
+    <ng-template #addIntent>
+      <mat-card>
+        <mat-card-content>
+          <mat-form-field>
+            <input
+              matInput
+              type="text"
+              name="intentName"
+              id="intentName"
+              #intentNameInput
+              [formControl]="intentNameCtrl"
+              (keyup.enter)="onAddIntent()"
+              (keyup.Esc)="intentNameInput.blur()"
+            />
+            <mat-error *ngIf="intentNameCtrl.hasError('required')">
+              Debes agregar el nombre
+            </mat-error>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+  </div>
+
+</div>

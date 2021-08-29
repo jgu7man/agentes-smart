@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { MxAuth } from '@marxa/auth';
-import { MxAlert, MxColor, MxText } from "@marxa/devkit";
+import { MxAlert, MxCache, MxColor, MxText } from "@marxa/devkit";
 import { DashboardService } from './services/dashboard.service';
 
 @Component({
@@ -16,13 +16,15 @@ export class AppComponent {
     private _text: MxText,
     private _alert: MxAlert,
     private _auth: MxAuth,
-    private _afAuth: AngularFireAuth,
-    private _dashboard: DashboardService
+    private _afAuth:  AngularFireAuth,
+    private _dashboard: DashboardService,
+    private _cache: MxCache
   ) {
     this._afAuth.setPersistence('local')
     this._auth.userCollection = 'usuarios'
     this._alert.storeError = false
     this._text.loadFontAwesome()
+    this._cache.cacheTagName = 'as'
     this._color.ColorPalette = {
       main: '#3079F1',
       accent: '#EFA130',

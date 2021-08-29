@@ -1,20 +1,11 @@
 import firebase from 'firebase/app'
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { Subject, Observable, Subscription, of } from 'rxjs';
-import { filter, tap, map, flatMap, distinctUntilChanged } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { Observable, Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { iDialogflowIntent, iIntentState } from '../models/intent.model';
-import { iContext } from '../models/context.model';
-import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
-import { HttpClient } from '@angular/common/http';
-import { ContextsService } from './contexts.service';
+import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { AgentsService } from './agents.service';
-import { DashboardService } from './dashboard.service';
-import { IntentsService } from './intents.service';
-import { EntityTypesService } from './entitiy-types.service';
-import {  iAgente } from '../models/agent.model';
+import { iAgente } from '../models/agent.model';
 
 @Injectable({
   providedIn: 'root',
@@ -53,15 +44,8 @@ export class CurrentAgentService {
   constructor(
     private _afs: AngularFirestore,
     private _cache: MxCache,
-    private router: Router,
-    private _http: HttpClient,
     private _alert: MxAlert,
-    private _loading: MxLoading,
-    private _contexts: ContextsService,
     private _agentes: AgentsService,
-    private _dashboard: DashboardService,
-    private _mensajes: IntentsService,
-    private _tipos: EntityTypesService
   ) {
 
     // this.firestoreIntentList$ = this.setObservables('mensajes')
@@ -72,35 +56,41 @@ export class CurrentAgentService {
 
   }
 
+  get current$(): Observable<iAgente | undefined> {
+    const path = this.currentPath('current-agent.service', 'current')
+    return this._afs.doc<iAgente>(path).valueChanges()
+  }
 
-  projectPath(functionName?: string): string {
+  currentPath(document?: string, functionName?: string): string {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const userId = this._cache.getDataKey<string>( 'userId' )
 
-    if ( !clientId ) {
-      throw new MxErrorAlertModel( `No se encontró el clientId`, `current-agent.service#${functionName}` )
+    if ( !userId ) {
+      throw new MxErrorAlertModel( `No se encontró el userId`, `${document}#${functionName}` )
     } else if ( !projectId ) {
-      throw new MxErrorAlertModel( `No se encontró el projectId`, `current-agent.service#${functionName}` )
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `${document}#${functionName}` )
     } else {
-      return `usuarios/${clientId}/agentes/${ projectId }`
+      return `usuarios/${userId}/agentes/${ projectId }`
     }
   }
+
+
 
   /** Obtiene un agente llamado por id
    * @param {string} projectId
    * @return {iAgente} Agente o null
    */
   async get( projectId: string ): Promise<iAgente | null> {
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const userId = this._cache.getDataKey<string>( 'userId' )
 
     try {
-      if ( !clientId ) {
-        throw new MxErrorAlertModel( `No se encontró el clientId`, 'get')
+      if ( !userId ) {
+        throw new MxErrorAlertModel( `No se encontró el userId`, 'get')
       } else if (!projectId) {
         throw new MxErrorAlertModel( `No se pudo obtener 'projectId': ${projectId}`, 'get' );
       } else {
         const agentDoc = await this._afs.doc<iAgente>
-          ( `usuarios/${ clientId }/agentes/${ projectId }` )
+          ( `usuarios/${ userId }/agentes/${ projectId }` )
           .ref.get()
 
         if (agentDoc.exists) {
@@ -119,8 +109,9 @@ export class CurrentAgentService {
   }
 
 
-  setAsStarted() {
-    const path = this.projectPath('setAsStarted')
+  /** Define que el tutorial del agente ya se completó */
+  setAsStarted(): void {
+    const path = this.currentPath('current-agent.service', 'setAsStarted')
     this._afs.doc(path).update({ started: true })
       .catch(error => {
         console.error(error);
@@ -132,7 +123,7 @@ export class CurrentAgentService {
     // this._loading.toggleWaitingSpinner('open')
     // this.projectId = projectId;
     this._cache.updateData('projectId', projectId);
-    await this._agentes.loadOne(projectId);
+    // await this._agentes.getById(projectId);
     // this._cache.updateData('currentAgente', this.current);
     // return this._dashboard.initializeDashboard()
     //   .pipe(
@@ -168,18 +159,7 @@ export class CurrentAgentService {
 
   // }
 
-  currentPath(functionName?: string) {
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
 
-    if ( !clientId ) {
-      throw new MxErrorAlertModel( `No se encontró el clientId`, functionName )
-    } else if ( !projectId ) {
-      throw new MxErrorAlertModel( `No se encontró el projectId`, functionName )
-    } else {
-      return `usuarios/${clientId}/agentes/${ projectId }`
-    }
-  }
   // # GET PATH
   /** Obtiene la ruta del agente en curso, espera por la respuesta del auth service para obtener el usuario */
   // getPath(): Observable<string> {
@@ -285,8 +265,8 @@ export class CurrentAgentService {
 
   /** CLEAN TEST CHAT: Limpia la sesión de conversación para TestChat del agente */
   cleanTestChat() {
-    let clientId = this._cache.getDataKey('clientId');
-    const path = `usuarios/${clientId}/clientes/TEST`;
+    let userId = this._cache.getDataKey('userId');
+    const path = `usuarios/${userId}/clientes/TEST`;
     this._afs.doc(path).update({
       outputContexts: firebase.firestore.FieldValue.delete(),
       sessionId: firebase.firestore.FieldValue.delete(),

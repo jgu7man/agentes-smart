@@ -53,7 +53,7 @@ export class CurrentIntentService {
 
   projectPath(functionName?: string) {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
 
     if ( !clientId ) {
       throw new MxErrorAlertModel( `No se encontró el clientId`, functionName )

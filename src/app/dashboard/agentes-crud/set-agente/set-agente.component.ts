@@ -8,6 +8,7 @@ import { ZoneConfigService } from 'src/app/admin/utils/zone-config.service';
 import { MxStorage } from '@marxa/storage';
 import { catchError, take } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   templateUrl: './set-agente.component.html',
@@ -16,7 +17,7 @@ import { ActivatedRoute } from '@angular/router';
 export class SetAgenteComponent implements OnInit {
 
   agente?: iAgente | null
-  user: firebase.User | null;
+  user!: firebase.User;
   folder!: string
   avatarCtrl: FormControl
 
@@ -29,21 +30,23 @@ export class SetAgenteComponent implements OnInit {
     private _storage: MxStorage,
     private _route: ActivatedRoute,
     public zoneConfig: ZoneConfigService,
+    private _location: Location
   ) {
     this.agenteForm = new FormGroup( {
       displayName: new FormControl( '', [ Validators.required ] ),
       defaultLanguageCode: new FormControl( 'es-419', [ Validators.required ] ),
       timeZone: new FormControl( 'America/New_York', [ Validators.required]),
       description: new FormControl( '' ),
-      avatarUri: this.avatarCtrl =  new FormControl( '' )
+      avatarUri: this.avatarCtrl = new FormControl( '' ),
     } )
 
-    this.user = this._cache.getDataKey( 'user' )
+    this.user = this._cache.getDataKey( 'user' ) as firebase.User
     if ( this.user ) {
       this.folder = `${this.user.uid}/agentes/`
     } else {
       let error = new MxErrorAlertModel( `No se encontró el usuario autenticado en el formulario de creación de agentes`)
-      this._alert.error(error.message, error)
+      this._alert.error( error.message, error )
+      this._location.back()
     }
   }
 
@@ -52,7 +55,7 @@ export class SetAgenteComponent implements OnInit {
   async ngOnInit() {
     let agenteId = this._route.snapshot.params['id']
     if ( agenteId ) {
-      this.agente = await this._agents.loadOne(agenteId)
+      this.agente = await this._agents.getById(agenteId)
       if ( this.agente ) {
         this.agenteForm.patchValue( this.agente )
       }
@@ -60,7 +63,7 @@ export class SetAgenteComponent implements OnInit {
   }
 
   onSubmit() {
-    let agente: iAgente = this.agenteForm.value
+    let agente: iAgente = {...this.agenteForm.value, owner: this.user.uid}
     if ( this.avatarCtrl.value === '' && this._storage.files.length > 0 ) {
       this._storage.upload().pipe(
         take(1),
@@ -76,7 +79,7 @@ export class SetAgenteComponent implements OnInit {
             if ( this.agente ) {
               this._agents.edit(agente)
             } else {
-              this._agents.saveAgent(agente)
+              this._agents.create(agente)
             }
 
           } else {
@@ -98,7 +101,7 @@ export class SetAgenteComponent implements OnInit {
       if ( this.agente ) {
         this._agents.edit(agente)
       } else {
-        this._agents.saveAgent(agente)
+        this._agents.create(agente)
       }
     }
   }

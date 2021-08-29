@@ -1,0 +1,33 @@
+.intents-content {
+  display: flex;
+  .addIntent-area {
+      margin: 0 0 0 1em;
+      padding-top: .5em;
+  }
+}
+
+.add-intent {
+  background: transparent;
+  border-radius: 5px;
+  box-shadow: inset 0px 2px 1px -1px rgba(0, 0, 0, 0.2), inset 0px 1px 1px 0px rgba(0, 0, 0, 0.14), inset 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  translate: all .3s;
+  min-width: 100px;
+}
+
+::ng-deep.intents-list {
+  position: relative;
+  display: flex;
+  flex-flow: wrap row;
+  mat-card {
+      margin: .5em 1em;
+      z-index: 2;
+      cursor: pointer;
+      min-width: 200px;
+  }
+}
+

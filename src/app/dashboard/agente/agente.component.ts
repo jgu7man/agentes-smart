@@ -61,7 +61,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
 
   async updateAgentDatabase() {
     const batch = this._afs.firestore.batch()
-    const clientId = this._cache.getDataKey<string>( 'clientId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
     const projectPath = `usuarios/${ clientId }/agentes/${ this.projectId }`
     const projectRef = this._afs.doc(projectPath).ref
 

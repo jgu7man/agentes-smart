@@ -29,7 +29,7 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.listSubscription =
-      this.agents.listenList().subscribe( list => {
+      this.agents.list$.subscribe( list => {
         if ( list.length == 0 ) this._router.navigate( [ '/dashboard/crear_agente' ] )
         else this.agentList = list
     })
@@ -45,7 +45,7 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
     this._dialog.open( DeleteAgenteDialog ).afterClosed().pipe( take( 1 ) )
       .subscribe( confirmation => {
         if ( confirmation ) {
-          this.agents.delete( projectId )
+          this.agents.delete$( projectId )
             .pipe(first()).subscribe(() =>
               this._alerts.notify('Agente Eliminando')
             )

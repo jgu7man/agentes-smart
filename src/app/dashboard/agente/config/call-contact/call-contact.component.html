@@ -1,0 +1,39 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      <h5>Datos de contacto</h5>
+    </mat-card-title>
+    <mat-card-subtitle>
+      <p>
+        Registra los datos de contacto que tu agente tendrá disponible para
+        contestar
+      </p>
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form action="#" onsubmit="return false">
+      <div class="row">
+        <div class="col s12">
+          <mat-form-field appearance="fill">
+            <mat-label>Recurso de contacto</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="config.contact_resource"
+              name="contact_resource"
+            />
+            <mat-hint>
+              OPCIONAL. Correo o número de teléfono al cual contactarte en caso
+              de que tu cliente desee tener contacto humano.
+            </mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions style="display: flex; justify-content: center">
+    <button mat-raised-button color="primary">Guardar</button>
+  </mat-card-actions>
+</mat-card>

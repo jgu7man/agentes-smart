@@ -14,14 +14,14 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
   // mensaje: IntentModel
   private inMensajeSubs!: Subscription
   private stateSubs!: Subscription
-  private intentName!: string
+  public intentName!: string
   private currentContexto!: string
   @ViewChild('respuestas') respuestasPanel!: ElementRef;
 
   constructor (
     public responsive: MxResponsive,
+    public _intent: CurrentIntentService,
     private router: Router,
-    private _intent: CurrentIntentService,
     private _route: ActivatedRoute
   ) {
   }

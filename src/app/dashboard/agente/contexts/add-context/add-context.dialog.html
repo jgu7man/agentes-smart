@@ -1,17 +1,19 @@
-<div class="contextField">
-  <mat-form-field appearence="outline">
-    <input
-    lowecase
-    matInput
-    #input
-    #contextoNuevo
-    type="text"
-    name="contextoNuevo"
-    id="contextoNuevo"
-    (keydown)="delSpaces($event)"
-    (keyup.enter)="onSetContext()"
-    (blur)="newContext == '' ? unfocus.emit(true) : onSetContext()"
-    [(ngModel)]="newContext"
-    >
-  </mat-form-field>
-</div>
+<p mat-dialog-title>Crea un nuevo contexto</p>
+<mat-dialog-content>
+  <div class="row">
+    <div class="col s12">
+      <as-add-context
+      [lastIndex]="contextIndex"
+      (contextAdded)="dialog_.close($event)"
+      ></as-add-context>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions style="display: flex; justify-content: space-around">
+  <button mat-raised-button
+  (click)="dialog_.close()"
+  >Cancel</button>
+  <button mat-raised-button
+  (click)="component.onSetContext()"
+  color="primary">Crear</button>
+</mat-dialog-actions>

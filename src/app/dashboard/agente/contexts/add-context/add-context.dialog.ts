@@ -1,48 +1,28 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Inject, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MxText } from '@marxa/devkit';
-import { iContext } from 'src/app/models/context.model';
-import { ContextsService } from 'src/app/services/contexts.service';
+import { AddContextComponent } from './add-context.component';
 
 @Component({
   templateUrl: './add-context.dialog.html',
   styleUrls: ['./add-context.dialog.scss'],
 })
 export class AddContextDialog implements OnInit {
-  newContext: string = '';
-  switchAddContext: boolean = false;
-  @Output() contextAdded: EventEmitter<any> = new EventEmitter();
-  @Output() unfocus: EventEmitter<any> = new EventEmitter();
-  @ViewChild('contextoNuevo') contextoNuevo!: ElementRef;
-  @Input() lastIndex!: number;
 
-  constructor(
-    private _text: MxText,
-    private _contextos: ContextsService,
-    // private _loading: GdevLoading
-  ) {}
+  contextName: string = ''
+   @ViewChild(AddContextComponent) component!: AddContextComponent
+  constructor (
+    @Inject(MAT_DIALOG_DATA) public contextIndex: number,
+    public dialog_: MatDialogRef<AddContextDialog>,
+    public _text: MxText
+  ) { }
 
-  ngOnInit(): void {}
-
-  onSetContext() {
-    if (this.newContext) {
-      var newContextName = this._text.normalize(this.newContext);
-      var newContext: iContext = {
-        contextName: newContextName,
-        lifespanCount: 3,
-        index: this.lastIndex,
-      };
-      this._contextos.set(newContext).then(() => {
-        this.newContext = '';
-        this.contextAdded.emit(true);
-      });
-    }
-    this.switchAddContext = false;
+  ngOnInit(): void {
   }
 
-  delSpaces(e: any) {
-    if (e.which === 32) {
-      this.newContext.valueOf().replace(/\s/g, '');
-      return false;
-    } else return e.which;
+
+  async onSave(contextName: string) {
+    this.dialog_.close(contextName);
   }
 }

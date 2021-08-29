@@ -16,7 +16,6 @@ import { AddContextDialog } from '../add-context/add-context.dialog';
 export class ContextSelectorComponent implements OnInit {
   contextLists: iContextList | null = null;
   contextNameList: string[] = [];
-  nuevoContexto!: iContext;
 
   @Input() contexto!: string;
   @Input() allowCreate: boolean = true;
@@ -33,7 +32,6 @@ export class ContextSelectorComponent implements OnInit {
 
   ngOnInit(): void {
     this.getContextList();
-    // console.log(this.contexto);
   }
 
   async getContextList() {
@@ -45,17 +43,13 @@ export class ContextSelectorComponent implements OnInit {
       console.log(agenteContext);
       if (agenteContext) {
         this.contextNameList = agenteContext.map(
-          (context) => context.contextName
+          (context) => context.name
         );
       } else {
         this.contextNameList = [];
       }
     }
-    this.nuevoContexto = {
-      contextName: '',
-      lifespanCount: 3,
-      index: this.contextNameList.length || 0,
-    };
+
 
   }
 
@@ -72,11 +66,11 @@ export class ContextSelectorComponent implements OnInit {
   openContextCreator() {
     var dialog = this._dialog.open(AddContextDialog, {
       minWidth: 300,
-      data: this.nuevoContexto,
+      data: this.contextNameList.length || 0,
     });
 
-    dialog.afterClosed().subscribe((result: iContext) => {
-      if (result) this.contextNameList.push(result.contextName);
+    dialog.afterClosed().subscribe((result: string) => {
+      if (result) this.contextNameList.push(result);
     });
   }
 }

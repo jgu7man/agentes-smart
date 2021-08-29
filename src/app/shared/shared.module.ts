@@ -6,6 +6,7 @@ import { MarxaModule } from './marxa.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { DirectivesModule } from '../directives/directives.module';
+import { PipesModule } from '../pipes/pipes.module';
 
 
 
@@ -20,6 +21,7 @@ import { DirectivesModule } from '../directives/directives.module';
     ReactiveFormsModule,
     HttpClientModule,
     DirectivesModule,
+    PipesModule,
   ],
   exports: [
     FirebaseModule,
@@ -28,7 +30,8 @@ import { DirectivesModule } from '../directives/directives.module';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    DirectivesModule
+    DirectivesModule,
+    PipesModule
   ]
 })
 export class SharedModule { }

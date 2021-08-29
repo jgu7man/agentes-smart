@@ -51,7 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy{
         this._alert.notify('Necesitas iniciar sesión')
         this._router.navigate( [ '/' ] )
       } else {
-        this._cache.updateData('clientId', user.uid)
+        this._cache.updateData('userId', user.uid)
         this.clientId = user.uid
       }
     } )

@@ -1,0 +1,26 @@
+.container {
+  overflow-y: auto;
+  padding-bottom: 5em;
+}
+
+h2{
+  font-size: x-large;
+}
+
+.copy-data-area {
+  margin-top: 3em
+}
+
+::ng-deep {
+  .platform-area {
+      .mat-expansion-panel-content .mat-expansion-panel-body {
+          padding: 1em 3em !important;
+      }
+  }
+  .copy-field {
+      .mat-form-field-suffix{
+          display: flex;
+          align-self: flex-start;
+      }
+  }
+}
