@@ -1,60 +1,52 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { catchError, first,  map,  mergeMap,  pluck, take } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, first, mergeMap, pluck, take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel as IntentStateModel, iIntentState } from '../models/intent.model';
+import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel, iIntentState } from '../models/intent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { iContext } from '../models/context.model';
 import { RespuestaModel } from '../models/intent-response.model';
-import { of } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root', })
 export class IntentsService {
-  /** Almacena la ruta de los mensajes, incluyendo ID de usuario y de proyecto */
-  private mensajesPath!: string;
-  /** Motiva a recargar los mensajes */
-  // reloadMensajes$ = new Subject<any>();
-  /** Almacena la URL para consultas de la API */
-  private _url = environment.restURL + 'intent';
+
   /** Observable de la lista de mensajes filtrados por contexto en firebase */
   public intentListByContext$ = new BehaviorSubject<IntentStateModel[]>([]);
 
-  // public list$!: Observable<iDialogflowIntent[]>
-
   constructor(
-    private _http: HttpClient,
-    private _af: AngularFirestore,
+    private _afs: AngularFirestore,
     private _cache: MxCache,
     private _alert: MxAlert,
     private _loading: MxLoading,
+    private _dialgoflowIntents: DialogflowIntentsService
   ) {
+    this.retriveFromDialogfow()
   }
 
+
+
+  /** Define la ruta del angente actual
+   * @param {string} [functionName] Opcionalmente, ingresa el nombre de la funcion para seguimiento del error
+   * @returns {*}  {string} Ruta del proyecto
+   */
   projectPath(functionName?: string): string {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'userId' )
+    const userId = this._cache.getDataKey<string>( 'userId' )
 
-    if ( !clientId ) {
-      throw new MxErrorAlertModel( `No se encontró el clientId`, `itents.service#${functionName}` )
+    if ( !userId ) {
+      throw new MxErrorAlertModel( `No se encontró el userId`, `itents.service#${functionName}` )
     } else if ( !projectId ) {
       throw new MxErrorAlertModel( `No se encontró el projectId`, `itents.service#${functionName}` )
     } else {
-      return `usuarios/${clientId}/agentes/${ projectId }`
+      return `usuarios/${userId}/agentes/${ projectId }`
     }
   }
 
 
 
 
-  // SECTION CRUD de mensajes
-
-  // $CREATE Mensajes
-
-  // # SAVE NEW MENSAJE
   /** Agrega el intent nuevo creado por la API a dialogflow como referencia para la interfaz en FIRESTORE
    * @param {iDialogflowIntent} displayName intent creado por la API
    * @param {number} [index] index en el orden del contexto
@@ -72,11 +64,12 @@ export class IntentsService {
       if ( projectId ) {
 
         const dfIntent = new DialogflowIntentModel( projectId, displayName, contexto )
-        const intentResult = await this.createDialogflowIntent(dfIntent);
+        const intentResult = await this._dialgoflowIntents.post( dfIntent );
+
         const intentState: IntentStateModel = new IntentStateModel(intentResult, index, contexto)
         console.log( intentState )
 
-        const intentRef = this._af.doc( `${this.projectPath('create')}/intents/${intentState.name}` )
+        const intentRef = this._afs.doc( `${this.projectPath('create')}/intents/${intentState.name}` )
         console.log( `Guardando intent en firestore: `, intentState );
         await intentRef.set( { ...intentState } )
           .catch(error => {throw new MxErrorAlertModel(`Error al guardar el intent ${intentResult.name} en firestore`, error)} )
@@ -95,52 +88,6 @@ export class IntentsService {
     }
   }
 
-  private async createDialogflowIntent(
-    { displayName, inputContextNames }: DialogflowIntentModel
-  ): Promise<iDialogflowIntent> {
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const intentRequest: any = { displayName, inputContextNames };
-    const body = { projectId, intentRequest };
-
-    return this._http.post( this._url, body, { responseType: 'json' } )
-      .pipe(
-        first(),
-        pluck<any, iDialogflowIntent>('intent'),
-
-        catchError( error => {
-          throw new MxErrorAlertModel(`Error del servidor creando un nuevo intent`, error)
-        } )
-
-      ).toPromise()
-  }
-
-  private catchCreateErrors(error: any) {
-
-    if ( error.error.code === 3 ) {
-      this._alert.error(
-        'Este nombre de intent ya existe, por favor elige otro',
-        error.error.error.details
-      );
-
-    } else if ( error.error.code === 9 ) {
-      this._alert.error(
-        'El nombre del intent no sólo puede contener caracteres como LETRAS: [a-z, A-Z], números:[0-9], guión bajo [_], guión medio [-] o espacios',
-        error.error.error.details
-      );
-
-    } else if ( 'message' in error ) {
-      this._alert.error(error.message, error)
-
-    } else {
-      this._alert.error('Error creando el intent nuevo', error.error.error.details);
-    }
-  }
-
-  // !$CREATE
-
-
-
-
 
 
   // # SET CONTEXT TO CONTEXT INTENT
@@ -149,50 +96,56 @@ export class IntentsService {
    * parámetro y una frase de entreamiento más.
    * @param {string} context
    */
-  setContextMensaje(context: string) {
-    const intentList = this._cache.getDataKey<iDialogflowIntent[]>( 'intents' ) || []
-    const contextIntent = intentList.find(
-      (i) => i.displayName === 'Default Context Intent'
-    );
+  // setContextIntent(context: string) {
+  //   const intentList = this._cache.getDataKey<iDialogflowIntent[]>( 'intents' ) || []
+  //   const contextIntent = intentList.find(
+  //     (i) => i.displayName === 'Default Context Intent'
+  //   );
 
-    if ( contextIntent ) {
-      if (!contextIntent.parameters) contextIntent.parameters = []
-      // contextIntent.parameters.push({
-      //   defaultValue: context,
-      //   displayName: context,
-      //   entityTypeDisplayName: context,
-      //   isList: false,
-      //   mandatory: false,
-      //   value: context,
-      // });
+  //   if ( contextIntent ) {
+  //     if (!contextIntent.parameters) contextIntent.parameters = []
+  //     // contextIntent.parameters.push({
+  //     //   defaultValue: context,
+  //     //   displayName: context,
+  //     //   entityTypeDisplayName: context,
+  //     //   isList: false,
+  //     //   mandatory: false,
+  //     //   value: context,
+  //     // });
 
-      if (!contextIntent.trainingPhrases) contextIntent.trainingPhrases = []
-      contextIntent.trainingPhrases.push({
-        parts: [
-          {
-            alias: context,
-            entityType: '@contextos',
-            text: context,
-            userDefined: true,
-          },
-        ],
-        type: 'EXAMPLE',
-      });
+  //     if (!contextIntent.trainingPhrases) contextIntent.trainingPhrases = []
+  //     contextIntent.trainingPhrases.push({
+  //       parts: [
+  //         {
+  //           alias: context,
+  //           entityType: '@contextos',
+  //           text: context,
+  //           userDefined: true,
+  //         },
+  //       ],
+  //       type: 'EXAMPLE',
+  //     });
 
-    }
+  //   }
 
-    // console.log(contextIntent)
-    // this._current.update(contextIntent);
-  }
+  //   // console.log(contextIntent)
+  //   // this._current.update(contextIntent);
+  // }
 
 
 
   // $READ MENSAJES
 
+
+
+  /** Obtiene el observable de los intents del agente en curso
+   * @readonly
+   * @type {Observable<iIntentState[]>}
+   */
   public get list$(): Observable<iIntentState[]>{
     const path = `${this.projectPath('list$')}/intents`
 
-    return this._af.collection<iIntentState>( path ).valueChanges()
+    return this._afs.collection<iIntentState>( path ).valueChanges()
       .pipe(
 
         catchError( ( error ) => {
@@ -203,76 +156,27 @@ export class IntentsService {
       )
   }
 
+
+
+  /** Obtiene la lista de intents en promesa a partir del observable
+   * @readonly
+   * @type {Promise<iIntentState[]>}
+   */
   public get list(): Promise<iIntentState[]>{
     return this.list$.pipe( take( 1 )).toPromise()
   }
 
 
-  // # GET DIALOGFLOW INTENTS
-  /** Obtiene respuesta de los intents registrados en el agente de Dialogflow  y actualiza en firestore*/
-  async updateIntents(): Promise<void> {
-    const path = `${ this.projectPath( 'getDialogFlowIntents' ) }/intents`
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const batch = this._af.firestore.batch()
-    const intentRef = this._af.collection( path )
 
-
-    try {
-      if ( !projectId ) throw new MxErrorAlertModel( `No se tienen el projectId` )
-
-
-      let list = await this._http.get<iDialogflowIntent[]>(
-        `${this._url}/${projectId}`,
-        { responseType: 'json' }
-      ).pipe(
-        // tap(data => console.log( data )),
-        first(),
-        pluck<any, iDialogflowIntent[]>( 'result', 'intents' ),
-
-        catchError( error => {
-          throw new MxErrorAlertModel( `Error desde el servidor al tratar de obtener los intent del agente ${ projectId }`, error )
-        } )
-
-      ).toPromise()
-
-
-      // ACTUALIZA EN FIRESTORE
-      await this._loading.asyncForEach( list,
-        (intent: iDialogflowIntent ) => {
-          let name = intent.name.slice(intent.name.lastIndexOf('/') + 1)
-          return batch.update(intentRef.doc(name).ref, {intent} )
-        } )
-
-
-      await batch.commit().catch( error => {
-        throw new MxErrorAlertModel( `Error en el commit actualizando intents a ${path}`, error)
-      })
-
-
-      return
-    } catch (error) {
-      if ('mensaje' in error) {
-        this._alert.error(error.message, error)
-      } else {
-        this._alert.error(`Error desconocido actualizando los intent del agente ${projectId}`, error)
-      }
-      return console.error(error)
-    }
-  }
-
-
-
-
-  // # MENSAJES LIST BY CONTEXT
-  // # GET MENSAJES LIST BY CONTEXTO
-  /** Obtiene los Mensajes de Firestore que coinciden con tener el contexto indicado
+  // # GET INTENTS LIST BY CONTEXTO
+  /** Obtiene los intents de Firestore que coinciden con tener el contexto indicado
    * @param {iContext} contexto Indica el contexto al cual pertenece la fila donde se invoca la lista de mensajes
-   * @return {Observable<IntentStateModel[]>} Regresa un array de mensajes pertenecientes al contexto
+   * @return {Observable<IntentStateModel[]>} Observable de intents states en array
    */
   getByContext$(contexto: iContext): Observable<iIntentState[]> {
     if ( contexto.id ) {
 
-      return this._af.collection<iIntentState>( this.projectPath( 'getByContext' ),
+      return this._afs.collection<iIntentState>( this.projectPath( 'getByContext' ),
         ref => ref
           .where( 'contexto', '==', contexto.name )
           .orderBy( 'index' )
@@ -292,9 +196,14 @@ export class IntentsService {
     }
   }
 
+
+
+  /** Obtiene los intents de firestore que no tienen contexto asignado
+   * @returns {*}  {Observable<iIntentState[]>}
+   */
   getWithoutContext$(): Observable<iIntentState[]> {
 
-    return this._af.collection<iIntentState>( this.projectPath( 'getByContext' ),
+    return this._afs.collection<iIntentState>( this.projectPath( 'getByContext' ),
       ref => ref.where( 'contexto', '==', 'no-context' )
     ).valueChanges().pipe(
       catchError( error => {
@@ -303,6 +212,30 @@ export class IntentsService {
       })
     )
   }
+
+
+
+  /** Busca el intent por name o displayName
+   * @param {string} displayNameOname
+   * @returns {*}  {Promise<iIntentState>}
+   */
+  async find( displayNameOname: string ): Promise<iIntentState> {
+    let path = `${this.projectPath( 'find' )}/intents`
+    const intentsResult = await this._afs.collection<iIntentState>( path, ref => ref
+      .where( 'name', '==', 'displayNameOname' )
+      .where( 'displayName', '==', 'displayNameOname' )
+    ).ref.get();
+
+    if ( intentsResult.size === 1 ) {
+      return intentsResult.docs[0].data()
+    } else if ( intentsResult.size > 1 ) {
+      throw new MxErrorAlertModel( `El intent esta duplicado o hay coincidencias displayName con name`)
+    } else {
+      throw new MxErrorAlertModel(`No se encontró el intent ${displayNameOname} `, 'findIntent')
+    }
+  }
+
+
 
   // private async validateMensajesList(
   //   mensajes: IntentModel[]
@@ -325,10 +258,10 @@ export class IntentsService {
    * @param {string} intentName Id del mensajes del cuál se solicita saber sus siguientes mensajes
    * @return {*} Array de mensajes siguientes del mensaes
    */
-  getNextIntents( intentName: string ): Promise<string[]> {
+  async getNextIntents( intentName: string ): Promise<string[]> {
     let path = `${this.projectPath('getMensajes')}/intents/${intentName}/respuestas`
 
-    return this._af.collection<RespuestaModel>( path )
+    return this._afs.collection<RespuestaModel>( path )
       .valueChanges()
       .pipe(
         take( 1 ),
@@ -349,11 +282,47 @@ export class IntentsService {
       })
   }
 
+
+
+  /** Actualiza el intent que se entregue como parámetro
+   * @param {iIntentState} intentState
+   * @returns {*}
+   */
+  async update( intentState: iIntentState ) {
+    const path = `${ this.projectPath }/intents`
+    const intent = intentState.intent
+
+    try {
+      // Update in dialogflow
+      await this._dialgoflowIntents.put(intent)
+      // Update in firestore
+      await this._afs.collection<iIntentState>( path )
+        .doc( intentState.name )
+        .update( {
+          ...intentState,
+          unsaved:false
+        } )
+    } catch (error) {
+      if ('mensaje' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(`Error actualizando el intent ${intentState.displayName}`, error)
+      }
+      return console.error(error)
+    }
+  }
+
+
+
+  /** Ordena los intents de una columna de contextos de la UI
+   * @param {iIntentState[]} list
+   * @returns {*}
+   */
   async orderContextIntents(list: iIntentState[]) {
     try {
       const path = `${this.projectPath('orderContextIntens')}/intents`
-      const intentsRef = await this._af.collection(path).ref
-      const batch = this._af.firestore.batch()
+      const intentsRef = await this._afs.collection(path).ref
+      const batch = this._afs.firestore.batch()
 
 
       await this._loading.asyncForEach( list, ( intentState: iIntentState, i: number ) => {
@@ -375,5 +344,269 @@ export class IntentsService {
       }
       return console.error(error)
     }
+  }
+
+
+
+  /** Permite restaurar un intent default de dialogflow a su estado original como nuevo o recuperarlo si se ha perdido
+   * @param {('Default Welcome Intent'
+   *       | 'Default Fallback Intent'
+   *       | 'Default Context Intent')} displayName
+   */
+  async restoreDefaultIntent(
+    displayName:
+      | 'Default Welcome Intent'
+      | 'Default Fallback Intent'
+      | 'Default Context Intent'
+  ) {
+    this._loading.toggleWaiting('open');
+    const batch = this._afs.firestore.batch()
+    const intentsPath = `${ this.projectPath( 'restoreDefaultIntent' ) }/intents`
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    let intentState = await this.find(displayName)
+
+    if ( !projectId ) {
+      throw new MxErrorAlertModel(`No se encontró el projectId`, 'restoreDefaultIntet')
+    } else {
+
+      if ( intentState ) {
+        const intentRef = this._afs.doc( `${intentsPath}/${intentState.name}` ).ref
+        const responses = await intentRef.collection( 'responses' ).get()
+
+        await this._loading.asyncForEach( responses.docs, response => {
+          batch.delete( response.ref)
+        })
+
+        batch.delete( intentRef )
+        await batch.commit()
+
+      }
+
+      await this.create(displayName)
+
+      this._loading.toggleWaiting('close');
+      this._alert.notify(displayName + ' creado');
+
+    }
+
+  }
+
+
+
+  /** Elimina el intent en DIALOGFLOW y después en FIRESTORE
+   * @param {string} intentName name del intent
+   * @returns {*}
+   */
+   async delete( intentName: string ) {
+    const batch = this._afs.firestore.batch()
+    const path = `${ this.projectPath( 'delete' ) }/intents/${ intentName }`;
+    const intentRef = this._afs.doc(path).ref
+
+    try {
+      await this._dialgoflowIntents.delete( intentName );
+      const intentDoc = await intentRef.get()
+
+      const responses = await intentDoc.ref.collection( 'responses' ).get()
+      await this._loading.asyncForEach( responses.docs, response => {
+        batch.delete( response.ref)
+      })
+
+      batch.delete( intentRef )
+      await batch.commit()
+
+      return;
+    } catch (error) {
+      if ('message' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(`No se pudo eliminar el intent`, error)
+      }
+      return console.error(error)
+    }
+  }
+
+
+
+
+
+
+  // # GET DIALOGFLOW INTENTS
+  /** Obtiene respuesta de los intents registrados en el agente de Dialogflow  y actualiza en firestore*/
+  private async retriveFromDialogfow(): Promise<void> {
+    const path = `${ this.projectPath( 'getDialogFlowIntents' ) }/intents`
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const batch = this._afs.firestore.batch()
+    const intentRef = this._afs.collection( path )
+
+
+    try {
+      const list = await this._dialgoflowIntents.get() || []
+
+      // ACTUALIZA EN FIRESTORE
+      await this._loading.asyncForEach( list,
+        (intent: iDialogflowIntent ) => {
+          let name = intent.name.slice(intent.name.lastIndexOf('/') + 1)
+          return batch.update(intentRef.doc(name).ref, {intent} )
+        } )
+
+      await batch.commit().catch( error => {
+        throw new MxErrorAlertModel( `Error en el commit actualizando intents a ${path}`, error)
+      })
+
+      return
+    } catch (error) {
+      if ('mensaje' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(`Error desconocido actualizando los intent del agente ${projectId}`, error)
+      }
+      return console.error(error)
+    }
+  }
+
+
+
+  /** Captura el error de la creación del intent
+   * @private
+   * @param {*} error
+   */
+  private catchCreateErrors(error: any) {
+
+    if ( error.error.code === 3 ) {
+      this._alert.error(
+        'Este nombre de intent ya existe, por favor elige otro',
+        error.error.error.details
+      );
+
+    } else if ( error.error.code === 9 ) {
+      this._alert.error(
+        'El nombre del intent no sólo puede contener caracteres como LETRAS: [a-z, A-Z], números:[0-9], guión bajo [_], guión medio [-] o espacios',
+        error.error.error.details
+      );
+
+    } else if ( 'message' in error ) {
+      this._alert.error(error.message, error)
+
+    } else {
+      this._alert.error('Error creando el intent nuevo', error.error.error.details);
+    }
+  }
+}
+
+
+
+@Injectable( { providedIn: 'root', } )
+export class DialogflowIntentsService {
+
+  private _url = environment.restURL + '/intent';
+  constructor (
+    private _http: HttpClient,
+    private _cache: MxCache,
+    private _alert: MxAlert,
+  ){}
+
+  async post(
+    { displayName, inputContextNames }: DialogflowIntentModel
+  ): Promise<iDialogflowIntent> {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const intentRequest: any = { displayName, inputContextNames };
+    const body = { projectId, intentRequest };
+
+    return this._http.post( this._url, body, { responseType: 'json' } )
+      .pipe(
+        first(),
+        pluck<any, iDialogflowIntent>('intent'),
+
+        catchError( error => {
+          throw new MxErrorAlertModel(`Error del servidor creando un nuevo intent`, error)
+        } )
+
+      ).toPromise()
+  }
+
+  async get() {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const projectPath = `${ this._url }/${ projectId }`
+    const headers  = new HttpHeaders({ responseType: 'json' })
+
+    try {
+
+      if ( !projectId ) throw new MxErrorAlertModel( `No se tienen el projectId` )
+      return await this._http.get<iDialogflowIntent[]>(projectPath, {headers}).pipe(
+        // tap(data => console.log( data )),
+        first(),
+        pluck<any, iDialogflowIntent[]>( 'result', 'intents' ),
+
+        catchError( error => {
+          throw new MxErrorAlertModel( `Error desde el servidor al tratar de obtener los intent del agente ${ projectId }`, error )
+        } )
+
+      ).toPromise()
+    } catch (error) {
+      if ('message' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(``, error)
+      }
+      return console.error(error)
+    }
+  }
+
+  /** Actualiza el intent actual en DIALOGFLOW a través de la API
+   * @private
+   * @param {IntentStateModel} intent
+   * @returns {*}  {Promise<IntentModel>}
+   */
+   put(intent: iDialogflowIntent): Promise<iDialogflowIntent> {
+    const projectId = this._cache.getDataKey('projectId');
+    const path = `projects/${projectId}/agent/intents/${intent.name}`;
+    const body = { intent: { ...intent, name: path }};
+
+    const headers = { responseType: 'json' };
+
+    return new Promise((resolve, reject) => {
+      this._http
+        .put(this._url, body, { headers })
+        .toPromise()
+        .then((response: any) => {
+          if (response['intent']) {
+            this._alert.notify(`Intent Actualizado`);
+            resolve(response['intent']);
+          } else {
+            throw new MxErrorAlertModel(`La respuesta no contiene intent`)
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            console.error( err );
+            throw new MxErrorAlertModel( `Error actualizando`)
+          }
+          reject(err);
+        });
+    });
+  }
+
+  /**
+   * Elimina el intent desde la API
+   * @private
+   * @param {string} intentId
+   * @returns {*}  {Promise<any>}
+   */
+   public delete(intentId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const projectId = this._cache.getDataKey<string>('projectId');
+
+      this._http
+        .delete(this._url + `/${intentId}/project/${projectId}`)
+        .toPromise()
+        .then((response) => { resolve(response); })
+        .catch((err) => {
+          if (err) {
+            console.log(err);
+            this._alert.error( 'No es posible elimnar intent', err);
+          }
+          // reject(true);
+        });
+    });
   }
 }

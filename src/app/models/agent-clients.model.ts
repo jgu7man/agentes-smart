@@ -7,7 +7,8 @@ export class ClienteModel {
     public photoURL?: string,
     public email?: string,
     public phone?: string,
-  ) {}
+  ) {
+  }
 }
 
 export interface iClient extends ClienteModel {

@@ -23,7 +23,6 @@ export class ContextsService {
 
   constructor(
     private _afs: AngularFirestore,
-    private _agents: AgentsService,
     private _alerts: MxAlert,
     private _cache: MxCache,
     private _color: MxColor,
@@ -36,18 +35,18 @@ export class ContextsService {
   ) {
   }
 
-  // projectPath(functionName?: string) {
-  //   const projectId = this._cache.getDataKey<string>( 'projectId' )
-  //   const clientId = this._cache.getDataKey<string>( 'userId' )
+  projectPath(functionName?: string) {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
 
-  //   if ( !clientId ) {
-  //     throw new MxErrorAlertModel( `No se encontró el clientId`, `contexts.service#${functionName}` )
-  //   } else if ( !projectId ) {
-  //     throw new MxErrorAlertModel( `No se encontró el projectId`, `contexts.service#${functionName}` )
-  //   } else {
-  //     return `usuarios/${clientId}/agentes/${ projectId }`
-  //   }
-  // }
+    if ( !clientId ) {
+      throw new MxErrorAlertModel( `No se encontró el clientId`, `contexts.service#${functionName}` )
+    } else if ( !projectId ) {
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `contexts.service#${functionName}` )
+    } else {
+      return `usuarios/${clientId}/agentes/${ projectId }`
+    }
+  }
 
   // SECTION CRUD de contextos
 
@@ -57,7 +56,7 @@ export class ContextsService {
     try {
       const list = await this.list$.pipe( take(1) ).toPromise()
       const contextsRef = this._afs.collection<iContext>(
-        `${ this._agents.currentPath('set') }/contexts`
+        `${ this.projectPath('set') }/contexts`
       )
 
       // Contexto nuevo
@@ -75,7 +74,7 @@ export class ContextsService {
           let contextAdded = await contextsRef.add( context );
           contextAdded.update({ id: contextAdded.id });
           context.id = contextAdded.id;
-          await this._intents.setContextMensaje( name );
+          // await this._intents.setContextIntent( name );
           return
         } else {
           this._alerts.message('Contexto duplicado');
@@ -96,11 +95,11 @@ export class ContextsService {
   }
 
 
-  async getOne( contexto: iContext ) {
+  async getById( contextId: string ) {
     const contextsRef = this._afs.collection<iContext>(
-      `${ this._agents.currentPath('setContext') }/contexts`
+      `${ this.projectPath('setContext') }/contexts`
     )
-    const contextDoc = await contextsRef.ref.doc(contexto.id).get();
+    const contextDoc = await contextsRef.ref.doc(contextId).get();
     var contextGeted: iContext = contextDoc.data() as iContext;
     return contextGeted;
   }
@@ -112,10 +111,14 @@ export class ContextsService {
 
   /** Escucha todos los contextos en tiempo real */
   get list$(): Observable<iContext[]> {
-    const agentePath = `${ this._agents.currentPath('setContext') }/contexts`
+    const agentePath = `${ this.projectPath('setContext') }/contexts`
     return this._afs.collection<iContext>(agentePath,
       ref => ref.orderBy('index', 'asc')
     ).valueChanges().pipe(debounceTime(1000), ) || of([])
+  }
+
+  get list(): Promise<iContext[]> {
+    return this.list$.pipe( take( 1 ) ).toPromise()
   }
 
   /** Se desuscribe cunado la vista de contextos no está en pantalla */
@@ -129,7 +132,7 @@ export class ContextsService {
   async updateIndex( contextos: iContext[] ) {
     try {
       const contextsRef = this._afs.collection<iContext>(
-        `${ this._agents.currentPath('setContext') }/contexts`
+        `${ this.projectPath('setContext') }/contexts`
       ).ref
       const batch = this._afs.firestore.batch()
       await this._loading.asyncForEach(contextos,
@@ -149,13 +152,13 @@ export class ContextsService {
 
   // DELETE
 
-  async delContext( context: iContext ) {
+  async delete( context: iContext ) {
     const contextsRef = this._afs.collection<iContext>(
-      `${ this._agents.currentPath('setContext') }/contexts`
+      `${ this.projectPath('setContext') }/contexts`
     ).ref
-    await this.deleteContextFromMensajes(context);
+    await this.deleteFromIntents(context);
     // await this.deleteContextFromIntent(context.contextName);
-    await this.deleteContextFromTipo(context.name);
+    await this.deleteFromEntityType(context.name);
     await contextsRef.doc(context.id).delete();
 
     console.log('Context deleted');
@@ -180,40 +183,34 @@ export class ContextsService {
     // return;
   }
 
-  private async deleteContextFromTipo(context: string) {
-    // const tiposList = await this._cache.getDataKey<EntityTypeModel[]>(
-    //   'contextos'
-    // ) || []
-    // const contextType = tiposList.find((c) => c.displayName === context);
-    // if (contextType) {
-    //   contextType.entities = contextType.entities.map((entity) => {
-    //     if (entity.value != context) return entity;
-    //   })
-    //   await this._tipo.updateTipo(contextType);
-    //   console.log('Entities list updated');
-    // }
-    // return;
+  private async deleteFromEntityType(context: string) {
+    const tiposList = await this._cache.getDataKey<EntityTypeModel[]>(
+      'contextos'
+    ) || []
+    const contextType = tiposList.find((c) => c.displayName === context);
+    if (contextType) {
+      contextType.entities = contextType.entities
+        .filter( ( entity ) => entity.value != context )
+      await this._tipo.updateTipo(contextType);
+      console.log('Entities list updated');
+    }
+    return;
   }
 
-  private async deleteContextFromMensajes(context: iContext) {
-    const agentePath = this._cache.getDataKey('agentePath');
-    var mensajesPath = agentePath + '/mensajes';
-    const mensajeRef = this._afs.collection(mensajesPath).ref;
-
-    this._intents.getByContext$( context )
-      .pipe(
+  private async deleteFromIntents(context: iContext) {
+    this._intents.getByContext$( context ).pipe(
         take( 1 ),
-        map(list => list.map(c => c.intent))
-      ).subscribe( ( intents ) => {
-      if (intents.length > 0) {
-        intents.forEach( async ( intent: iDialogflowIntent ) => {
-          let contextToDel = intent.inputContextNames.findIndex(
-            (ent) => ent === context.id
-          )
+        map(list => list ? list : [])
+      ).subscribe( ( list ) => {
+        if ( list.length > 0 ) {
+          this._loading.asyncForEach( list, async intentState => {
 
-          intent.inputContextNames.splice( contextToDel, 1 );
-          await this.updateIntent(intent);
-          return
+            let contextToDel = intentState.intent
+              .inputContextNames.indexOf(  context.id )
+            intentState.intent.inputContextNames.splice( contextToDel, 1 );
+
+            await this._intents.update( intentState )
+            return
         });
 
         console.log('Intents updated');
@@ -221,41 +218,6 @@ export class ContextsService {
     });
 
     return;
-  }
-
-  async updateIntent(intent: iDialogflowIntent) {
-    this._loading.toggleWaiting( 'open' );
-    let projectId = this._cache.getDataKey('projectId');
-    let intentPath = `projects/${ projectId }/agent/intents/${ intent.name }`;
-    let urlPath = `${this._url}/intent`
-    let firestorePath = `${this._agents.currentPath('updateIntent')}/intents`
-
-    try {
-      // Update current mensaje
-      if ( projectId ) {
-        intent.name = intentPath;
-        const headers = { responseType: 'json' };
-        const body = { intent };
-        const request = await this._http.put( urlPath, body, { headers } )
-          .pipe(take(1)).toPromise()
-        // console.log(request);
-        if (request) {
-          // console.info('Se Actualizo Intent:', request);
-          let intentId = extractIntentId( intent.name )
-          await this._afs.collection(firestorePath).doc(intentId).update({intent})
-          return;
-
-        } else throw new MxErrorAlertModel( `No se pudo guardar` )
-      } else throw new MxErrorAlertModel(`No se ha seleccionado intent como actual`)
-
-    } catch ( error ) {
-      if ( 'message' in error )
-        this._alerts.error( error.message, error );
-      else
-        this._alerts.error('No se pudo guardar', error);
-      this._loading.toggleWaitingBar();
-      return console.error(error);
-    }
   }
 
   setContextosList(contextName: string, list: iIntentState[]) {

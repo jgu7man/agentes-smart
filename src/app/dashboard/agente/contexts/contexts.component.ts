@@ -106,7 +106,7 @@ export class ContextsComponent implements OnInit, OnDestroy {
 
 
   toDeleteContext( contexto: iContext ) {
-    this.contextos.delContext( contexto ).then( () => {
+    this.contextos.delete( contexto ).then( () => {
       this.getContextos()
     } )
   }

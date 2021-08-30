@@ -6,7 +6,7 @@ import { Subject, Subscription, forkJoin, Observable, BehaviorSubject, of } from
 import { map, pluck, tap, debounceTime, flatMap, filter, take, catchError, mergeMap } from 'rxjs/operators';
 import { emptyIntent, iDialogflowIntent, iIntentState, IntentStateModel, iParameter } from '../models/intent.model';
 import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
-import { IntentsService } from './intents.service';
+import { DialogflowIntentsService, IntentsService } from './intents.service';
 import { RespuestaModel } from '../models/intent-response.model';
 import { SystemEntitiesService } from '../admin/utils/system-entities.service';
 import { EntityTypeModel, iSystemEntity } from '../models/entity-type.model';
@@ -45,8 +45,9 @@ export class CurrentIntentService {
     private _http: HttpClient,
     private _commons: MxCommonsService,
     private _router: Router,
-    private _mensajes: IntentsService,
-    private _systemEntites: SystemEntitiesService
+    private _intents: IntentsService,
+    private _systemEntites: SystemEntitiesService,
+    private _dialogflowIntents: DialogflowIntentsService,
   ) {
     // this.current$.subscribe(mensaje => console.log(mensaje))
   }
@@ -179,20 +180,14 @@ export class CurrentIntentService {
     this._loading.toggleWaiting('open');
 
     try {
-      // Update current mensaje
       const current = this.current$.getValue()
       if ( current ) {
-        const request = await this.updateIntentApiRequest(current.intent);
-        // console.log(request);
-        if (request) {
-          // console.info('Se Actualizo Intent:', request);
-          await this._mensajes.updateIntents()
-          this.current$.next( { ...current, unsaved: false })
-          this._alerts.notify('Guardado');
-          this._loading.toggleWaiting('close');
-          return;
+        await this._intents.update(current)
+        this.current$.next( { ...current, unsaved: false } )
+        this._alerts.notify('Guardado');
+        this._loading.toggleWaiting('close');
+        return;
 
-        } else throw new MxErrorAlertModel( `No se pudo guardar` )
       } else throw new MxErrorAlertModel(`No se ha seleccionado intent como actual`)
 
     } catch ( error ) {
@@ -205,43 +200,7 @@ export class CurrentIntentService {
     }
   }
 
-  /** Actualiza el intent actual en DIALOGFLOW a través de la API
-   * @private
-   * @param {IntentStateModel} intent
-   * @returns {*}  {Promise<IntentModel>}
-   */
-  updateIntentApiRequest(intent: iDialogflowIntent): Promise<iDialogflowIntent> {
-    let projectId = this._cache.getDataKey('projectId');
-    let path = `projects/${projectId}/agent/intents/${intent.name}`;
-    intent.name = path;
-    const body = {
-      intent,
-      intetnView: 'INTENT_VIEW_FULL',
-    };
 
-    const headers = { responseType: 'json' };
-
-    return new Promise((resolve, reject) => {
-      this._http
-        .put(this._url, body, { headers })
-        .toPromise()
-        .then((response: any) => {
-          if (response['intent']) {
-            this._alerts.notify(`Intent Actualizado`);
-            resolve(response['intent']);
-          } else {
-            throw new MxErrorAlertModel(`La respuesta no contiene intent`)
-          }
-        })
-        .catch((err) => {
-          if (err) {
-            console.error( err );
-            throw new MxErrorAlertModel( `Error actualizando`)
-          }
-          reject(err);
-        });
-    });
-  }
 
   /**
    * Elimina el intent en DIALOGFLOW y después en FIRESTORE
