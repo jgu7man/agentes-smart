@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
 import { MxLoading } from '@marxa/devkit';
 import { iTrainingPhrase } from 'src/app/models/intent.model';
 import { ParametersService } from 'src/app/services/parameters.service';
-import { TrainingPhrasesService } from 'src/app/services/training-phrases.service';
+import { PhraseService, TrainingPhrasesService } from 'src/app/services/training-phrases.service';
 
 @Component({
   selector: 'as-phrase-item',
@@ -12,7 +12,7 @@ import { TrainingPhrasesService } from 'src/app/services/training-phrases.servic
 export class PhraseItemComponent implements OnInit {
 
   @Input() switchPhraseInput: boolean = false
-  @Input() frase!: iTrainingPhrase
+  @Input() phrase!: iTrainingPhrase
   @Input() index!: number
   @ViewChild( 'inputPhrase' ) inputPhrase!: ElementRef
   phraseToEdit: string = ''
@@ -22,7 +22,8 @@ export class PhraseItemComponent implements OnInit {
   constructor (
     private _loading: MxLoading,
     private _frases: TrainingPhrasesService,
-    public params_: ParametersService
+    public params_: ParametersService,
+    private _phrases: PhraseService
   ) { }
 
   ngOnInit(): void {
@@ -33,50 +34,30 @@ export class PhraseItemComponent implements OnInit {
       event.stopImmediatePropagation()
   }
 
-  @Input() async toEditPhrase( phrase: iTrainingPhrase ) {
+  async toEditPhrase( phrase: iTrainingPhrase ) {
     this.switchPhraseInput = true
     console.log( phrase );
-    this.phraseToEdit = await this._frases.stringifyFullPhrase( phrase )
+    this.phraseToEdit = await this._phrases.stringifyFullPhrase( phrase )
     await this._loading.waitFor( 100 )
     this.inputPhrase.nativeElement.focus()
   }
 
 
 
-  onSetPhrase( PHRASE: iTrainingPhrase ) {
+  onSetPhrase( phrase: string ) {
 
     this.switchPhraseInput = false
-    console.log( this._frases.stringifyFullPhrase( PHRASE ), '|', this.phraseToEdit );
+    console.log( this._phrases.stringifyFullPhrase( this.phrase ), '|', phrase );
 
-    if ( this._frases.stringifyFullPhrase( PHRASE ) === this.phraseToEdit ) {
-      console.log( 'no edicion' );
-    } else {
-      console.log( 'editada' );
-      console.log( PHRASE );
-
-      PHRASE.parts = this._frases.createParts( this.phraseToEdit )
-
-      console.log( PHRASE );
-      this._frases.update( PHRASE,  )
-
-    }
-
-  }
-
-
-
-
-
-  onSelectPart( textSelected: string ) {
-    try {
-
-    } catch (error) {
-
+    if ( this._phrases.stringifyFullPhrase( this.phrase ) !==  phrase) {
+      this.phrase.parts = this._phrases.createParts( phrase )
+      this._frases.update( this.phrase )
     }
   }
+
 
   delItem() {
-    this._frases.delete( this.frase ).then( () => {
+    this._frases.delete( this.phrase ).then( () => {
       this.onDeleted.emit(true)
     })
   }

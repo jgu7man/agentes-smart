@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
 import { iPhrasePart, iTrainingPhrase } from 'src/app/models/intent.model';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { ParametersService } from 'src/app/services/parameters.service';
-import { TrainingPhrasesService } from 'src/app/services/training-phrases.service';
+import { PhraseService, TrainingPhrasesIndex, TrainingPhrasesService } from 'src/app/services/training-phrases.service';
 import { PhraseItemComponent } from './phrase-item/phrase-item.component';
 import { PhraseParamsFormComponent } from './phrase-params-form/phrase-params-form.component';
 
@@ -28,36 +28,23 @@ import { PhraseParamsFormComponent } from './phrase-params-form/phrase-params-fo
 export class TrainingPhrasesComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
-  addPhraseInput: boolean = false;
-  phraseCtrl: FormControl = new FormControl('');
-  newPhrase: string = '';
-  phraseParts: iPhrasePart[] = [];
-  fraseExpanded?: number;
-  // paginatiorLabes: MatPaginatorIntl = new MatPaginatorIntl
-  currentPage: any[] = [];
-  pageSize: number = 10;
-  firstIndex: number = 0;
-  lastIndex!: number;
-  pageIndex: number = 0;
-  listenerParamDeleted!: Subscription;
-  frasesSub!: Subscription;
-  paramAddedSub!: Subscription;
-  frasesList: iTrainingPhrase[] = [];
+  public addPhraseInput: boolean = false;
+  public phraseCtrl: FormControl = new FormControl('');
+  private phraseExpanded?: number;
+
+  private phrasesSub!: Subscription;
+  private paramAddedSub!: Subscription;
+  phrasesList: iTrainingPhrase[] = [];
 
   @ViewChild('newPhraseInput') newPhraseInput!: ElementRef;
   @ViewChild('accordeon') accordion!: MatAccordion;
-  @ViewChildren('frase') frasePanels!: QueryList<MatExpansionPanel>;
-  @ViewChildren(PhraseItemComponent)
-  prhaseList!: QueryList<PhraseItemComponent>;
-  @ViewChildren(PhraseParamsFormComponent)
-  parametersList!: QueryList<PhraseParamsFormComponent>;
 
   constructor(
     private _loading: MxLoading,
-    public $frases: TrainingPhrasesService,
-    public $mensaje: CurrentIntentService,
-    private _params: ParametersService,
-    private _paginator: MatPaginatorIntl
+    public $trainingPhrases: TrainingPhrasesService,
+    private _phrases: PhraseService,
+    public phrasesIndex: TrainingPhrasesIndex,
+    private _paginator: MatPaginatorIntl,
   ) {
     this._paginator.itemsPerPageLabel = 'Frases por página';
     this._paginator.firstPageLabel = 'Primera página';
@@ -67,51 +54,15 @@ export class TrainingPhrasesComponent
   }
 
   ngOnInit(): void {
-    this.frasesSub = this.$frases.list$.subscribe((frases) => {
-      this.frasesList = frases;
-      this.lastIndex = this.lastIndex ? this.lastIndex : this.pageSize;
 
-      // console.log( {first: this.firstIndex, last: this.lastIndex} )
-      this.currentPage = this.frasesList.slice(this.firstIndex, this.lastIndex);
-
-      this.getLastIndex(this.firstIndex, this.currentPage.length);
-    });
-  }
-
-  getLastIndex(startIndex: number, length: number) {
-    if (this.pageSize > length) {
-      this.lastIndex = length + startIndex;
-    } else {
-      this.lastIndex = startIndex + this.pageSize;
-    }
-  }
-
-  pageEvent(event: PageEvent) {
-    this.firstIndex =
-      event.pageIndex == 0 ? 0 : event.pageIndex * this.pageSize;
-
-    let trim = event.pageIndex * this.pageSize + this.pageSize;
-
-    this.currentPage = this.frasesList.slice(this.firstIndex, trim);
-
-    this.getLastIndex(this.firstIndex, this.currentPage.length);
-    // console.log(this.currentPage.length, this.firstIndex, this.lastIndex);
-
-    // console.log(this.firstIndex, this.lastIndex);
   }
 
   ngAfterViewInit() {
-    this.paramAddedSub = this.$frases.paramAdded$.subscribe(() => {
-      // console.log( 'added' )
+    this.paramAddedSub = this.$trainingPhrases
+      .paramAdded$.subscribe( () => {
       this.accordion.closeAll();
     });
   }
-
-  // get Frases() {
-  //   const mensaje = this.$mensaje.current$.getValue();
-  //   console.log( mensaje )
-  //   return mensaje ? mensaje.trainingPhrases : [];
-  // }
 
   // CREATE frase
   async toAddPhrase() {
@@ -120,38 +71,28 @@ export class TrainingPhrasesComponent
     this.newPhraseInput.nativeElement.focus();
   }
 
-  async onSetPhrase() {
+
+
+  async onSetPhrase(phrase: string) {
     this.addPhraseInput = false;
-    this.fraseExpanded = undefined;
-    if (this.newPhrase) {
-      // console.log(this.newPhrase);
-      const NEWPHRASE: iTrainingPhrase = {
+    this.phraseExpanded = undefined;
+
+    if ( phrase ) {
+      // console.log(newPhrase);
+      const trainingPhrase: iTrainingPhrase = {
         type: 'EXAMPLE',
-        parts: this.$frases.createParts(this.newPhrase),
+        parts: this._phrases.createParts(phrase),
       };
+
       await this._loading.waitFor(200);
-      this.$frases.add(NEWPHRASE).then(async () => {
-        // console.log( this.currentPage.length == this.pageSize )
-        if (this.currentPage.length == this.pageSize) {
-          this.pageIndex = Math.ceil(
-            this.frasesList.length / this.pageSize - 1
-          );
-          this.firstIndex = this.pageIndex * this.pageSize;
-          this.lastIndex = this.frasesList.length;
-          this.currentPage = this.frasesList.slice(
-            this.firstIndex,
-            this.lastIndex
-          );
-        } else {
-          this.currentPage.push(NEWPHRASE);
-          this.lastIndex++;
-        }
-        this.newPhrase = '';
-        await this._loading.waitFor(500);
-        this.accordion.closeAll();
-      });
+      await this.$trainingPhrases.add(trainingPhrase)
+
+      this.phraseCtrl.patchValue('')
+      await this._loading.waitFor(500);
+      this.accordion.closeAll();
     }
   }
+
 
   // UPDATE FRASE
 
@@ -163,30 +104,24 @@ export class TrainingPhrasesComponent
       //   console.log(textSelected, frase);
       var fraseRestructured: iTrainingPhrase =
         // Find the part that includes text selected and split it
-        await this.$frases.stractSelectedPart(frase, textSelected);
+        await this._phrases.stractSelectedPart(frase, textSelected);
       // console.log( fraseRestructured);
 
-      this.$frases.update(fraseRestructured);
+      this.$trainingPhrases.update(fraseRestructured);
       await this._loading.waitFor(100);
-      this.fraseExpanded = index;
+      this.phraseExpanded = index;
     }
   }
 
   validateFraseExpanded(index: number) {
-    if (this.fraseExpanded && this.fraseExpanded >= 0) {
-      return index == this.fraseExpanded;
+    if (this.phraseExpanded && this.phraseExpanded >= 0) {
+      return index == this.phraseExpanded;
     } else return false;
   }
 
-  openedPanel(event: any) {
-    // console.log( event )
-  }
 
-  onRemoveFrase(index: number) {
-    this.currentPage.splice(index, 1);
-  }
 
-  disableFrase(frase: iTrainingPhrase) {
+  disableFrase(frase: iTrainingPhrase): boolean {
     let someEntity: boolean = false;
     frase.parts.forEach((parte) => {
       if (parte && (parte.entityType || parte.alias)) someEntity = true;
@@ -194,13 +129,9 @@ export class TrainingPhrasesComponent
     return someEntity ? false : true;
   }
 
-  trackByFraseName(index: number, frase: iTrainingPhrase) {
-    return frase.name;
-  }
-
   ngOnDestroy() {
     // this.listenerParamDeleted.unsubscribe()
     this.paramAddedSub.unsubscribe();
-    this.frasesSub.unsubscribe();
+    this.phrasesSub.unsubscribe();
   }
 }

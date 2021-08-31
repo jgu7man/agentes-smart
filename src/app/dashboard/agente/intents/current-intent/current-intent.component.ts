@@ -71,7 +71,7 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
       this._alert.request( 'Hay cambias sin guardar. ¿Deseas guardarlos?', 'text', 'Sí', 'No' )
         .pipe(take( 1 ))
         .subscribe( confirmation => {
-          if ( confirmation ) this._intent.update()
+          if ( confirmation ) this._intent.saveChanges()
         } )
     }
   }

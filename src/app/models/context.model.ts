@@ -21,12 +21,11 @@ export class ContextModel {
 }
 
 export interface iContext {
-    name: string
-    index: number
-    lifespanCount: number
-    color: string
-    id: string,
-    // parameters?: Object
+  name: string
+  index: number
+  lifespanCount: number
+  color: string
+  id: string,
 }
 
 export interface iContextList {

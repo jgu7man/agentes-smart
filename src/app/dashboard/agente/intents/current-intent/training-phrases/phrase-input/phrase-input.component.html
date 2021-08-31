@@ -1,0 +1,15 @@
+<mat-form-field appearance="outline" class="newFrase">
+  <input
+    placeholder="Nueva frase de entrenamiento"
+    matInput
+    #newPhraseInput
+    type="text"
+    name="newPhraseInput"
+    id="newPhraseInput"
+    [formControl]="phraseCtrl"
+    (blur)="onBlur.emit()"
+    (keyup.enter)="phraseCtrl.value != ''
+      ? onSubmit.emit(phraseCtrl.value) : onBlur.emit()
+    "
+  />
+</mat-form-field>

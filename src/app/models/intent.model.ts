@@ -96,8 +96,6 @@ export interface iTrainingPhrase {
     entityType?: string,
     alias?: string | boolean,
     userDefined?: boolean,
-    // selected?: boolean,
-    // paramName?: string
 }
 
 export const emptyTraningPhrase: iTrainingPhrase = {

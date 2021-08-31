@@ -10,14 +10,14 @@
       </button>
     </div>
     <div class="col s7 m9">
-      <!-- <aSmart-breadcums [intentIndex]="intent.index"></aSmart-breadcums> -->
+      <!-- <as-intent-breadcums [intentIndex]="intentState.index || 0"></as-intent-breadcums> -->
     </div>
     <div class="col s2">
       <button
         style="float: right"
         mat-raised-button
         color="primary"
-        (click)="currentIntent.update()"
+        (click)="currentIntent.saveChanges()"
         [disabled]="!intentState.unsaved"
       >
         Guardar
@@ -30,7 +30,7 @@
         <h4>{{ intentState.displayName }}</h4>
       </ng-container>
       <ng-template #editIntent>
-        <mat-form-field>
+        <mat-form-field appearance="outline">
           <input
             matInput
             type="text"

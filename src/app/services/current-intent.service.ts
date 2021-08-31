@@ -19,38 +19,20 @@ import { EntityTypesService } from './entitiy-types.service';
 export class CurrentIntentService {
   /** Informa cuando el intent actual ha cambiado */
   public state$ = new BehaviorSubject<IntentStateModel | null>(null);
-  /** Contiene el intent actual y sus cambios */
-  // public current: IntentModel;
   /** Contiene el nombre del contexto actual */
   public currentContexto?: string;
-  /** Suscripción a los parámetros de la ruta activa */
-  // private paramSubs: Subscription;
-  /** Contiene el nombre del intent actual */
-  private intentName?: string;
-  /** Contiene la ruta de FIRESTORE del mensaje actual */
-  // private mensajesPath: string;
-  /** Contiene la ruta a la API */
-  private _url = environment.restURL + '/intent';
   // respuestasSubs: Subscription;
-  respuestasList$ = new BehaviorSubject<RespuestaModel[]>([]);
+  // respuestasList$ = new BehaviorSubject<RespuestaModel[]>([]);
   // currentSubscription: Subscription
-  entityTypes$ = new BehaviorSubject<(EntityTypeModel | iSystemEntity)[]>([]);
+  public entityTypes$ = new BehaviorSubject<(EntityTypeModel | iSystemEntity)[]>([]);
 
   constructor(
-    private _afs: AngularFirestore,
     private _loading: MxLoading,
     private _cache: MxCache,
     private _alerts: MxAlert,
-    private _http: HttpClient,
-    private _commons: MxCommonsService,
-    private _router: Router,
     private _intents: IntentsService,
     private _entityTypes: EntityTypesService,
-    private _systemEntites: SystemEntitiesService,
-    private _dialogflowIntents: DialogflowIntentsService,
-  ) {
-    // this.current$.subscribe(mensaje => console.log(mensaje))
-  }
+  ) {}
 
 
 
@@ -94,7 +76,6 @@ export class CurrentIntentService {
    * @param {string} [contexto]
    */
   set(displayNameOname: string, contexto?: string): Observable<iIntentState> {
-    this.intentName = displayNameOname
     return this._intents.find$( displayNameOname ).pipe(
       map( intentState => {
         if ( intentState ) {
@@ -122,11 +103,23 @@ export class CurrentIntentService {
   }
 
 
+  change( field: keyof iDialogflowIntent, changes: any ) {
+    if ( this.state$.value ) {
+      this.state$.next({
+        ...this.state$.value,
+        intent: {
+          ...this.state$.value.intent,
+          [field]: changes
+        },
+        unsaved: true
+      });
+    }
+  }
 
   // UPDATE MENSAJE ACTUAL
   // mensajeUpdated$: Subject<any> = new Subject()
   /** Actualiza el intent actual en DIALOGFLOW con los cambios hechos en el área de entrenamiento. */
-  async update() {
+  async saveChanges() {
     this._loading.toggleWaiting('open');
 
     try {

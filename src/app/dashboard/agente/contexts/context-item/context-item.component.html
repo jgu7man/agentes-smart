@@ -1,5 +1,7 @@
 <ng-container *ngIf="!switchEditContext; else editContext">
-  <p class="contexto-name" *ngIf="contexto">{{ contexto.name }}</p>
+  <p class="contexto-name">
+    {{ contexto.name }}
+  </p>
 </ng-container>
 <ng-template #editContext>
   <as-add-context (contextAdded)="switchEditContext = false" ></as-add-context>

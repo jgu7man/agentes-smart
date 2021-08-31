@@ -61,6 +61,8 @@ import { WhatsappIntegrationComponent } from './agente/integrations/whatsapp-int
 import { QRCodeModule } from 'angularx-qrcode';
 import { EntityValueSelectorComponent } from './agente/entity-types/entity-value-selector/entity-value-selector.component';
 import { EntityStateBodyComponent } from './agente/entity-types/entity-type/entity-state-body/entity-state-body.component';
+import { IntentBreadcumsComponent } from './agente/intents/current-intent/intent-breadcums/intent-breadcums.component';
+import { PhraseInputComponent } from './agente/intents/current-intent/training-phrases/phrase-input/phrase-input.component';
 
 
 @NgModule({
@@ -125,6 +127,8 @@ import { EntityStateBodyComponent } from './agente/entity-types/entity-type/enti
     WhatsappIntegrationComponent,
     EntityValueSelectorComponent,
     EntityStateBodyComponent,
+    IntentBreadcumsComponent,
+    PhraseInputComponent,
   ],
   imports: [
     CommonModule,

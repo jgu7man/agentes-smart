@@ -1,0 +1,9 @@
+#breadcums {
+  overflow-x: scroll;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+#breadcums::-webkit-scrollbar {
+  opacity: 0;
+}

@@ -2,7 +2,6 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Subscription } from 'rxjs';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { DeleteIntentDialog } from '../delete-intent/delete-intent.dialog';
 
@@ -13,12 +12,8 @@ import { DeleteIntentDialog } from '../delete-intent/delete-intent.dialog';
 })
 export class IntentHeaderComponent implements OnInit {
 
-  // mensaje: IntentModel
-  switchEdit: boolean = false
-  intentNameCtrl: FormControl = new FormControl( '' )
-
-  stateSubs!: Subscription
-  unsaved: boolean = false
+  public switchEdit: boolean = false
+  public intentNameCtrl: FormControl = new FormControl( '' )
 
   constructor (
     public currentIntent: CurrentIntentService,
@@ -30,22 +25,9 @@ export class IntentHeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
-
-
   updateDisplayName() {
-    const intentState = this.currentIntent.state$.value
-    if ( intentState ) {
-      let displayName = intentState.displayName
-      if ( displayName != this.intentNameCtrl.value ) {
-        this.currentIntent.state$.next({
-          ...intentState,
-          displayName: this.intentNameCtrl.value,
-          unsaved: true
-        })
-      }
-      this.switchEdit = false
-
-    }
+    this.currentIntent.change('displayName', this.intentNameCtrl.value)
+    this.switchEdit = false
   }
 
   toDelIntent() {

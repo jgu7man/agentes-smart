@@ -1,0 +1,12 @@
+<p id="breadcums" *ngIf="context">
+  <!-- CONTEXTO -->
+  <a [routerLink]="['../../mensajes']"  ><span><b>{{context}}: </b></span></a>
+  <!-- ENTRADAS -->
+  <span *ngFor="let mensaje of mensajes | slice:0:intentIndex +1; index as i">
+      <a [routerLink]="['../../mensaje',mensaje.name]"
+      [queryParams]="{'contexto': context}">
+      {{mensaje.displayName}}
+  </a>
+  <span *ngIf="i != mensajes.length -1"> > </span>
+</span>
+</p>

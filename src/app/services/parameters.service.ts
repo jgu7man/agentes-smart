@@ -47,13 +47,6 @@ export class ParametersService {
     }
   }
 
-  updateCurrentIntent(intentState: iIntentState, changes: iParameter[]) {
-    this._currentIntent.state$.next({
-      ...intentState,
-      intent: { ...intentState.intent, parameters: changes },
-      unsaved: true
-    });
-  }
 
   get list$(): Observable<iParameter[]> {
     return this._currentIntent.state$.pipe(
@@ -88,8 +81,7 @@ export class ParametersService {
       }
 
       parameters.push(param);
-
-      this.updateCurrentIntent(intentState, parameters)
+      this._currentIntent.change('parameters', parameters)
 
       // console.log(param);
       return;
@@ -143,7 +135,7 @@ export class ParametersService {
 
         parameters[ paramIndex ] = param;
         console.log( 'params defined' );
-        this.updateCurrentIntent(intentState, parameters)
+        this._currentIntent.change('parameters', parameters)
       }
     } catch (error) {
       console.error(error);
@@ -164,7 +156,7 @@ export class ParametersService {
         ), 1 );
 
         console.log('params deleted');
-        this.updateCurrentIntent(intentState, parameters)
+        this._currentIntent.change('parameters', parameters)
         await this.deleteParamInParts( param.displayName, trainingPhrases );
         return
       }
