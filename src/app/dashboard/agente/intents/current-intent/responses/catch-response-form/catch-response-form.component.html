@@ -1,20 +1,22 @@
 <!-- Parámetro -->
-<div class="row" *ngIf="(mensaje_.current$|async) as mensaje">
-  <div class="col s4 resp-label">
-      Guardar
-  </div>
+<div class="row" *ngIf="mensaje_.state$ | async as intentState">
+  <div class="col s4 resp-label">Guardar</div>
   <div class="col s8">
-      <mat-select placeholder="parámetro" [(ngModel)]="dataForm.parametro" name="param"
-      (selectionChange)="edited.emit(dataForm)">
-          <mat-option *ngFor="let param of mensaje.intent.parameters" [value]="param.displayName">
-              {{param.displayName}}
-          </mat-option>
-      </mat-select>
+    <mat-select
+      placeholder="parámetro"
+      [(ngModel)]="dataForm.parametro"
+      name="param"
+      (selectionChange)="edited.emit(dataForm)"
+    >
+      <mat-option
+        *ngFor="let param of intentState.intent.parameters"
+        [value]="param.displayName"
+      >
+        {{ param.displayName }}
+      </mat-option>
+    </mat-select>
   </div>
 </div>
-
-
-
 
 <!-- Grupo de datos -->
 <!-- <div class="row">
@@ -31,7 +33,6 @@
       </mat-select>
   </div>
 </div> -->
-
 
 <!-- Key to catch -->
 <!-- <div class="row">

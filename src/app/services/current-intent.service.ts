@@ -11,15 +11,14 @@ import { RespuestaModel } from '../models/intent-response.model';
 import { SystemEntitiesService } from '../admin/utils/system-entities.service';
 import { EntityTypeModel, iSystemEntity } from '../models/entity-type.model';
 import { environment } from 'src/environments/environment';
+import { EntityTypesService } from './entitiy-types.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CurrentIntentService {
   /** Informa cuando el intent actual ha cambiado */
-  public current$ = new BehaviorSubject<IntentStateModel>(
-    new IntentStateModel(emptyIntent)
-  );
+  public state$ = new BehaviorSubject<IntentStateModel | null>(null);
   /** Contiene el intent actual y sus cambios */
   // public current: IntentModel;
   /** Contiene el nombre del contexto actual */
@@ -35,7 +34,7 @@ export class CurrentIntentService {
   // respuestasSubs: Subscription;
   respuestasList$ = new BehaviorSubject<RespuestaModel[]>([]);
   // currentSubscription: Subscription
-
+  entityTypes$ = new BehaviorSubject<(EntityTypeModel | iSystemEntity)[]>([]);
 
   constructor(
     private _afs: AngularFirestore,
@@ -46,25 +45,34 @@ export class CurrentIntentService {
     private _commons: MxCommonsService,
     private _router: Router,
     private _intents: IntentsService,
+    private _entityTypes: EntityTypesService,
     private _systemEntites: SystemEntitiesService,
     private _dialogflowIntents: DialogflowIntentsService,
   ) {
     // this.current$.subscribe(mensaje => console.log(mensaje))
   }
 
-  projectPath(functionName?: string) {
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const clientId = this._cache.getDataKey<string>( 'userId' )
 
-    if ( !clientId ) {
-      throw new MxErrorAlertModel( `No se encontró el clientId`, functionName )
+
+  /** Define la ruta del angente actual
+   * @param {string} [functionName] Opcionalmente, ingresa el nombre de la funcion para seguimiento del error
+   * @returns {*}  {string} Ruta del proyecto
+   */
+  projectPath( functionName?: string ) {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const userId = this._cache.getDataKey<string>( 'userId' )
+
+    if ( !userId ) {
+      throw new MxErrorAlertModel( `No se encontró el userId`, `current-intent.service#${functionName}` )
     } else if ( !projectId ) {
-      throw new MxErrorAlertModel( `No se encontró el projectId`, functionName )
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `current-intent.service#${functionName}` )
     } else {
-      let path = `usuarios/${ clientId }/agentes/${ projectId }`
+      let path = `usuarios/${ userId }/agentes/${ projectId }`
       return path
     }
   }
+
+
 
   /**
    * Obtiene los parámetros de la ruta cuando se ingresa a editar un mensaje
@@ -80,98 +88,40 @@ export class CurrentIntentService {
   }
 
 
-  /** Establece en el storage el intent actual y emite un evento para current$ */
-  async setCurrent(displayNameOname: string, contexto?: string) {
+
+  /** Establece en el storage el intent actual y emite un evento para current$
+   * @param {string} displayNameOname
+   * @param {string} [contexto]
+   */
+  set(displayNameOname: string, contexto?: string): Observable<iIntentState> {
     this.intentName = displayNameOname
-    this._cache.updateData('currentContexto', contexto);
-    this.findIntent(displayNameOname).pipe(
-      // tap((data)=> console.log( data )),
-      map( ( intentState ) => {
-        this.current$.next(intentState)
-        this.getIntentEntityTypes( intentState.intent.parameters )
-        return intentState.intent
-      } ),
-      mergeMap((intent) => this.getRespuestasList(intent.name))
-    )
-  }
-
-
-  findIntent(displayNameOname: string) {
-    let path = `${this.projectPath( 'findIntent' )}/intents`
-    return  this._afs.collection<iIntentState>( path, ref => ref
-      .where( 'name', '==', 'displayNameOname' )
-      .where( 'displayName', '==', 'displayNameOname' )
-    ).get().pipe(
-      map( list => {
-        if ( !list.empty ) {
-          return list.docs[0].data()
+    return this._intents.find$( displayNameOname ).pipe(
+      map( intentState => {
+        if ( intentState ) {
+          this._cache.updateData( 'currentContexto', contexto );
+          this._cache.updateData( 'intentId', intentState.name)
+          this.state$.next( intentState )
+          this._entityTypes.filterByParams( intentState.intent.parameters )
+            .pipe(take( 1 ))
+            .subscribe(this.entityTypes$)
+          return intentState
         } else {
-          throw new MxErrorAlertModel(`No se encontró el intent ${displayNameOname} `, 'findIntent')
+          throw new MxErrorAlertModel( `No se encontró el intent seleccionado`, 'set')
         }
-      } ),
-      catchError( error => {
-        throw 'message' in error
-          ? this._alerts.error( error.message, error)
-          : this._alerts.error( `Hubo un problema al buscar el intent ${ displayNameOname }`, error )
-      } )
+      }),
+      catchError( ( error ) => {
+        if ( 'message' in error ) {
+          throw this._alerts.error(error.message, error)
+        } else {
+          throw this._alerts.error(`No se pudo setear el intenr actual`, error)
+        }
+      })
     )
+
+    // this.getResponses(intentState.intent.name)
   }
 
 
-  /**
-   * Se suscribe a los cambios de FIRESTORE para obtener las respuestas del intent actual y estble la variable de respuestasList con la lista actualizada. También inserta la lista de respuestas en el storage
-   *
-   * @returns {RespuestaModel} Array de respuestas actualizado
-   */
-  getRespuestasList(mensajeName: string) {
-    let path = `${this.projectPath('getRespuestasList')}/intents/${mensajeName}`;
-    return this._afs
-      .collection<RespuestaModel>(path)
-      .valueChanges().pipe(
-        map((respuestas) =>
-          this._commons.sortBy<RespuestaModel>(respuestas, 'index')),
-        tap((respuestas) =>
-          this._cache.updateData('currentRespuestas', respuestas)),
-      )
-  }
-
-  intentTypeEntities$ = new BehaviorSubject<(EntityTypeModel | iSystemEntity)[]>([]);
-  /** Obtiene los tipos de datos del mensaje actual
-   * @return {array} Arreglo de los tipos de datos del mensaje actual
-   */
-  async getIntentEntityTypes( paramList: iParameter[] ) {
-    let entityTypesPath = `${this.projectPath('getMensajeTipos')}/entityTypes`
-    const intentTypes = await this._afs.collection<EntityTypeModel>( entityTypesPath )
-      .get().pipe( take( 1 ), map( list => {
-        if ( !list.empty ) return list.docs.map( doc => doc.data() )
-        else throw new MxErrorAlertModel(`No se logró cargar los entityTypes`, 'getMensajeTipos')
-      } ) ).toPromise()
-
-    const sysTypes: any = this._systemEntites.systemEntities
-    const allTypes: (EntityTypeModel | iSystemEntity)[] = intentTypes.concat(sysTypes)
-
-    const entities = this.intentTypeEntities$.getValue();
-    paramList.forEach((param) => {
-      let splited = param.entityTypeDisplayName.split('@')
-      let paramEntity = splited[1] ? splited[1] : splited[0]
-      if( paramEntity !== undefined){
-        let typeStored: EntityTypeModel | iSystemEntity | undefined = entities.find(
-          (t) => t && t.displayName == paramEntity
-        );
-        if (!typeStored || typeStored === undefined) {
-          typeStored = allTypes.find(t => t.displayName == paramEntity)
-          if ( typeStored ) {
-            this.intentTypeEntities$.next([
-              ...this.intentTypeEntities$.getValue(),
-              typeStored,
-            ]);
-          }
-        }
-      }
-    });
-
-    return this.intentTypeEntities$;
-  }
 
   // UPDATE MENSAJE ACTUAL
   // mensajeUpdated$: Subject<any> = new Subject()
@@ -180,10 +130,10 @@ export class CurrentIntentService {
     this._loading.toggleWaiting('open');
 
     try {
-      const current = this.current$.getValue()
+      const current = this.state$.getValue()
       if ( current ) {
         await this._intents.update(current)
-        this.current$.next( { ...current, unsaved: false } )
+        this.state$.next( { ...current, unsaved: false } )
         this._alerts.notify('Guardado');
         this._loading.toggleWaiting('close');
         return;
@@ -202,78 +152,9 @@ export class CurrentIntentService {
 
 
 
-  /**
-   * Elimina el intent en DIALOGFLOW y después en FIRESTORE
-   *
-   * @param {string} intentName name del intent
-   * @returns {*}
-   */
-  async delete( intentName: string ) {
-    const batch = this._afs.firestore.batch()
-    const path = `${ this.projectPath( 'delete' ) }/intents/${ intentName }`;
-    const intentRef = this._afs.doc(path).ref
-
-    try {
-      await this.deleteIntentRequest( intentName );
-      const intentDoc = await intentRef.get()
-
-      const responses = await intentDoc.ref.collection( 'responses' ).get()
-      await this._loading.asyncForEach( responses.docs, response => {
-        batch.delete( response.ref)
-      })
-
-      batch.delete( intentRef )
-      await batch.commit()
-
-      return;
-    } catch (error) {
-      if ('mensaje' in error) {
-        this._alerts.error(error.message, error)
-      } else {
-        this._alerts.error(``, error)
-      }
-      return console.error(error)
-    }
-  }
-
-  /**
-   * Elimina el intent desde la API
-   * @private
-   * @param {string} intentId
-   * @returns {*}  {Promise<any>}
-   */
-  public deleteIntentRequest(intentId: string): Promise<any> {
-    this._loading.toggleWaiting('open');
-    return new Promise((resolve, reject) => {
-      const projectId = this._cache.getDataKey<string>('projectId');
-
-      this._http
-        .delete(this._url + `/${intentId}/project/${projectId}`)
-        .toPromise()
-        .then((response) => { resolve(response); })
-        .catch((err) => {
-          if (err) {
-            console.log(err);
-            this._alerts.error( 'No es posible elimnar intent', err);
-          }
-          // reject(true);
-        });
-    });
-  }
-
   /** Desuscribe todos los datos en este servicio */
   unsubscribe() {
-
-    this._cache.deleteDataKey('currentIntent');
-    this._cache.deleteDataKey('currentRespuestas');
-    this.current$.next(new IntentStateModel(emptyIntent))
-    // if (this.respuestasSubs) {
-    //   this.respuestasSubs.unsubscribe();
-    // }
-    // if (this.intentListSubs) {
-    //   this.intentListSubs.unsubscribe();
-    // }
-    // if (this.paramSubs) this.paramSubs.unsubscribe();
-    // console.log('unsubscribe');
+    this.state$.next(null)
+    this.entityTypes$.next([])
   }
 }

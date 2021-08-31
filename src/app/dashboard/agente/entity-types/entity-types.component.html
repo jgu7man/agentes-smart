@@ -1,1 +1,108 @@
-<p>entity-types works!</p>
+<mat-drawer-container [hasBackdrop]="true">
+
+  <!-- PANEL DE TIPO ELEGIDO -->
+  <mat-drawer style="width: 100%" #currentTipo [mode]="'over'" position="start">
+    <as-entity-type
+      *ngIf="tipoSelected"
+      [selected]="tipoSelected"
+      (closePanel)="onClose()"
+    ></as-entity-type>
+  </mat-drawer>
+
+  <!-- CONTENIDO DE LA VISTA -->
+  <mat-drawer-content>
+    <div class="container">
+      <div class="row">
+
+        <!-- USER ENTITIES -->
+        <div class="col s12 m6">
+          <mat-card class="dashboard-section-card">
+
+            <mat-card-header class="dashboard-section-header">
+              <mat-card-title class="dashboard-section-title">
+                <h2>Tipos de dato</h2>
+                <button mat-raised-button color="primary" (click)="openAdd()">
+                  Agregar
+                </button>
+              </mat-card-title>
+              <mat-card-subtitle>
+                Administra el tipo de datos al que tu agente estará atento en
+                cada interacción.
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <mat-selection-list
+                #listPanel
+                class="drawer-list"
+                (selectionChange)="onSelected($event)"
+                [multiple]="false"
+              >
+                <mat-list-option
+                  *ngFor="let tipo of tipos_.list$ | async"
+                  [value]="tipo"
+                  [disabled]="tipo.displayName == 'productos'"
+                >
+                  @{{ tipo.displayName }}
+                  <div
+                    mat-line
+                    style="font-size: x-small"
+                    *ngIf="tipo.displayName == 'productos'"
+                  >
+                    Este tipo sólo se puede editar desde la sección de
+                    inventario
+                  </div>
+                </mat-list-option>
+              </mat-selection-list>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+
+        <!-- SYSTEM ENTITIES -->
+        <div class="col s12 m6">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Entitadades del sistema</mat-card-title>
+              <mat-card-subtitle>
+                Las entidades del sistema son tipos de datos que el agente sabe
+                reconocer por default. Aquí te dejmos una lista con ejemplos.
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <ul
+                class="collection bordered"
+                style="overflow-y: scroll"
+                strechHeight
+              >
+                <mat-accordion displayMode="flat">
+                  <li
+                    class="collection-item"
+                    *ngFor="let type of systemEntities_.systemEntities"
+                  >
+                    <mat-expansion-panel>
+                      <mat-expansion-panel-header>
+                        @{{ type.displayName }}
+                      </mat-expansion-panel-header>
+                      <b>Ejemplos:</b>
+                      <ul class="collection">
+                        <li
+                          class="collection-item"
+                          *ngFor="let example of type.examples"
+                        >
+                          {{ example.request }}
+                        </li>
+                      </ul>
+                    </mat-expansion-panel>
+                  </li>
+                </mat-accordion>
+              </ul>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <!-- system entities ends -->
+      </div>
+    </div>
+  </mat-drawer-content>
+  <!-- CONTENIDO DE LA VISTA ENDS -->
+</mat-drawer-container>

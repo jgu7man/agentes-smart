@@ -14,8 +14,8 @@ import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 })
 export class EntityTypeSelectorComponent implements OnInit, OnDestroy{
 
-  @Input() value: string = '';
-  @Input() id: string = '';
+  @Input() value?: string = '';
+  @Input() id?: string | true;
 
   tipos: string[] = [];
   tipoControl = new FormControl();

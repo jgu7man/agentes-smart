@@ -1,7 +1,7 @@
 import { Inject } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CurrentIntentService } from 'src/app/services/current-intent.service';
+import { IntentsService } from 'src/app/services/intents.service';
 
 @Component({
   templateUrl: './delete-intent.dialog.html',
@@ -12,7 +12,7 @@ export class DeleteIntentDialog implements OnInit {
   constructor (
     public dialog: MatDialogRef<DeleteIntentDialog>,
     @Inject( MAT_DIALOG_DATA ) public intentName: string,
-    public currentIntent: CurrentIntentService
+    public intents: IntentsService
   ) { }
 
   ngOnInit(): void {

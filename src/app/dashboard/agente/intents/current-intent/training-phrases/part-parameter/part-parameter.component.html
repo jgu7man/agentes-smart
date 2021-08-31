@@ -1,1 +1,134 @@
-<p>part-parameter works!</p>
+<div class="row param-row" *ngIf="parte.alias && parte.alias != ''">
+
+  <!-- HEADER -->
+  <!-- Texto seleccionado -->
+  <div class="col l10">
+    <p>"<b>{{parte.text}}</b>"
+      <mat-divider [inset]="true"></mat-divider>
+    </p>
+  </div>
+
+  <!-- Eliminar parametro -->
+  <div class="col l2 paramOptions right">
+    <button mat-icon-button (click)="onDelete.emit()">
+      <i class="fas fa-times red-text"></i>
+      <!-- Eliminar -->
+    </button>
+    <button mat-icon-button (click)="_frases.paramAdded$.next()">
+      <i class="fas fa-check green-text"></i>
+      <!-- Guardar -->
+    </button>
+  </div>
+
+
+  <!-- BODY -->
+  <div class="col s12">
+
+    <!-- TIPO DE DATO -->
+    <div class="row">
+      <!-- Tipo de dato -->
+      <div class="col s6">
+        <as-entity-type-selector
+          (tipoSelected)="onTipoSelected($event)"
+          [value]="parte.entityType"
+          [id]="parte.alias"
+        ></as-entity-type-selector>
+      </div>
+
+      <div class="col s6">
+        <button mat-raised-button (click)="onAddTipo()">
+          Crear nuevo tipo de dato
+        </button>
+      </div>
+    </div>
+
+
+    <!-- PARÁMETRO -->
+    <div class="row">
+      <!-- Nombre param -->
+      <div class="col s6">
+        <!-- Define entity and param -->
+        <ng-container *ngIf="!isSystemEntity; else customParam">
+          <!-- Add new entity at entityType -->
+          <ng-container *ngIf="toggleAddClase; else select">
+            <mat-form-field appearance="outline" floatLabel="always">
+              <mat-label>Agregar Parámetro</mat-label>
+              <input
+                placeholder="Lo que quiso decir..."
+                matInput
+                type="text"
+                [(ngModel)]="parte.text"
+                name="paramName"
+              />
+            </mat-form-field>
+          </ng-container>
+          <!-- Select entityType -->
+          <ng-template #select >
+            <as-entity-value-selector
+            [entityTypeDisplayName]="parte.entityType || ''"
+            [value]="parte.alias"
+            (selected)="onEntitySelect($event)"
+            ></as-entity-value-selector>
+          </ng-template>
+        </ng-container>
+        <!-- Defines CUSTOM PARAM -->
+        <ng-template #customParam >
+          <mat-form-field appearance="outline">
+            <mat-label>Parámetro Personalizado</mat-label>
+            <input
+              placeholder="Nombre del parámetro"
+              matInput
+              type="text"
+              [formControl]="paramNameCtrl"
+              (keypress)="text.onlyAllow(['letters', 'backspace'], $event)"
+              name="paramName"
+              [disabled]="isProductParam"
+            />
+          </mat-form-field>
+        </ng-template>
+
+      </div>
+
+
+      <div class="col s6" *ngIf="!isSystemEntity" >
+        <ng-container *ngIf="!toggleAddClase; else add">
+          <button mat-raised-button
+          (click)="toggleAddClase = true" >
+            Agregar parámetro
+          </button>
+        </ng-container>
+        <ng-template #add >
+          <button mat-raised-button
+          (click)="setNewEntity()">Agregar</button>
+        </ng-template>
+      </div>
+    </div>
+
+
+    <!-- VALOR -->
+    <div class="row">
+      <!-- Valor -->
+    <div class="col s6">
+      <mat-form-field appearance="outline">
+        <mat-label>Lo que dijo</mat-label>
+        <input matInput type="text" [(ngModel)]="parte.text" readonly disabled />
+      </mat-form-field>
+    </div>
+
+    <div class="col s6" *ngIf="!isSystemEntity">
+      <button mat-raised-button
+      (click)="setSinonimo()"
+      [disabled]="disableSinonimo || synonymExists"
+      [matTooltip]="addSynonymToolTip "
+      >Agregar como sinónimo</button>
+    </div>
+    </div>
+
+
+
+
+
+  </div>
+
+
+</div>

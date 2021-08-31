@@ -9,7 +9,7 @@
         <ng-container *ngIf="part && part.alias; else unSelected">
           <span
             class="selected"
-            [ngStyle]="{ background: params_.getParamColor(part.alias) }"
+            [ngStyle]="{ background: params_.getColor(part.alias) }"
           >
             {{ part.text }}
           </span>

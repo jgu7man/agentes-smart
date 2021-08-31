@@ -1,1 +1,36 @@
-<p>responses works!</p>
+<div class="container">
+  <div class="row aling-cols">
+      <div class="col s10">
+          <h5>Respuestas</h5>
+      </div>
+      <div class="col s2">
+          <button mat-icon-button (click)="addRespuesta()">
+              <i class="fas fa-plus"></i>
+          </button>
+      </div>
+  </div>
+
+
+  <ng-container *ngIf="(mensaje_.respuestasList$ | async) as respuestas; else sinRespuestas">
+    <div class="row respuestasList" *ngIf="respuestas.length; else sinRespuestas" (cdkDropListDropped)="drop($event)" cdkDropList #respuestasList >
+      <div class="respuestaItem"
+      *ngFor="let respuesta of respuestas; let i = index" cdkDrag
+      [cdkDragDisabled]="openedCard == i">
+        <as-response-item
+        [respuesta]="respuesta"
+        (onDelete)="deleteRespuesta(respuesta.id || '', respuesta.index)"
+        (opened)="onOpened(i)"
+        ></as-response-item>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #sinRespuestas>
+    <div class="row respuestasList">
+      <div class="col s12 center">
+        Aún no has agregado respuestas
+      </div>
+    </div>
+  </ng-template>
+
+</div>

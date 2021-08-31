@@ -1,7 +1,7 @@
 <div
   class="mat-elevation-z4"
   id="intent-header"
-  *ngIf="currentIntent.current$ | async as intent"
+  *ngIf="currentIntent.state$ | async as intentState"
 >
   <div class="row align-cols">
     <div class="col s2 m1 goback-btn">
@@ -18,7 +18,7 @@
         mat-raised-button
         color="primary"
         (click)="currentIntent.update()"
-        [disabled]="!unsaved"
+        [disabled]="!intentState.unsaved"
       >
         Guardar
       </button>
@@ -27,7 +27,7 @@
   <div class="row">
     <div class="col s10 m11">
       <ng-container *ngIf="!switchEdit; else editIntent">
-        <h4>{{ intent.displayName }}</h4>
+        <h4>{{ intentState.displayName }}</h4>
       </ng-container>
       <ng-template #editIntent>
         <mat-form-field>

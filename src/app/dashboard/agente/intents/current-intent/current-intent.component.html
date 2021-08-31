@@ -1,19 +1,19 @@
-<div class="row">
+<div class="row" *ngIf="(_intent.state$ | async) as intentState">
   <!-- <waiting-bar></waiting-bar> -->
 
   <!-- Desktop -->
   <ng-container *ngIf="!responsive.small; else mobileDesing">
     <div strechHeight class="col s6" id="intent-form">
-      <div id="mensaje-container">
+      <div id="intent-container" >
 
-        <div class="row mensaje-content" strechHeight>
-          <ng-container *ngIf="intentName !== 'welcome'; else welcome">
+        <div class="row intent-content" strechHeight>
+          <ng-container *ngIf="routeIntentName !== 'welcome'; else welcome">
             <as-intent-header></as-intent-header>
           </ng-container>
           <ng-template #welcome >
 
-            <div id="mensaje-header">
-              <div class="row align-cols" *ngIf="(_intent.current$ | async) as intent">
+            <div id="intent-header">
+              <div class="row align-cols" >
                 <div class="col s10">
                   <p class="intent-title"> Primera interacción </p>
                 </div>
@@ -22,7 +22,7 @@
                   (keydown.enter)="$event.preventDefault()"
                   (keydown.enter)="$event.stopImmediatePropagation()"
                   (click)="_intent.update()"
-                  [disabled]="!intent.unsaved"
+                  [disabled]="!intentState.unsaved"
                   >Guardar</button>
                 </div>
               </div>
@@ -46,14 +46,14 @@
     <mat-accordion>
       <mat-expansion-panel class="intent-panel" [expanded]="true">
         <mat-expansion-panel-header> Mensaje </mat-expansion-panel-header>
-        <div id="mensaje-container">
-          <ng-container *ngIf="intentName !== 'welcome'; else welcome">
+        <div id="intent-container">
+          <ng-container *ngIf="routeIntentName !== 'welcome'; else welcome">
             <as-intent-header></as-intent-header>
           </ng-container>
           <ng-template #welcome >
 
-            <div id="mensaje-header">
-              <div class="row align-cols" *ngIf="(_intent.current$ | async) as intent">
+            <div id="intent-header">
+              <div class="row align-cols">
                 <div class="col s10">
                   <p class="intent-title"> Primera interacción </p>
                 </div>
@@ -62,7 +62,7 @@
                   (keydown.enter)="$event.preventDefault()"
                   (keydown.enter)="$event.stopImmediatePropagation()"
                   (click)="_intent.update()"
-                  [disabled]="!intent.unsaved"
+                  [disabled]="!intentState.unsaved"
                   >Guardar</button>
                 </div>
               </div>
@@ -74,7 +74,7 @@
       </mat-expansion-panel>
       <mat-expansion-panel>
         <mat-expansion-panel-header> Respuestas </mat-expansion-panel-header>
-        <as-responses></as-responses>
+        <as-responses (lastPositionChange)="onLastChange($event)"></as-responses>
       </mat-expansion-panel>
     </mat-accordion>
   </ng-template>

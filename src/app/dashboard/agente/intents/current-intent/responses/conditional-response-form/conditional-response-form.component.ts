@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { EntityTypeModel, iSystemEntity } from 'src/app/models/entity-type.model';
 import { CondicionalModel, iCondition, SimpleModel } from 'src/app/models/intent-response.model';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
+import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 import { ParametersService } from 'src/app/services/parameters.service';
 
 @Component({
@@ -32,15 +33,16 @@ export class ConditionalResponseFormComponent implements OnInit {
   constructor(
     // public respuestas_: RespuestasService,
     public _params: ParametersService,
-    private _mensaje: CurrentIntentService
+    private _mensaje: CurrentIntentService,
+    private _entityTypes: EntityTypesService,
   ) {
-    this.result = new CondicionalModel('', '', '');
+    this.result = new CondicionalModel( '', '', '' );
   }
 
   async ngOnInit() {
     if (this.result.parametro) {
       this.tipoSelected = this._mensaje
-        .intentTypeEntities$
+        .entityTypes$
         .getValue()
         .find((t) => t && t.displayName == this.result.parametro);
     }
@@ -62,12 +64,12 @@ export class ConditionalResponseFormComponent implements OnInit {
     } else return ''
   }
 
-  onParamChange(selected: string) {
+  async onParamChange(selected: string) {
     console.log( selected )
     let displayName = selected.startsWith('@') ?
       selected.substring(1) : selected
 
-    let paramFound = this._params.getParamByName(displayName);
+    let paramFound = await this._params.getByName(displayName);
     if (paramFound) {
       this.isOriginal = paramFound.value.split('.').length > 1 ? true : false;
     }
@@ -77,14 +79,14 @@ export class ConditionalResponseFormComponent implements OnInit {
     // var param = selectedSplit.length > 1 ? selectedSplit[1] : selectedSplit[0];
     // console.log( param )
     // console.log( this._mensaje.mensajeTypeEntities$.getValue() )
-    this.tipoSelected = this._mensaje.intentTypeEntities$.getValue()
+    this.tipoSelected = this._mensaje.entityTypes$.getValue()
       .find((t) => t && t.displayName == displayName);
 
     console.log( this.tipoSelected )
     this.onRespChanges.emit(this.result);
   }
 
-  get isntSystem() {
+  get isntSystem(): EntityTypeModel | false {
     return this.tipoSelected && 'entities' in this.tipoSelected
     ? this.tipoSelected as EntityTypeModel : false
   }

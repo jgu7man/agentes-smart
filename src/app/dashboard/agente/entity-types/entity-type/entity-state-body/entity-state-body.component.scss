@@ -1,0 +1,39 @@
+#tipo-body {
+  padding: 1em;
+  #tipo-options{
+      display: flex;
+      flex-direction: row;
+  }
+  .mat-card {
+      padding-bottom: 5em;
+  }
+}
+
+#clases-header {
+margin-bottom: 10px;
+}
+
+.collection-item {
+padding: 10px 0 0;
+  .row {
+      margin: 0;
+  }
+}
+
+.mat-checkbox {
+  margin-right: 1em;
+}
+
+li {
+  list-style: none;
+}
+
+
+@media screen and (max-width:450px){
+  #tipo-options {
+      flex-direction: column !important;
+      mat-checkbox {
+          margin: .5em 0;
+      }
+  }
+}

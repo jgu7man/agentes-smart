@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
+import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 import { RespuestaModel, ResultResponse } from '../models/intent-response.model';
 import { CurrentIntentService } from './current-intent.service';
 
@@ -42,23 +43,38 @@ export class RespuestasService {
     private _loading: MxLoading,
     private _alerts: MxAlert,
     private _cache: MxCache,
+    private _commons: MxCommonsService,
   ) {
   }
 
-  projectPath(functionName?: string): string {
+  intentPath(functionName?: string): string {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
     const clientId = this._cache.getDataKey<string>( 'userId' )
+    const intentId = this._cache.getDataKey<string>( 'intentId' )
 
     if ( !clientId ) {
-      throw new MxErrorAlertModel( `No se encontró el clientId`, `itents.service#${functionName}` )
+      throw new MxErrorAlertModel( `No se encontró el clientId`, `responses.service#${functionName}` )
     } else if ( !projectId ) {
-      throw new MxErrorAlertModel( `No se encontró el projectId`, `itents.service#${functionName}` )
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `responses.service#${functionName}` )
+    } else if ( !intentId ) {
+      throw new MxErrorAlertModel( `No se encontró el intentId`, `responses.service#${functionName}` )
     } else {
-      return `usuarios/${clientId}/agentes/${ projectId }`
+      return `usuarios/${clientId}/agentes/${ projectId }/intents/${intentId}`
     }
   }
 
 
+  get list$() {
+    const path = `${ this.intentPath( 'list' ) }/responses`
+    return this.fs.collection( path ).valueChanges( { idField: 'id' } )
+    .pipe( map((respuestas) =>
+      this._commons.sortBy<RespuestaModel>( respuestas, 'index' ) ),
+    )
+  }
+
+  get list() {
+    return this.list$.pipe( take( 1 ) ).toPromise()
+  }
 
 
   /**
@@ -68,8 +84,7 @@ export class RespuestasService {
    * @return {Subject} Aviso al observable de cambios en la lista de respuestas
    */
   async setRespuesta( respuesta: RespuestaModel ) {
-    const intentName = this._mensaje.current$.value.name
-    const intentPath = `${ this.projectPath( 'set' ) }/intents/${ intentName }`
+    const intentPath = `${ this.intentPath( 'set' ) }`
     const intentRef = this.fs.doc( intentPath)
     if (respuesta.id) {
       console.log('update');
@@ -141,8 +156,7 @@ export class RespuestasService {
    * @return {Subject} Aviso al observable de cambios en la lista de respuestas
    */
   async delRespuesta( respuestaId: string ) {
-    const intentName = this._mensaje.current$.value.name
-    const intentPath = `${ this.projectPath( 'set' ) }/intents/${ intentName }`
+    const intentPath = `${ this.intentPath( 'delRespuesta' ) }`
     const intentRef = this.fs.doc( intentPath)
     try {
       await intentRef.collection('responses').doc(respuestaId).delete();
@@ -156,8 +170,7 @@ export class RespuestasService {
 
 
   async updateRespuestasOrder( list: RespuestaModel[] ) {
-    const intentName = this._mensaje.current$.value.name
-    const intentPath = `${ this.projectPath( 'set' ) }/intents/${ intentName }`
+    const intentPath = `${ this.intentPath( 'updateRespuestasOrder' ) }`
     const intentRef = this.fs.doc( intentPath)
     const respRef = intentRef.collection('responses').ref
     const batch = this.fs.firestore.batch()

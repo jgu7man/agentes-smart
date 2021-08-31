@@ -1,1 +1,29 @@
-<p>add-entity-type works!</p>
+<mat-dialog-content>
+  <mat-form-field style="min-width: 100%">
+    <input
+      matInput
+      type="text"
+      #addInput
+      name="addInput"
+      id="addInput"
+      [formControl]="displayNameCtrl"
+      (keydown)="text.onlyAllow(['letters', 'backspace'], $event)"
+    />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions style="display: flex; justify-content: space-around">
+  <button
+    mat-raised-button
+    (click)="cancel()"
+  >
+    Cancelar
+  </button>
+  <button
+    mat-raised-button
+    [disabled]="displayNameCtrl.invalid"
+    (click)="onAddTipo()"
+    color="primary"
+  >
+    Crear
+  </button>
+</mat-dialog-actions>

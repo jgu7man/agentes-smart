@@ -3,26 +3,26 @@
   <!-- # CONTEXT AREA -->
   <mat-drawer
     id="context-list"
-    class="contextos-list-container"
+    class="contexts-list-container"
     [opened]="true"
     mode="side"
     gdev-color
     [mxBackground]="'cornflowerblue'"
   >
-    <!-- <as-contextos></aSmart-contextos> -->
+    <as-contexts></as-contexts>
   </mat-drawer>
 
   <!-- # INTENTS AREA -->
   <mat-drawer-content>
     <!-- MENSAJES SIN CONTEXTO -->
-    <div class="mensajes-container">
+    <div class="intents-container">
       <as-intent-list></as-intent-list>
     </div>
 
     <!-- MENSAJES POR CONTEXTO -->
     <ng-container *ngIf="contexts.list$ | async as contexts">
       <div *ngFor="let contexto of contexts | sortBy: 'asc':'index'"
-      class="mensajes-container"
+      class="intents-container"
       >
         <as-intent-list [contexto]="contexto" ></as-intent-list>
       </div>

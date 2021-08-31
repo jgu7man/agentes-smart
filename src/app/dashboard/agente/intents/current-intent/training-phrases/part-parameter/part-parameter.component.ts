@@ -1,6 +1,8 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MxCache, MxLoading, MxText } from '@marxa/devkit';
+import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { AddEntityTypeComponent } from 'src/app/dashboard/agente/entity-types/entity-type/add-entity-type/add-entity-type.component';
 import { EntityTypeModel, iEntity } from 'src/app/models/entity-type.model';
@@ -15,13 +17,13 @@ import { TrainingPhrasesService } from 'src/app/services/training-phrases.servic
   templateUrl: './part-parameter.component.html',
   styleUrls: ['./part-parameter.component.scss']
 })
-export class PartParameterComponent implements OnInit {
+export class PartParameterComponent implements OnInit, OnDestroy {
 
   @Input() parte!: iPhrasePart;
   @Input() index!: number;
 
   switchEntitySelector: boolean = false;
-  paramName: any = '';
+  paramNameCtrl: FormControl = new FormControl('')
   param?: iParameter;
 
   toggleAddClase: boolean = false;
@@ -36,44 +38,29 @@ export class PartParameterComponent implements OnInit {
   @Output() paramAdded = new EventEmitter<iPhrasePart>();
   @Output() onTipoChange: EventEmitter<iPhrasePart> = new EventEmitter();
 
+  private paramNameSubscription!: Subscription;
+
   constructor(
     private _params: ParametersService,
     private _loading: MxLoading,
-    private _mensaje: CurrentIntentService,
+    private _currentIntent: CurrentIntentService,
     public  _frases: TrainingPhrasesService,
-    private _text: MxText,
+    public text: MxText,
     private _dialog: MatDialog,
     private _cache: MxCache,
     private _tipos: EntityTypesService
   ) {}
 
   ngOnInit(): void {
+    this.paramNameSubscription =
+    this.paramNameCtrl.valueChanges.subscribe( changes => {
+      if (this.param) this.parte.alias = this.param.displayName = changes
+    })
     if (this.parte) {
-      this.paramName = this.parte.alias == true ? '' : this.parte.alias;
+      this.paramNameCtrl.patchValue(
+        this.parte.alias == true ? '' : this.parte.alias
+      )
     }
-  }
-
-  // async toSelectTipo() {
-  //   this.switchEntitySelector = true;
-  //   await this._loading.waitFor(100);
-  //   // this.partEntityInput.nativeElement.focus()
-  // }
-
-  reformatText(event: any) {
-    // listen keypress event; not keydown o keyup
-    var k;
-    k = event.charCode; // k = event.keyCode;  (Both can be used)
-    return (
-      (k > 64 && k < 91) || // allow letters
-      (k >= 48 && k <= 57) || // allow numbers
-      (k > 96 && k < 123) || // allow numpads
-      k == 8 // allow backspace
-      // || k == 32  // allow space
-      // || k == 188 // allow comma
-      // || k == 189 // allow dash
-      // || k == 190 // allow perdiod (dot)
-      // || k == 95 // allow underscore
-    );
   }
 
   onAddTipo() {
@@ -102,9 +89,10 @@ export class PartParameterComponent implements OnInit {
     this.parte.entityType = tipoSelected.startsWith('@')
       ? tipoSelected : `@${tipoSelected}`
     if (tipoSelected === 'productos') {
-      this.parte.alias = this.paramName = 'productos'
+      this.parte.alias = 'productos'
+      this.paramNameCtrl.patchValue('productos')
     } else {
-      this.paramName = this.parte.text
+      this.paramNameCtrl.patchValue( this.parte.text )
     }
 
     this.addParameter()
@@ -132,13 +120,15 @@ export class PartParameterComponent implements OnInit {
       };
       // console.log( this.parte )
       this.paramAdded.emit(this.parte);
-      const paramStored = this._mensaje.current$.value.intent.parameters
-        .find( ( p ) => p.displayName == this.param?.displayName );
+      this._params.getList()
+        .then( list => {
+          let paramStored = list.find( ( p ) => p.displayName == this.param?.displayName );
+          if (!paramStored && this.param) {
+            this._params.add(this.param)
+          }
+        })
 
-      // console.log( paramStored )
-      if (!paramStored) {
-        this._params.addParam(this.param)
-      }
+        // console.log( paramStored )
     }
   }
 
@@ -174,8 +164,8 @@ export class PartParameterComponent implements OnInit {
     return this.synonymExists ? 'El sinónimo ya existe, no es necesario agregarlo de nuevo': ''
   }
 
-  setCustomParam( value: string ) {
-    if (this.param) this.parte.alias = this.param.displayName = value
+  get isProductParam() {
+    return this.param && this.param.displayName == 'productos' ? true : false
   }
 
   setSinonimo() {
@@ -193,6 +183,10 @@ export class PartParameterComponent implements OnInit {
 
     }
 
+  }
+
+  ngOnDestroy() {
+    this.paramNameSubscription.unsubscribe()
   }
 
 }

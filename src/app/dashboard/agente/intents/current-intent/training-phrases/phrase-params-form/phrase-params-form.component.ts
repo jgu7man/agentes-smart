@@ -27,12 +27,12 @@ export class PhraseParamsFormComponent implements OnInit {
   setTipoFrase( phrasePart: any, partIndex: number ) {
     let part = phrasePart as iPhrasePart
       this.frase.parts[ partIndex ] = part
-      this._frase.updatePhrase( this.frase )
+      this._frase.update( this.frase )
   }
 
   onParamAdded(parte: iPhrasePart, index: number) {
     this.frase.parts[index] = parte
-    this._frase.updatePhrase(this.frase)
+    this._frase.update(this.frase)
   }
 
 
@@ -43,7 +43,7 @@ export class PhraseParamsFormComponent implements OnInit {
     var restoredPartText = this._frase.stringifyFullPhrase( this.frase )
     this.frase.parts = this._frase.createParts( restoredPartText )
     // console.log(this.frase);
-    this._frase.updatePhrase(this.frase )
+    this._frase.update(this.frase )
     // var newParts = this._frase.createParts( restoredPartText )
     // console.log(newParts);
 

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore, CollectionReference } from '@angular/fire/firestore';
 import { Subject, Observable, of, zip, BehaviorSubject } from 'rxjs';
-import { map, tap, flatMap, take, mergeMap } from 'rxjs/operators';
+import { map, tap, flatMap, take, mergeMap, filter, scan } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { difference } from 'lodash';
 import { EntityTypeModel, extractTypeId, iEntity, iEntityType, iSystemEntity } from '../models/entity-type.model';
@@ -11,6 +11,9 @@ import { SystemEntitiesService } from '../admin/utils/system-entities.service';
 import { CurrentEntityTypeService } from './current-entity-type.service';
 import { iContext } from '../models/context.model';
 import { CommonsService } from '../shared/commons.service';
+import { iParameter } from '../models/intent.model';
+import { from } from 'rxjs';
+import { ContextsService } from './contexts.service';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +28,7 @@ export class EntityTypesService {
   /** Almacena el id del proyecto del caché */
   // private projectId: String;
 /** Lista observable de los tipos */
-  public list$ = new BehaviorSubject<EntityTypeModel[]>([]);
+  public list$ = new BehaviorSubject<iEntityType[]>([]);
 
   // private listSubs: Subscription;
 
@@ -38,6 +41,7 @@ export class EntityTypesService {
     private _alerts: MxAlert,
     private _color: MxColor,
     private _common: CommonsService,
+    private _contexts: ContextsService,
     private _systemEntites: SystemEntitiesService,
     private _currentEntityType: CurrentEntityTypeService
   ) {
@@ -64,9 +68,10 @@ export class EntityTypesService {
   // # $CREATE TIPO
   /** Prepara la entity para ser creada en el backend, obtiene el ID:name y guarda los datos en firestore */
   public async create(
-    entityType: EntityTypeModel
+    displayName: string
   ): Promise<iEntityType | undefined> {
 
+    const entityType = new EntityTypeModel(this._text.normalize( displayName ))
     const typeList = this.list$.value
     const typesPath = `${this.projectPath('create')}/entityTypes`
     const typeInList = typeList.find(
@@ -74,8 +79,6 @@ export class EntityTypesService {
     );
 
     // Prepare entityType
-    entityType.displayName = this._text.normalize( entityType.displayName );
-    entityType = this._common.cleanUndefineds(entityType)
 
 
     this._loading.toggleWaiting( 'open' );
@@ -83,11 +86,11 @@ export class EntityTypesService {
     if (!typeInList) {
       console.log('nueva entity');
       // create entity API
-      let newEntity = await this._postCreateEntity({ ...entityType.value });
+      let newEntity = await this._postCreateEntity({ ...entityType });
       console.log(newEntity);
       // Get clean entity Id
       const resourceID = extractTypeId(newEntity.name as string)
-      const typeToAdd:iEntityType = { ...entityType.value, name: newEntity.name };
+      const typeToAdd:iEntityType = { ...entityType, name: newEntity.name };
 
       // Save tipo in firestore
       await this._afs.collection(typesPath).doc(resourceID).set(typeToAdd);
@@ -101,8 +104,8 @@ export class EntityTypesService {
 
   /** Crea el entity en el backend */
   private _postCreateEntity(
-    entityType: iEntityType
-  ): Promise<EntityTypeModel> {
+    entityType: EntityTypeModel
+  ): Promise<iEntityType> {
     console.log( { entityType: { ...entityType } } );
     const projectId = this._cache.getDataKey<string>( 'projectId' )
     if (!projectId) throw new MxErrorAlertModel(`No se encontró el projectId`)
@@ -203,41 +206,20 @@ export class EntityTypesService {
     // create contexts
     await this._loading.asyncForEach(
       newEntity.entities,
-      async (entity, index) => {
-        this.saveContext(entity, index);
+      async ( entity, index ) => {
+        this._contexts.set(entity.value, index)
       }
     );
 
     this._loading.toggleWaiting('close');
   }
 
-  // REVIEW No debería estar en ContextosService?
-  async saveContext( entity: iEntity, index: number ) {
-    let path = `${this.projectPath('saveContext')}/contexts`
-    let contexto: iContext = {
-      name: entity.value,
-      lifespanCount: 3,
-      index: index,
-      color: this._color.generateHSLcolor(50, 50),
-    };
-
-    Object.keys(contexto).forEach((key) => {
-      if ( contexto[ key as keyof iContext ] == undefined )
-        delete contexto[ key as keyof iContext];
-    });
-
-    // Agrega contexto nuevo
-    let contextNuevo = await this._afs.collection(path).add(contexto);
-    contextNuevo.update({ id: contextNuevo.id });
-    contexto.id = contextNuevo.id;
-  }
-
 
   // $READ TIPOS DE DATOS
   /** GET TIPOS LIST Retorna la lista completa de entidades del agente y las entidades de sistema */
-  listen(): Observable<EntityTypeModel[]> {
+  listen(): Observable<iEntityType[]> {
     const path = `${ this.projectPath( 'entityTypes#listen' ) }/entityTypes`
-    return this._afs.collection<EntityTypeModel>( path )
+    return this._afs.collection<iEntityType>( path )
       .valueChanges()
   }
 
@@ -254,7 +236,7 @@ export class EntityTypesService {
             return response['result']
           else console.error("Error al cargar los entityTypes")
         }),
-        tap((list: EntityTypeModel[]) => {
+        tap((list: iEntityType[]) => {
           list.forEach(t => {
             let tipoId = extractTypeId(t.name as string)
             this._afs.collection(fsPath).doc(tipoId).set(t, {merge: true})
@@ -279,6 +261,32 @@ export class EntityTypesService {
     let result = await this._afs.collection<EntityTypeModel>( path ).ref
       .where('displayName', '==', displayName).get()
     return result.empty ? null : result.docs[0].data()
+  }
+
+
+
+  filterByParams( paramList: iParameter[] )
+    : Observable<( EntityTypeModel | iSystemEntity )[]> {
+    const sysTypes: any = this._systemEntites.systemEntities
+    const allTypes = this.listen().pipe(
+      map<EntityTypeModel[], ( EntityTypeModel | iSystemEntity )[]>(
+        types => types.concat( sysTypes )
+      )
+    )
+
+    return from( paramList ).pipe(
+      mergeMap( param => {
+        let splited = param.entityTypeDisplayName.split( '@' )
+        let paramEntity = splited[ 1 ] ? splited[ 1 ] : splited[ 0 ]
+        return allTypes.pipe( map( types =>
+          types.find( t => t.displayName === paramEntity)
+        ))
+      } ),
+      scan( ( acc, val ) => {
+        if ( val !== undefined ) acc.push( val )
+        return acc
+      }, <( EntityTypeModel | iSystemEntity )[]>[] )
+    )
   }
 
   /** Está pendiendte de la entity seleccionada en el storage */

@@ -18,7 +18,7 @@ export class EntityComponent implements OnInit {
   @Input() set claseId(id: string) { this._claseId.next(id); }
   get claseId() { return this._claseId.getValue()}
   /** Recibe y establece el tipo de vista de lista a mapa */
-  @Input() kind: 'KIND_MAP' | 'KIND_LIST' = 'KIND_MAP';
+  @Input() kind: 'KIND_MAP' | 'KIND_LIST' | "KIND_REGEXP" = 'KIND_MAP';
   /** Emite evento cuando la clase fue editada */
   @Output() claseEdited = new EventEmitter<iEntity>();
   /** Emite evento cuando la clase fue borrada */
@@ -26,7 +26,7 @@ export class EntityComponent implements OnInit {
   /** Emite evento cuando la clase se cerró */
   @Output() closeClase = new EventEmitter<boolean>();
   /** Almacena la clase filtrada por id */
-  public clase!: iEntity | null;
+  public clase!: iEntity;
 
   constructor(
     public currentEntityType: CurrentEntityTypeService

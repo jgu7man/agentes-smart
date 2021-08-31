@@ -1,1 +1,71 @@
-<p>param-row works!</p>
+<div class="row">
+  <!-- Display name -->
+  <div class="col s3" (click)="toEditDisplayName()">
+    <ng-container *ngIf="!switchNameInput; else nameInput">
+      <span
+        [ngStyle]="{ background: params_.getColor(param.displayName) }"
+        class="paramName"
+        >{{ param.displayName }}</span
+      >
+    </ng-container>
+    <ng-template #nameInput>
+      <mat-form-field>
+        <input
+          matInput
+          type="text"
+          #displayName
+          name="displayName"
+          id="displayName"
+          [(ngModel)]="param.displayName"
+          (keyup.enter)="onDisplayNameChanged($event)"
+          (blur)="onDisplayNameChanged($event)"
+        />
+      </mat-form-field>
+    </ng-template>
+  </div>
+
+  <!-- Tipo -->
+  <div class="col s3 param-entity-selector" (click)="toEditTipo()">
+    <ng-container *ngIf="!switchTipoSelecter; else tipoSelecter">
+      {{ param.entityTypeDisplayName }}
+    </ng-container>
+    <ng-template #tipoSelecter>
+      <as-entity-type-selector
+        [id]="param.name"
+        [value]="param.entityTypeDisplayName"
+        (tipoSelected)="onTipoChanged($event)"
+      ></as-entity-type-selector>
+    </ng-template>
+  </div>
+
+  <!-- Value -->
+  <div class="col s3">
+    <as-param-value
+      [paramValue]="param.value ? param.value : param.displayName"
+      (paramValueSelected)="onValueSelected($event)"
+    ></as-param-value>
+  </div>
+
+  <div class="col s1">
+    <mat-checkbox
+      (change)="onMandatoryChange($event)"
+      [(ngModel)]="param.mandatory"
+    ></mat-checkbox>
+  </div>
+
+  <div class="col s1">
+    <mat-checkbox
+      (change)="onIslistChange($event)"
+      [(ngModel)]="param.isList"
+    ></mat-checkbox>
+  </div>
+
+  <div class="col s1">
+    <button mat-icon-button [mat-menu-trigger-for]="paramMenu">
+      <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <mat-menu #paramMenu="matMenu">
+      <button mat-menu-item (click)="onDeleteParam()">Eliminar</button>
+    </mat-menu>
+  </div>
+</div>

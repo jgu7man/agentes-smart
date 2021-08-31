@@ -1,0 +1,32 @@
+@media screen and (max-width: 450px){
+  #tipos-container {
+      overflow: auto;
+      max-height: 77vh;
+  }
+}
+
+.mat-drawer-container {
+overflow: auto;
+}
+
+::ng-deep {
+  .drawer-list{
+      mat-list-option {
+          border-bottom: .5px solid #a0a0a0;
+      }
+  }
+  .drawer-list mat-list-option:first-child {
+      border-top: .5px solid #a0a0a0;
+  }
+}
+
+.mat-expansion-panel {
+box-shadow: none;
+.mat-expansion-panel-header {
+    padding: 0;
+}
+}
+
+mat-card-title{
+font-family: 'Cuprum', sans-serif;
+}

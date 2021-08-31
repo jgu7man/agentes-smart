@@ -13,8 +13,8 @@ import { SetAgenteComponent } from './agentes-crud/set-agente/set-agente.compone
 import { InicioComponent } from './inicio/inicio.component';
 import { DeleteAgenteDialog } from './agentes-crud/delete-agente/delete-agente.dialog';
 import { StartUiComponent } from './agente/start-ui/start-ui.component';
-import { StartTipoComponent } from './agente/start-ui/start-tipo/start-tipo.component';
-import { StartFrasesComponent } from './agente/start-ui/start-frases/start-frases.component';
+import { StartEntityTypesComponent } from './agente/start-ui/start-entity-types/start-entity-types.component';
+import { StartTrainingPhrasesComponent } from './agente/start-ui/start-trining-phrases/start-training-phrases.component';
 import { EntityTypesComponent } from './agente/entity-types/entity-types.component';
 import { EntityTypeComponent } from './agente/entity-types/entity-type/entity-type.component';
 import { EntityComponent } from './agente/entity-types/entity-type/entity/entity.component';
@@ -59,6 +59,8 @@ import { IntegrationsComponent } from './agente/integrations/integrations.compon
 import { MessengerIntegrationComponent } from './agente/integrations/messenger-integration/messenger-integration.component';
 import { WhatsappIntegrationComponent } from './agente/integrations/whatsapp-integration/whatsapp-integration.component';
 import { QRCodeModule } from 'angularx-qrcode';
+import { EntityValueSelectorComponent } from './agente/entity-types/entity-value-selector/entity-value-selector.component';
+import { EntityStateBodyComponent } from './agente/entity-types/entity-type/entity-state-body/entity-state-body.component';
 
 
 @NgModule({
@@ -73,8 +75,8 @@ import { QRCodeModule } from 'angularx-qrcode';
     DeleteAgenteDialog,
 
     StartUiComponent,
-    StartTipoComponent,
-    StartFrasesComponent,
+    StartEntityTypesComponent,
+    StartTrainingPhrasesComponent,
 
     EntityTypesComponent,
     EntityTypeComponent,
@@ -121,6 +123,8 @@ import { QRCodeModule } from 'angularx-qrcode';
     IntegrationsComponent,
     MessengerIntegrationComponent,
     WhatsappIntegrationComponent,
+    EntityValueSelectorComponent,
+    EntityStateBodyComponent,
   ],
   imports: [
     CommonModule,

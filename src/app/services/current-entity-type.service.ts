@@ -5,7 +5,7 @@ import { distinctUntilChanged, startWith } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
-import { EntityTypeState, extractTypeId, iEntity, iEntityType } from '../models/entity-type.model';
+import { EntityTypeStateModel, extractTypeId, iEntity, iEntityType } from '../models/entity-type.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ import { EntityTypeState, extractTypeId, iEntity, iEntityType } from '../models/
 export class CurrentEntityTypeService {
 
   /** Estado en tiempo real del Tipo de dato seleccionado */
-  current$ = new BehaviorSubject<EntityTypeState|null>(null);
+  current$ = new BehaviorSubject<EntityTypeStateModel|null>(null);
   /** Obtine y almacena la ruta a la API */
   private _url = environment.restURL + 'entity';
   /** Tipo de dato que será activado */
@@ -37,7 +37,7 @@ export class CurrentEntityTypeService {
   }
 
   /** Define el tipo de dato seleccionado */
-  setCurrentTipo(entityType: EntityTypeState) {
+  setCurrentTipo(entityType: EntityTypeStateModel) {
     entityType.saved = true
     this.current$.next(entityType)
     return this.current$.pipe(
@@ -126,14 +126,30 @@ export class CurrentEntityTypeService {
 
 
   /** Obtiene la clase que solicita */
-  getClase(name?: string): iEntity | null {
+  getClase(name?: string): iEntity  {
     const entityType = this.current$.getValue()
-    if ( entityType ) {
-      if ( name || entityType.body.entities) {
-        let entityFinded = entityType.body.entities.find( e => e.value == name )
-        return entityFinded ? entityFinded : null
-      } else return null
-    } else return null
+
+    try {
+      if ( entityType ) {
+        if ( name || entityType.body.entities) {
+          let entityFinded = entityType.body.entities.find( e => e.value == name )
+          if ( entityFinded ) return entityFinded
+
+          else throw new MxErrorAlertModel( `No se pudo encontrar la entidad ${ name }` )
+
+        } else throw new MxErrorAlertModel('No obtuvo el name del entity o no se encontraron entities en la entityType actual')
+
+      } else throw new MxErrorAlertModel( 'No se estableció entity type actual' )
+
+    } catch (error) {
+      if ('message' in error) {
+        this._alerts.error(error.message, error, 'current-entity-type.service#getEntity')
+      } else {
+        this._alerts.error(`Error buscando el entity ${name}`, error, 'current-entity-type.service#getEntity')
+      }
+      // return console.error(error)
+      throw console.error(error)
+    }
   }
 
 

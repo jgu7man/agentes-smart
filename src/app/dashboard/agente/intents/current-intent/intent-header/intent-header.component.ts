@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
@@ -11,7 +11,7 @@ import { DeleteIntentDialog } from '../delete-intent/delete-intent.dialog';
   templateUrl: './intent-header.component.html',
   styleUrls: ['./intent-header.component.scss']
 })
-export class IntentHeaderComponent implements OnInit, OnDestroy {
+export class IntentHeaderComponent implements OnInit {
 
   // mensaje: IntentModel
   switchEdit: boolean = false
@@ -28,38 +28,33 @@ export class IntentHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.stateSubs = this.currentIntent.current$
-      .subscribe( state => {
-        this.unsaved = state.unsaved
-        this.intentNameCtrl.patchValue(state.displayName)
-      } )
   }
 
 
 
   updateDisplayName() {
-    let displayName = this.currentIntent.current$.value.displayName
-    if ( displayName != this.intentNameCtrl.value ) {
-      this.currentIntent.current$.next({
-        ...this.currentIntent.current$.value,
-        displayName: this.intentNameCtrl.value,
-        unsaved: true
-      })
+    const intentState = this.currentIntent.state$.value
+    if ( intentState ) {
+      let displayName = intentState.displayName
+      if ( displayName != this.intentNameCtrl.value ) {
+        this.currentIntent.state$.next({
+          ...intentState,
+          displayName: this.intentNameCtrl.value,
+          unsaved: true
+        })
+      }
+      this.switchEdit = false
+
     }
-    this.switchEdit = false
   }
 
   toDelIntent() {
     this._dialog.open( DeleteIntentDialog, {
       minWidth: '400px',
-      data: this.currentIntent.current$.getValue().name
+      data: this.currentIntent.state$.value?.name || ''
     } ).afterClosed().subscribe( ( confirmation ) => {
       if (confirmation) this.location.back()
     } )
-  }
-
-  ngOnDestroy() {
-    this.stateSubs.unsubscribe()
   }
 
 }

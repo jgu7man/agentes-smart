@@ -6,11 +6,11 @@ import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
-  selector: 'aSmart-start-frases',
-  templateUrl: './start-frases.component.html',
-  styleUrls: ['./start-frases.component.scss'],
+  selector: 'as-start-training-phrases',
+  templateUrl: './start-training-phrases.component.html',
+  styleUrls: ['./start-training-phrases.component.scss'],
 })
-export class StartFrasesComponent implements OnInit {
+export class StartTrainingPhrasesComponent implements OnInit {
   intent$: Observable<iIntentState> = new Observable();
   stateSubs: Subscription;
   unsaved: boolean = false;
@@ -24,7 +24,7 @@ export class StartFrasesComponent implements OnInit {
     private _cache: MxCache
   ) {
     this.stateSubs =
-      this.mensaje_.current$.subscribe( state => {
+      this.mensaje_.state$.subscribe( state => {
         if ( state ) {
           this.unsaved = state.unsaved as boolean;
           if (this.listenSaved && !this.unsaved) {
@@ -46,7 +46,7 @@ export class StartFrasesComponent implements OnInit {
 
   async getWelcomeIntent() {
     this.intent$ = this._cache.listenForChanges<iIntentState>('currentIntent');
-    await this.mensaje_.setCurrent('Default Welcome Intent');
+    await this.mensaje_.set('Default Welcome Intent');
     // await this.intent$.pipe(take(1)).toPromise()
     // this._loading.toggleWaitingSpinner(false)
   }

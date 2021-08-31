@@ -8,7 +8,7 @@
       [(ngModel)]="response.parametro"
       name="param"
     >
-      <mat-option *ngFor="let param of paramList" [value]="param.displayName">
+      <mat-option *ngFor="let param of params_.list$ | async" [value]="param.displayName">
         {{ param.displayName }}
       </mat-option>
     </mat-select>

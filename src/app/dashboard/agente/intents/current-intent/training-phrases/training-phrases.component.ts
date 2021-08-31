@@ -130,7 +130,7 @@ export class TrainingPhrasesComponent
         parts: this.$frases.createParts(this.newPhrase),
       };
       await this._loading.waitFor(200);
-      this.$frases.addTraningPhrase(NEWPHRASE).then(async () => {
+      this.$frases.add(NEWPHRASE).then(async () => {
         // console.log( this.currentPage.length == this.pageSize )
         if (this.currentPage.length == this.pageSize) {
           this.pageIndex = Math.ceil(
@@ -166,7 +166,7 @@ export class TrainingPhrasesComponent
         await this.$frases.stractSelectedPart(frase, textSelected);
       // console.log( fraseRestructured);
 
-      this.$frases.updatePhrase(fraseRestructured);
+      this.$frases.update(fraseRestructured);
       await this._loading.waitFor(100);
       this.fraseExpanded = index;
     }

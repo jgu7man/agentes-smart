@@ -1,0 +1,18 @@
+<mat-form-field appearance="outline" floatLabel="always">
+  <mat-label>Parámetro agente</mat-label>
+  <mat-select
+    placeholder="Lo que quiso decir..."
+    [formControl]="valueCtrl"
+    name="item"
+    (selectionChange)="onSelected($event)"
+  >
+    <ng-container *ngIf="clases.length > 0; else empty">
+      <mat-option *ngFor="let clase of clases" [value]="clase">
+        {{ clase }}
+      </mat-option>
+    </ng-container>
+    <ng-template #empty>
+      <mat-option disabled> No hay parámetros </mat-option>
+    </ng-template>
+  </mat-select>
+</mat-form-field>

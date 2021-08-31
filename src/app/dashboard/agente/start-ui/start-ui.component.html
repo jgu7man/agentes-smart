@@ -31,9 +31,9 @@
                   <b>sabores</b> tiene los helados?
                 </p>
 
-                <aSmart-start-tipo
+                <as-start-entity-types
                   (tipoAdded)="stepper.next()"
-                ></aSmart-start-tipo>
+                ></as-start-entity-types>
 
                 <div>
                   <!-- <button mat-button matStepperNext>Siguiente</button> -->
@@ -44,9 +44,9 @@
             <!-- Segundo paso -->
             <mat-step>
               <ng-template matStepLabel>Frases de entrenamiento</ng-template>
-              <aSmart-start-frases
+              <as-start-training-phrases
                 (saved)="stepper.next()"
-              ></aSmart-start-frases>
+              ></as-start-training-phrases>
             </mat-step>
 
             <mat-step>

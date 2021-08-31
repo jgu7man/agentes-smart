@@ -1,0 +1,59 @@
+@import 'src/styles.scss';
+
+#flow-area {
+  background: transparent;
+  height:100%;
+  overflow-y:auto;
+  @include scrollbar;
+  #context-list {
+    height: fit-content;
+    padding-bottom: 5em;
+    ::ng-deep {
+      .mat-drawer-inner-container{
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+.intents-list-container {
+    width: 25%;
+    max-width: 250px;
+}
+
+.contexts-list-container {
+    border: none;
+}
+
+.intents-container {
+    display: flex;
+    align-items: center;
+    min-height: 70px;
+}
+
+.contexto-row {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    min-width: 150px;
+    padding: 1em;
+    border-bottom: solid 1px #ffffff80;
+    position: relative;
+    .contexto-top-area {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        cursor: grab;
+        button {
+            float: right;
+        }
+    }
+}
+
+@media screen and (max-width: 450px) {
+    .intents-list-container {
+    width: 75%;
+    max-width: 350px;
+}
+}

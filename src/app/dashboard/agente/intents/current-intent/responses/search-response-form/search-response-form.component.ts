@@ -8,6 +8,7 @@ import { iParameter } from 'src/app/models/intent.model';
 import { TarjetaModel } from 'src/app/models/tarjeta.model';
 import { CurrentAgentService } from 'src/app/services/current-agent.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
+import { ParametersService } from 'src/app/services/parameters.service';
 import { RespuestasService } from 'src/app/services/respuestas.service';
 import { TarjetasService } from 'src/app/services/tarjetas.service';
 
@@ -35,8 +36,8 @@ export class SearchResponseFormComponent implements OnInit, OnDestroy {
 
   @Output() onRespChanges: EventEmitter<RespuestaBuscarModel> = new EventEmitter()
   respuesta: RespuestaBuscarModel
-  paramList: iParameter[]  = []
-  paramsSubscription: Subscription
+  // paramList: iParameter[]  = []
+  // paramsSubscription: Subscription
 
   constructor (
     public respuestas_: RespuestasService,
@@ -44,13 +45,14 @@ export class SearchResponseFormComponent implements OnInit, OnDestroy {
     public agente_: CurrentAgentService,
     private _alerts: MxAlert,
     private _mensaje: CurrentIntentService,
-    private _tarjetas: TarjetasService
+    private _tarjetas: TarjetasService,
+    public  params_: ParametersService,
   ) {
     this.respuesta = new RespuestaBuscarModel('', '')
-    this.paramsSubscription =
-    this._mensaje.current$.subscribe(({ intent }) => {
-      this.paramList = intent.parameters
-    })
+    // this.paramsSubscription =
+    // this._mensaje.state$.subscribe(({ intent }) => {
+    //   this.paramList = intent.parameters
+    // })
   }
 
   async ngOnInit() {
@@ -83,7 +85,7 @@ export class SearchResponseFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.paramsSubscription) this.paramsSubscription.unsubscribe()
+    // if (this.paramsSubscription) this.paramsSubscription.unsubscribe()
   }
 
 }

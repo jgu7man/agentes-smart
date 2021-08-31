@@ -27,7 +27,7 @@ export class ParamRowComponent implements OnInit {
 
   onValueSelected( value: string ) {
     this.param.value = value
-    this.params_.updateParam(this.param)
+    this.params_.update(this.param)
   }
 
   async toEditDisplayName() {
@@ -44,27 +44,27 @@ export class ParamRowComponent implements OnInit {
   onDisplayNameChanged(event: any) {
     event.stopImmediatePropagation()
     if(this.param.displayName != this.prevDisplayName)
-    this.params_.updateParam(this.param)
+    this.params_.update(this.param)
   }
 
   onTipoChanged(tipo: string) {
     this.param.entityTypeDisplayName = tipo
-    this.params_.updateParam(this.param)
+    this.params_.update(this.param)
   }
 
 
   onMandatoryChange(event: MatCheckboxChange) {
     this.param.mandatory = event.checked
-    this.params_.updateParam(this.param)
+    this.params_.update(this.param)
   }
 
   onIslistChange(event: MatCheckboxChange) {
     this.param.isList = event.checked
-    this.params_.updateParam(this.param)
+    this.params_.update(this.param)
   }
 
   onDeleteParam() {
-    this.params_.deleteParam(this.param)
+    this.params_.delete(this.param)
   }
 
 

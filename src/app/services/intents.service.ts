@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, first, mergeMap, pluck, take } from 'rxjs/operators';
+import { catchError, first, map, mergeMap, pluck, take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel, iIntentState } from '../models/intent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
@@ -214,25 +214,39 @@ export class IntentsService {
   }
 
 
+  find$( displayNameOrName: string ): Observable<iIntentState | null> {
+    let path = `${ this.projectPath( 'find' ) }/intents`
+
+    return this._afs.collection<iIntentState>( path, ref => ref
+      .where( 'name', '==', displayNameOrName )
+      .where( 'displayName', '==', displayNameOrName )
+    ).get().pipe(
+
+      map( result => {
+        if ( result.size === 1 ) {
+          return result.docs[ 0 ].data()
+
+        } else if ( result.size > 1 ) {
+          new MxErrorAlertModel(
+            `El intent esta duplicado o hay coincidencias displayName con name.`,
+            `${ result.docs.map(i => i.id).join(', ')}`)
+          return null
+
+        } else {
+          new MxErrorAlertModel( `No se encontró el intent ${ displayNameOrName } `, 'findIntent' )
+          return null
+
+        }
+      })
+    )
+  }
 
   /** Busca el intent por name o displayName
-   * @param {string} displayNameOname
+   * @param {string} displayNameOrName
    * @returns {*}  {Promise<iIntentState>}
    */
-  async find( displayNameOname: string ): Promise<iIntentState> {
-    let path = `${this.projectPath( 'find' )}/intents`
-    const intentsResult = await this._afs.collection<iIntentState>( path, ref => ref
-      .where( 'name', '==', 'displayNameOname' )
-      .where( 'displayName', '==', 'displayNameOname' )
-    ).ref.get();
-
-    if ( intentsResult.size === 1 ) {
-      return intentsResult.docs[0].data()
-    } else if ( intentsResult.size > 1 ) {
-      throw new MxErrorAlertModel( `El intent esta duplicado o hay coincidencias displayName con name`)
-    } else {
-      throw new MxErrorAlertModel(`No se encontró el intent ${displayNameOname} `, 'findIntent')
-    }
+  async find( displayNameOrName: string ): Promise<iIntentState | null> {
+    return await this.find$(displayNameOrName).pipe( take( 1 )).toPromise()
   }
 
 

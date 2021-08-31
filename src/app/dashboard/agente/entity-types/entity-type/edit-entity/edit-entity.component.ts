@@ -23,7 +23,7 @@ export class EditEntityComponent implements OnInit, OnDestroy {
   /** Recibe la clase en cuestión */
   @Input() clase!: iEntity;
   /** Recibe el la configuración del tipo */
-  @Input() kind: 'KIND_MAP' | 'KIND_LIST' = 'KIND_MAP';
+  @Input() kind: 'KIND_MAP' | 'KIND_LIST' | "KIND_REGEXP" = 'KIND_MAP';
   /** Controlador del "Chips Filed" */
   @ViewChild('sinonimosInput') sinonimosInput!: ElementRef;
   /** Emite cuando la clase se editó, agregó o borró */

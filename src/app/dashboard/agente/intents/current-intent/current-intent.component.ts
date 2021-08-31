@@ -1,8 +1,9 @@
-import { ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { MxResponsive } from '@marxa/devkit';
+import { MxAlert, MxResponsive } from '@marxa/devkit';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 
 @Component({
@@ -10,45 +11,46 @@ import { CurrentIntentService } from 'src/app/services/current-intent.service';
   styleUrls: ['./current-intent.component.scss']
 })
 export class CurrentIntentComponent implements OnInit, OnDestroy {
-  mensajeName!: string
-  // mensaje: IntentModel
-  private inMensajeSubs!: Subscription
+  private inIntentSubs!: Subscription
   private stateSubs!: Subscription
-  public intentName!: string
-  private currentContexto!: string
+  public routeIntentName!: string
+  private currentContext!: string
   @ViewChild('respuestas') respuestasPanel!: ElementRef;
 
   constructor (
     public responsive: MxResponsive,
     public _intent: CurrentIntentService,
     private router: Router,
-    private _route: ActivatedRoute
+    private _route: ActivatedRoute,
+    private _alert: MxAlert
   ) {
+    this.getCurrentIntent()
   }
 
   ngOnInit(): void {
-    this.getCurrentIntent()
-    this.stateSubs = this._intent.current$
-      .subscribe( ( state ) => {
-        if ( state ) {
-          if ( state.unsaved == false ) {
-            this.getCurrentIntent()
-          }
-        }
-    });
-    this.updateMensaje()
+    this.changeIntent()
+    // this.stateSubs = this._intent.current$
+    //   .subscribe( ( state ) => {
+    //     if ( state ) {
+    //       if ( state.unsaved == false ) {
+    //         this.getCurrentIntent()
+    //       }
+    //     }
+    // });
   }
+
+
 
   getCurrentIntent() {
-    this.intentName = this._route.snapshot.params['name']
-    this.currentContexto = this._route.snapshot.queryParams['contexto']
-    console.log(this.intentName, this.currentContexto);
-    this._intent.setCurrent(this.intentName, this.currentContexto)
+    this.routeIntentName = this._route.snapshot.params['name']
+    this.currentContext = this._route.snapshot.queryParams['contexto']
+    this._intent.set(this.routeIntentName, this.currentContext)
+    // console.log(this.intentName, this.currentContext);
 
   }
 
-  updateMensaje() {
-    this.inMensajeSubs =
+  changeIntent() {
+    this.inIntentSubs =
       this.router.events.subscribe( ( val ) => {
         if ( val instanceof NavigationEnd ) {
           console.log('update');
@@ -63,11 +65,21 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
   }
 
 
+  @HostListener('window:popstate', ['$event'])
+  onPopState(event: any) {
+    if ( this._intent.state$.value?.unsaved ) {
+      this._alert.request( 'Hay cambias sin guardar. ¿Deseas guardarlos?', 'text', 'Sí', 'No' )
+        .pipe(take( 1 ))
+        .subscribe( confirmation => {
+          if ( confirmation ) this._intent.update()
+        } )
+    }
+  }
 
 
   ngOnDestroy(): void {
     this._intent.unsubscribe()
-    this.inMensajeSubs.unsubscribe()
+    this.inIntentSubs.unsubscribe()
     this.stateSubs.unsubscribe()
     // console.log('unsubscribe');
   }

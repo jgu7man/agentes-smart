@@ -57,7 +57,7 @@ export class PhraseItemComponent implements OnInit {
       PHRASE.parts = this._frases.createParts( this.phraseToEdit )
 
       console.log( PHRASE );
-      this._frases.updatePhrase( PHRASE,  )
+      this._frases.update( PHRASE,  )
 
     }
 
@@ -76,7 +76,7 @@ export class PhraseItemComponent implements OnInit {
   }
 
   delItem() {
-    this._frases.deletePhrase( this.frase ).then( () => {
+    this._frases.delete( this.frase ).then( () => {
       this.onDeleted.emit(true)
     })
   }

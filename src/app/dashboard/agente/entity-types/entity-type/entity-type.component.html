@@ -1,1 +1,55 @@
-<p>entity-type works!</p>
+<div class="container" *ngIf="currentEntityType.current$ | async as tipo">
+  <div class="row">
+
+    <!-- CERRAR PANEL -->
+    <div class="col s1">
+      <button mat-icon-button (click)="onClose()">
+        <i class="fas fa-times fa-lg"></i>
+      </button>
+    </div>
+
+
+    <!-- UPDATE tipo name -->
+    <div class="col s8">
+      <mat-form-field appearance="outline">
+        <input
+          matInput
+          type="text"
+          #editInput
+          name="editInput"
+          [formControl]="displayNameCtrl"
+          (keydown)="text.onlyAllow(['letters', 'backspace'], $event)"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- BOTÓN DE GUARDADO -->
+    <div class="col s2">
+      <button
+        mat-raised-button
+        [color]="'primary'"
+        (click)="currentEntityType.onSave()"
+        [disabled]="tipo.saved"
+      >
+        Guardar
+      </button>
+    </div>
+
+    <!-- OPCIONES -->
+    <div class="col s1">
+      <button mat-icon-button [mat-menu-trigger-for]="tipoMenu">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <mat-menu #tipoMenu="matMenu">
+        <button mat-menu-item (click)="delete(tipo.name)">Eliminar</button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <!-- Tipo body to update -->
+  <div class="row">
+    <div class="col s12">
+      <as-entity-state-body [tipo]="tipo.body"></as-entity-state-body>
+    </div>
+  </div>
+</div>

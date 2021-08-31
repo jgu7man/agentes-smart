@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StartTipoComponent } from './start-tipo.component';
+import { StartEntityTypesComponent } from './start-entity-types.component';
 
-describe('StartTipoComponent', () => {
-  let component: StartTipoComponent;
-  let fixture: ComponentFixture<StartTipoComponent>;
+describe('StartEntityTypesComponent', () => {
+  let component: StartEntityTypesComponent;
+  let fixture: ComponentFixture<StartEntityTypesComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ StartTipoComponent ]
+      declarations: [ StartEntityTypesComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(StartTipoComponent);
+    fixture = TestBed.createComponent(StartEntityTypesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

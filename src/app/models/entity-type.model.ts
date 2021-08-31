@@ -1,81 +1,56 @@
 export class EntityTypeModel {
-    constructor (
-        public displayName: string,
-        public kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP',
-        public autoExpansionMode: 'AUTO_EXPANSION_MODE_UNSPECIFIED' | 'AUTO_EXPANSION_MODE_DEFAULT',
-        public entities: iEntity[],
-        public enableFuzzyExtraction: boolean,
-        public name?: string,
+  public kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP';
+  public autoExpansionMode:
+    | 'AUTO_EXPANSION_MODE_UNSPECIFIED'
+    | 'AUTO_EXPANSION_MODE_DEFAULT';
+  public entities: iEntity[];
+  public enableFuzzyExtraction: boolean;
 
-  ) { }
-
-  /** Retorna el displayName sin @ */
-  toPlainText() {
-    return this.displayName.startsWith('@')
-      ? this.displayName.substring(1) : this.displayName
+  constructor(
+    public displayName: string,
+    entities?: iEntity[],
+    kind?: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP'
+  ) {
+    this.kind = kind || 'KIND_MAP';
+    this.autoExpansionMode = 'AUTO_EXPANSION_MODE_DEFAULT';
+    this.entities = entities || [];
+    this.enableFuzzyExtraction = true;
   }
-
-  set value(value) {
-    this.displayName = value.displayName
-    this.kind = value.kind
-    this.autoExpansionMode = value.autoExpansionMode
-    this.entities = value.entities
-    this.enableFuzzyExtraction = value.enableFuzzyExtraction
-    this.name = value.name
-  }
-
-  /** Retorna sólo los valores del entityType */
-  get value(): iEntityType {
-    return {
-      displayName: this.displayName,
-      kind: this.kind,
-      autoExpansionMode: this.autoExpansionMode,
-      entities: this.entities,
-      enableFuzzyExtraction: this.enableFuzzyExtraction,
-      name: this.name
-    }
-  }
-
-
 }
 
-export interface iEntityType {
-  displayName: string,
-  kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP',
-  autoExpansionMode: 'AUTO_EXPANSION_MODE_UNSPECIFIED' | 'AUTO_EXPANSION_MODE_DEFAULT',
-  entities: iEntity[],
-  enableFuzzyExtraction: boolean,
-  name?: string,
+export interface iEntityType extends EntityTypeModel {
+  name: string;
 }
 
-export interface iSystemEntity  {
-    displayName: string,
-    examples?:SystemEntitieExample[]
-    } export interface SystemEntitieExample {
-        request?: string,
-        result?:string[]
+export interface iSystemEntity {
+  displayName: string;
+  examples?: SystemEntitieExample[];
 }
-
+export interface SystemEntitieExample {
+  request?: string;
+  result?: string[];
+}
 
 export interface iEntity {
-    value: string,
-    synonyms?: string[],
+  value: string;
+  synonyms?: string[];
 }
 
-export function extractTypeId( typeName: string ): string {
-  return typeName.slice( typeName.lastIndexOf('/') + 1 )
+export function extractTypeId(typeName: string): string {
+  return typeName.slice(typeName.lastIndexOf('/') + 1);
 }
 
-
-export class EntityTypeState {
-  saved: boolean
-  selected: boolean
-  body: iEntityType
-  name: string
-   constructor( body: iEntityType ) {
-       this.saved = true
-       this.body = body
-       this.name = body.name || ''
-       this.selected = false
-   }
+export class EntityTypeStateModel {
+  public saved: boolean;
+  public selected: boolean;
+  public body: iEntityType;
+  public name: string;
+  constructor(body: iEntityType) {
+    this.saved = true;
+    this.body = body;
+    this.name = body.name || '';
+    this.selected = false;
+  }
 }
+
+export interface iEntityTypeState extends EntityTypeStateModel {}

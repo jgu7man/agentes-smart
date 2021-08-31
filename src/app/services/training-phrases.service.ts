@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { MxAlert, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { map, pluck } from 'rxjs/operators';
-import { iPhrasePart, iTrainingPhrase } from '../models/intent.model';
+import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { filter, map, pluck, take } from 'rxjs/operators';
+import { iIntentState, iPhrasePart, iTrainingPhrase } from '../models/intent.model';
 import { CurrentIntentService } from './current-intent.service';
 
 @Injectable({
@@ -10,35 +10,52 @@ import { CurrentIntentService } from './current-intent.service';
 })
 export class TrainingPhrasesService {
 
-  list$ = new BehaviorSubject<iTrainingPhrase[]>([]);
+  // list$ = new BehaviorSubject<iTrainingPhrase[]>([]);
   paramAdded$: Subject<any> = new Subject();
   partSelected!: iPhrasePartMap
   constructor(
     // private fs: AngularFirestore,
-    private _mensaje: CurrentIntentService,
+    private _currentIntent: CurrentIntentService,
     private _loading: MxLoading,
     private _alert: MxAlert,
+    private _cache: MxCache,
   ) {
-    this._mensaje.current$.pipe(
-      pluck('intent', 'trainingPhrases'),
-    ).subscribe(this.list$)
+
   }
 
 
+
+  updateCurrentIntent(intentState: iIntentState, changes: iTrainingPhrase[]) {
+    this._currentIntent.state$.next({
+      ...intentState,
+      intent: { ...intentState.intent, trainingPhrases: changes },
+      unsaved: true
+    });
+  }
+
+  get list$(): Observable<iTrainingPhrase[]> {
+    return this._currentIntent.state$.pipe(
+      map( state => state ? state.intent.trainingPhrases : [])
+    )
+  }
+
+  get list() {
+    return this.list$.pipe( take( 1 ) ).toPromise()
+  }
+
   // CREATE Frses de entrenamiento
-  async addTraningPhrase(frase: iTrainingPhrase, index?: number) {
+  async add(trainingPhrase: iTrainingPhrase, index?: number) {
     try {
-      const intent = this._mensaje.current$.value.intent
+      const intentState = this._currentIntent.state$.value
 
-      index
-        ? intent.trainingPhrases.splice(index, 0, frase)
-        : intent.trainingPhrases.push(frase);
+      if ( intentState ) {
+        const trainingPhrases = intentState.intent.trainingPhrases
+        index
+          ? trainingPhrases.splice(index, 0, trainingPhrase)
+          : trainingPhrases.push(trainingPhrase);
 
-      this._mensaje.current$.next({
-        ...this._mensaje.current$.value,
-        intent: { ...intent, trainingPhrases: intent.trainingPhrases },
-        unsaved: true
-      });
+        this.updateCurrentIntent(intentState, trainingPhrases)
+      }
       // this.store.dispatch(actions.setUnsaved());
 
       return;
@@ -49,23 +66,23 @@ export class TrainingPhrasesService {
   }
 
   // UPDATE
-  async updatePhrase(phrase: iTrainingPhrase) {
-    const index = this.findFraseIndex(phrase)
-    // console.log( index )
+  async update(phrase: iTrainingPhrase) {
+    const index = await this.findIndex(phrase)
     try {
-      const intent = this._mensaje.current$.getValue().intent;
-      intent.trainingPhrases[index] = phrase;
+      const intentState = this._currentIntent.state$.value
+      if ( intentState ) {
+        const trainingPhrases = intentState.intent.trainingPhrases
+        trainingPhrases[ index ] = phrase;
+        this.updateCurrentIntent( intentState, trainingPhrases)
+      }
 
-      this._mensaje.current$.next({
-        ...this._mensaje.current$.getValue(),
-        intent: { ...intent, trainingPhrases: intent.trainingPhrases },
-        unsaved: true
-      })
     } catch (error) {
       console.error(error);
       this._alert.error('Error actualizando la frase de entrenamiento', error);
     }
   }
+
+
 
   /**
    * Retorna la frase completa con acotaciones para definir entidades y parámetros.
@@ -90,7 +107,7 @@ export class TrainingPhrasesService {
   }
 
   /** Retorna la frase completa en un string sin acotaciones */
-  stringCleanPhrase(phrase: iTrainingPhrase): string {
+  stringifyCleanPhrase(phrase: iTrainingPhrase): string {
     let partsString: string[] = [];
     phrase.parts.forEach((part) => {
       partsString.push(part.text);
@@ -259,8 +276,8 @@ export class TrainingPhrasesService {
   }
 
 
-  findFraseIndex(frase: iTrainingPhrase) {
-    const frasesList = this.list$.getValue()
+  async findIndex(frase: iTrainingPhrase) {
+    const frasesList = await this.list
     var fraseIndex: number
     if (frase.name) {
       fraseIndex = frasesList.findIndex(f => f.name === frase.name)
@@ -275,19 +292,18 @@ export class TrainingPhrasesService {
   }
 
   // DELETE
-  async deletePhrase(frase: iTrainingPhrase) {
+  async delete(frase: iTrainingPhrase) {
     try {
-      const intent = this._mensaje.current$.value.intent;
-      intent.trainingPhrases.splice(
-        intent.trainingPhrases.findIndex(
-        (phrase) => phrase.name === frase.name
-      ), 1);
+      const intentState = this._currentIntent.state$.value;
+      if ( intentState ) {
+        const trainingPhrases = intentState.intent.trainingPhrases
+        trainingPhrases.splice(
+          trainingPhrases.findIndex(
+          (phrase) => phrase.name === frase.name
+        ), 1);
 
-      this._mensaje.current$.next({
-        ...this._mensaje.current$.value,
-        intent: { ...intent, trainingPhrases: intent.trainingPhrases },
-        unsaved: true
-      })
+        this.updateCurrentIntent(intentState, trainingPhrases)
+      }
     } catch (error) {
       console.error(error);
       this._alert.error('No se pudo eliminar la frase de entrenamiento', error);

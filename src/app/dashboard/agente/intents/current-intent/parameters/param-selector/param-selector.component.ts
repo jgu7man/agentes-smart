@@ -31,15 +31,15 @@ export class ParamSelectorComponent implements OnInit, AfterViewInit, OnDestroy 
   paramsSubscription!: Subscription;
 
   constructor(
-    private _params: ParametersService,
+    public _params: ParametersService,
     private _loading: MxLoading,
     // public respuestas_: RespuestasService,
     private _mensaje: CurrentIntentService
   ) {
-    this.paramsSubscription =
-    this._mensaje.current$.subscribe(intentState => {
-      this.paramList = intentState.intent.parameters;
-    });
+    // this.paramsSubscription =
+    //   this._mensaje.state$.subscribe( intentState => {
+    //   if (intentState) this.paramList = intentState.intent.parameters;
+    // });
   }
 
   ngOnInit(): void {}
@@ -60,13 +60,13 @@ export class ParamSelectorComponent implements OnInit, AfterViewInit, OnDestroy 
     // }
   }
 
-  onParamChange(selected: MatSelectChange) {
+  async onParamChange(selected: MatSelectChange) {
     if (!this.paramSelected || !this.paramSelected.value)
       this.paramSelected = { value: '', isOriginal: false };
 
     this.paramSelected.value = selected.value;
     if (this.paramSelected) {
-      let paramFound = this._params.getParamByName(this.paramSelected.value);
+      let paramFound = await this._params.getByName(this.paramSelected.value);
       if (paramFound) {
         let value = paramFound.value
           ? paramFound.value

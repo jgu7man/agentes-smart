@@ -1,0 +1,26 @@
+
+#intent-form {
+  background: #fff;
+  box-shadow: 2px 0px 4px rgba($color: #000000, $alpha: 0.5);
+}
+
+
+.intent-panel {
+  max-height: 70vh;
+}
+
+#resp-manager, #intent-form {
+padding-bottom: 4em;
+overflow-y: auto;
+overflow-x: hidden !important;
+max-height: 92vh;
+}
+
+#intent-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#intent-container::-webkit-scrollbar {
+  display: block;
+}

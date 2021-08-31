@@ -59,7 +59,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
   ) {
     this.result = new SimpleModel( '' );
     this.mensajeSubscription =
-      this._mensaje.current$.subscribe( async mensaje => {
+      this._mensaje.state$.subscribe( async mensaje => {
         this.contextLists = await this._cache.getDataKey<any>( 'contextosLists' );
         await this.setNextIntents( this.currentContext );
       } )
@@ -107,9 +107,9 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       // Set intents related to current context
       if ( currentContext ) {
         var currentList: any[] = this.contextLists[ currentContext ];
-        const current = this._mensaje.current$.getValue();
+        const current = this._mensaje.state$.getValue();
         var currentIntentIndex = currentList.findIndex(
-          ( i ) => i.displayName === current.displayName
+          ( i ) => i.displayName === current?.intent.displayName
         );
         // console.log(currentIntentIndex)
         // Set next intent in the context
@@ -156,9 +156,9 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
 
     get isBienvenida() {
-      let intent = this._mensaje.current$.getValue()
+      let intentState = this._mensaje.state$.getValue()
       console.log(  )
-      return intent.displayName == 'Default Welcome Intent'
+      return intentState?.intent.displayName == 'Default Welcome Intent'
     }
 
     get activeIntentSelector() {
