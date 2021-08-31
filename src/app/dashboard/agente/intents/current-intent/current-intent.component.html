@@ -21,7 +21,7 @@
                   <button style="float: right;" mat-raised-button color="primary"
                   (keydown.enter)="$event.preventDefault()"
                   (keydown.enter)="$event.stopImmediatePropagation()"
-                  (click)="_intent.update()"
+                  (click)="_intent.saveChanges()"
                   [disabled]="!intentState.unsaved"
                   >Guardar</button>
                 </div>
@@ -61,7 +61,7 @@
                   <button style="float: right;" mat-raised-button color="primary"
                   (keydown.enter)="$event.preventDefault()"
                   (keydown.enter)="$event.stopImmediatePropagation()"
-                  (click)="_intent.update()"
+                  (click)="_intent.saveChanges()"
                   [disabled]="!intentState.unsaved"
                   >Guardar</button>
                 </div>

@@ -40,13 +40,7 @@ export class StartEntityTypesComponent implements OnInit, OnDestroy {
     public tipos_: EntityTypesService,
     private _cache: MxCache
   ) {
-    this.tipo = new EntityTypeModel(
-      'palabrasclave',
-      'KIND_LIST',
-      'AUTO_EXPANSION_MODE_DEFAULT',
-      [],
-      true
-    );
+    this.tipo = new EntityTypeModel( 'palabrasclave', [], 'KIND_LIST');
   }
 
   async ngOnInit() {

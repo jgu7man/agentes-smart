@@ -54,7 +54,9 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "lodash"
+              "lodash",
+              "qrcode",
+              "export-to-csv"
             ]
           },
           "configurations": {

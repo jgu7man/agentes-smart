@@ -11,15 +11,24 @@
   </div>
 
 
-  <ng-container *ngIf="(mensaje_.respuestasList$ | async) as respuestas; else sinRespuestas">
-    <div class="row respuestasList" *ngIf="respuestas.length; else sinRespuestas" (cdkDropListDropped)="drop($event)" cdkDropList #respuestasList >
+  <ng-container *ngIf="(responses.list$ | async) as responses; else sinRespuestas">
+    <div class="row respuestasList" *ngIf="responses.length; else sinRespuestas" (cdkDropListDropped)="drop($event)" cdkDropList #respuestasList >
       <div class="respuestaItem"
-      *ngFor="let respuesta of respuestas; let i = index" cdkDrag
+      *ngFor="let response of responses; let i = index" cdkDrag
       [cdkDragDisabled]="openedCard == i">
         <as-response-item
-        [respuesta]="respuesta"
-        (onDelete)="deleteRespuesta(respuesta.id || '', respuesta.index)"
+        [respuesta]="response"
+        (onDelete)="deleteRespuesta( response.id || '')"
         (opened)="onOpened(i)"
+        ></as-response-item>
+      </div>
+
+      <div *ngIf="emptyResponse"
+      class="respuestaItem">
+        <as-response-item
+        [respuesta]="emptyResponse"
+        (onDelete)="cancelAddResponse()"
+        (opened)="onOpened(responses.length)"
         ></as-response-item>
       </div>
     </div>

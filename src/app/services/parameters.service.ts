@@ -6,7 +6,7 @@ import { map, take } from 'rxjs/operators';
 import { iIntentState, IntentStateModel, iParameter, iPhrasePart, iTrainingPhrase, ParameterModel } from '../models/intent.model';
 import { iAgentParameter } from '../models/parameter.model';
 import { CurrentIntentService } from './current-intent.service';
-import { TrainingPhrasesService } from './training-phrases.service';
+import { PhraseService, TrainingPhrasesService } from './training-phrases.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +25,7 @@ export class ParametersService {
   constructor(
     private _currentIntent: CurrentIntentService,
     private _frases: TrainingPhrasesService,
+    private _phrases: PhraseService,
     private _loading: MxLoading,
     private _alerts: MxAlert,
     private _color: MxColor,
@@ -185,8 +186,8 @@ export class ParametersService {
                 delete frase.parts[parteIndex].entityType;
                 delete frase.parts[parteIndex].alias;
 
-                let partsString = this._frases.stringifyFullPhrase(frase);
-                let partsRestored = this._frases.createParts(partsString);
+                let partsString = this._phrases.stringifyFullPhrase(frase);
+                let partsRestored = this._phrases.createParts(partsString);
                 frase.parts = partsRestored;
 
                 await this._frases.update( frase );

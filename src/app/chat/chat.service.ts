@@ -155,7 +155,7 @@ export class ChatService {
     let suggestions: QuickResponse[] = sugerencias.map((sug) => {
       return {
         displayText: sug.text,
-        value: sug.context,
+        value: sug.context || '',
       };
     } );
     this.conversation.push(new Interaction(suggestions, 'that'))

@@ -14,17 +14,17 @@
       <div class="col s4">Nombre</div>
       <div class="col s4">Entidad</div>
       <div class="col s3">Valor</div>
-      <div class="col s1">Req</div>
-      <div class="col s1">Lista</div>
+      <!-- <div class="col s1">Req</div> -->
+      <!-- <div class="col s1">Lista</div> -->
       <div class="col s1"></div>
     </div>
     </div>
     <div class="col s12" *ngIf="switchAddParameter">
         <as-add-parameter (closeRow)="switchAddParameter = false" ></as-add-parameter>
     </div>
-    <div class="col s12" *ngIf="(currentIntent.current$ | async) as intent" id="params-body">
-      <ng-container *ngIf="intent.intent.parameters.length > 0; else noParams">
-        <as-param-row *ngFor="let param of intent.intent.parameters" [param]="param"></as-param-row>
+    <div class="col s12" *ngIf="(params.list$ | async) as params" id="params-body">
+      <ng-container *ngIf="params.length > 0; else noParams">
+        <as-param-row *ngFor="let param of params" [param]="param"></as-param-row>
       </ng-container>
       <ng-template #noParams>
         <p class="center">No has agregado parametros</p>

@@ -37,6 +37,8 @@ export class RespuestasService {
     // { name: 'card', display: 'Tarjeta' },
   ];
 
+  emptyResponse?: RespuestaModel
+
   constructor(
     private fs: AngularFirestore,
     private _mensaje: CurrentIntentService,
@@ -72,8 +74,8 @@ export class RespuestasService {
     )
   }
 
-  get list() {
-    return this.list$.pipe( take( 1 ) ).toPromise()
+  async getList() {
+    return await this.list$.pipe( take( 1 ) ).toPromise()
   }
 
 
@@ -123,7 +125,8 @@ export class RespuestasService {
         respuesta.result = result;
 
         let res = await intentRef.collection('responses').add(respuesta);
-        await intentRef.collection('responses').doc(res.id).update({ id: res.id });
+        await intentRef.collection( 'responses' ).doc( res.id ).update( { id: res.id } );
+        delete this.emptyResponse
       }
     }
 
@@ -140,9 +143,9 @@ export class RespuestasService {
     kind: 'simple' | 'grupo_datos' | 'buscar' | 'sugerencias'
   ) {
     var resCant: boolean[] = [];
+    const list = await this.getList();
     await this._loading.asyncForEach(
-      this._mensaje.respuestasList$.getValue(),
-      (res: RespuestaModel) => {
+      list, (res: RespuestaModel) => {
         if (res.tipo == kind) resCant.push(true);
       }
     );

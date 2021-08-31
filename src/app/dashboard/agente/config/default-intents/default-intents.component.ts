@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AgentConfigService } from 'src/app/services/agent-config.service';
+import { IntentsService } from 'src/app/services/intents.service';
 import { FallbackComponent } from '../fallback/fallback.component';
 
 @Component({
@@ -11,8 +12,9 @@ import { FallbackComponent } from '../fallback/fallback.component';
 export class DefaultIntentsComponent implements OnInit {
 
   constructor (
-    public opciones_: AgentConfigService,
-    private _dialog: MatDialog
+    // public opciones_: AgentConfigService,
+    private _dialog: MatDialog,
+    public intents: IntentsService,
   ) { }
 
   ngOnInit(): void {

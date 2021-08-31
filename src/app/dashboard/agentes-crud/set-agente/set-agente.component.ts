@@ -55,10 +55,10 @@ export class SetAgenteComponent implements OnInit {
   async ngOnInit() {
     let agenteId = this._route.snapshot.params['id']
     if ( agenteId ) {
-      this.agente = await this._agents.getById(agenteId)
-      if ( this.agente ) {
-        this.agenteForm.patchValue( this.agente )
-      }
+      // this.agente = await this._agents.getById(agenteId)
+      // if ( this.agente ) {
+      //   this.agenteForm.patchValue( this.agente )
+      // }
     }
   }
 

@@ -62,3 +62,19 @@ h2, h4,  h5 {
 }
 
 // p { color:mat-color($agente-smart-foreground, text) }
+@mixin scrollbar {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent
+  }
+  &::-webkit-scrollbar-button {
+    display:none
+  }
+  &::-webkit-scrollbar-thumb{
+    background: #141e66;
+    border: none;
+    box-shadow: -1px -1px 10px -3px rgb(0 0 0 / 50%);
+  }
+}

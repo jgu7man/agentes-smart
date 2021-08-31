@@ -171,7 +171,7 @@ export class ProductsService {
 
         if (typeRef) {
           var typesDoc = await  typeRef.get()
-          let productType = typesDoc.data() as EntityTypeModel;
+          let productType = typesDoc.data() as iEntityType;
           productType.entities = [
             ...productType.entities.filter(e => e.value != productClase.value),
             productClase
@@ -181,20 +181,17 @@ export class ProductsService {
           await (await this.productTypeRef())?.update({ entities: productType.entities })
         } else {
           console.log('No existen tipos');
-          let newTipo: iEntityType = new EntityTypeModel(
+          let newTipo: EntityTypeModel = new EntityTypeModel(
             'productos',
-            'KIND_MAP',
-            'AUTO_EXPANSION_MODE_DEFAULT',
             [productClase],
-            true,
+            'KIND_MAP',
           );
 
-          let entity = await this._createProductsEntity(newTipo);
+          let entity: iEntityType = await this._createProductsEntity(newTipo);
           if (entity) {
             let id = entity.name?.slice(entity.name.lastIndexOf('/') + 1)
-            newTipo.name = entity.name ;
             let entityPath = `agentes/${this.projectId}/tipos`
-            this.usuarioRef?.collection(entityPath).doc(id).set({...newTipo})
+            this.usuarioRef?.collection(entityPath).doc(id).set({...entity})
           }
         }
       }
@@ -211,8 +208,8 @@ export class ProductsService {
 
 /** Crea el entity en el backend */
 private _createProductsEntity(
-  productsEntity: iEntityType
-): Promise<EntityTypeModel> {
+  productsEntity: EntityTypeModel
+): Promise<iEntityType> {
   return new Promise((resolve, reject) => {
     this._http.post(
         `${this._url}/${this.projectId}`,

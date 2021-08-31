@@ -4,11 +4,10 @@ import { debounceTime, map, take,  } from 'rxjs/operators';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { MxAlert, MxCache, MxColor, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { IntentsService } from './intents.service';
-import { EntityTypesService } from './entitiy-types.service';
 import { CurrentEntityTypeService } from './current-entity-type.service';
 import { ContextModel, iContext, iContextList } from '../models/context.model';
 import { extractIntentId, iDialogflowIntent, iIntentState } from '../models/intent.model';
-import { EntityTypeModel } from '../models/entity-type.model';
+import { EntityTypeModel, iEntityType } from '../models/entity-type.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { AgentsService } from './agents.service';
@@ -31,7 +30,6 @@ export class ContextsService {
     private _loading: MxLoading,
     private _text: MxText,
     private _tipo: CurrentEntityTypeService,
-    private _tipos: EntityTypesService,
   ) {
   }
 
@@ -184,7 +182,7 @@ export class ContextsService {
   }
 
   private async deleteFromEntityType(context: string) {
-    const tiposList = await this._cache.getDataKey<EntityTypeModel[]>(
+    const tiposList = await this._cache.getDataKey<iEntityType[]>(
       'contextos'
     ) || []
     const contextType = tiposList.find((c) => c.displayName === context);

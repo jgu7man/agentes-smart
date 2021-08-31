@@ -329,11 +329,9 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       // else {
       //   respuestaObj.outputContexts.push(nextIntentContext)
       // }
-
+      const responses = await this.respuestas_.getList()
       if (respuestaObj.result.asDefault) {
-        var defaultStored = this._mensaje.respuestasList$
-          .getValue()
-          .filter((r) => r.result.asDefault);
+        var defaultStored = responses.filter((r) => r.result.asDefault);
         if (defaultStored.length > 1) {
           this._alerts.message(
             'No puedes asignar dos respuestas como "Default"'
