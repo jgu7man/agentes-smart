@@ -43,7 +43,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
   @Output() opened: EventEmitter<void> = new EventEmitter();
 
   switchAddIntent: boolean = false;
-  mensajeSubscription: Subscription
+  intentSubscription: Subscription
 
   @ViewChild( 'respuestaCard' ) public ownElement!: ElementRef
 
@@ -54,12 +54,12 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     private _cache: MxCache,
     public contextos_: ContextsService,
     private _dialog: MatDialog,
-    private _mensaje: CurrentIntentService,
+    private _intent: CurrentIntentService,
     private _intents: IntentsService
   ) {
     this.result = new SimpleModel( '' );
-    this.mensajeSubscription =
-      this._mensaje.state$.subscribe( async mensaje => {
+    this.intentSubscription =
+      this._intent.state$.subscribe( async mensaje => {
         this.contextLists = await this._cache.getDataKey<any>( 'contextosLists' );
         await this.setNextIntents( this.currentContext );
       } )
@@ -107,7 +107,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       // Set intents related to current context
       if ( currentContext ) {
         var currentList: any[] = this.contextLists[ currentContext ];
-        const current = this._mensaje.state$.getValue();
+        const current = this._intent.state$.getValue();
         var currentIntentIndex = currentList.findIndex(
           ( i ) => i.displayName === current?.intent.displayName
         );
@@ -156,7 +156,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
 
     get isBienvenida() {
-      let intentState = this._mensaje.state$.getValue()
+      let intentState = this._intent.state$.getValue()
       console.log(  )
       return intentState?.intent.displayName == 'Default Welcome Intent'
     }
@@ -384,7 +384,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-      if (this.mensajeSubscription) this.mensajeSubscription.unsubscribe()
+      if (this.intentSubscription) this.intentSubscription.unsubscribe()
     }
 
     /** Lista de tipo de respuestas con sus respectivos estilos */

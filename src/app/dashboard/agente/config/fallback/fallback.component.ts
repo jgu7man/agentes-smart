@@ -45,7 +45,7 @@ export class FallbackComponent implements OnInit {
 
       const agentePath = this._cache.getDataKey('agentePath');
       this.respuestaPath =
-        agentePath + `/mensajes/${this.intent.name}/respuestas`;
+        agentePath + `/intents/${this.intent.name}/responses`;
       const respuestasCol = await this._afs
         .collection(this.respuestaPath)
         .ref.get();

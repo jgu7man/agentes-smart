@@ -7,7 +7,11 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "back": "cd ../agenteSmart-backend/functions && start cmd /k npm run debug",
+    "websocket": "cd ../agentesmart-ws && start cmd /k npm run test ",
+    "work": "npm run back && npm run websocket && ng serve",
+    "open": "npm run back && npm run websocket && ng serve -o"
   },
   "private": true,
   "dependencies": {

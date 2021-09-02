@@ -134,7 +134,7 @@ export class CurrentIntentService {
       } else throw new MxErrorAlertModel(`No se ha seleccionado intent como actual`)
 
     } catch ( error ) {
-      if ( 'mensaje' in error )
+      if ( 'message' in error )
         this._alerts.error( error.message, error );
       else
         this._alerts.error('No se pudo guardar', error);

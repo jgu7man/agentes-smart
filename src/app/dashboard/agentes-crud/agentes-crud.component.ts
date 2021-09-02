@@ -30,6 +30,7 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.listSubscription =
       this.agents.list$.subscribe( list => {
+        // console.log( list )
         if ( list.length == 0 ) this._router.navigate( [ '/dashboard/crear_agente' ] )
         else this.agentList = list
     })

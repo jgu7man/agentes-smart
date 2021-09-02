@@ -72,19 +72,21 @@ export class IntentsService {
         const intentRef = this._afs.doc( `${this.projectPath('create')}/intents/${intentState.name}` )
         console.log( `Guardando intent en firestore: `, intentState );
         await intentRef.set( { ...intentState } )
-          .catch(error => {throw new MxErrorAlertModel(`Error al guardar el intent ${intentResult.name} en firestore`, error)} )
+          .catch( error => {
+            throw new MxErrorAlertModel( `Error al guardar el intent ${ intentResult.name } en firestore`, 'create',  error )
+          } )
 
         // this.getDialogFlowIntents();
         this._loading.toggleWaiting('close');
         this._alert.notify('Mensaje creado')
         return
-      } else throw new MxErrorAlertModel(`No se encontró el projectId`, 'saveNew')
-
+      } else throw new MxErrorAlertModel(`No se encontró el projectId`, 'create')
 
     } catch (error) {
       this._loading.toggleWaiting('close');
       this.catchCreateErrors(error)
-      return console.error(error);
+      console.error( error );
+      return
     }
   }
 
@@ -163,36 +165,54 @@ export class IntentsService {
    * @type {Promise<iIntentState[]>}
    */
   public get list(): Promise<iIntentState[]>{
-    return this.list$.pipe( take( 1 )).toPromise()
+    try {
+      return this.list$.pipe( take( 1 )).toPromise()
+    } catch (error) {
+      if ('mensaje' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(``, error)
+      }
+      return new Promise(() => [])
+    }
   }
 
 
 
   // # GET INTENTS LIST BY CONTEXTO
   /** Obtiene los intents de Firestore que coinciden con tener el contexto indicado
-   * @param {iContext} contexto Indica el contexto al cual pertenece la fila donde se invoca la lista de mensajes
+   * @param {iContext} context Indica el contexto al cual pertenece la fila donde se invoca la lista de mensajes
    * @return {Observable<IntentStateModel[]>} Observable de intents states en array
    */
-  getByContext$(contexto: iContext): Observable<iIntentState[]> {
-    if ( contexto.id ) {
+  getByContext$(context: iContext): Observable<iIntentState[]> {
+    try {
+      if ( context.id ) {
 
-      return this._afs.collection<iIntentState>( this.projectPath( 'getByContext' ),
-        ref => ref
-          .where( 'contexto', '==', contexto.name )
-          .orderBy( 'index' )
-      ).valueChanges()
-        .pipe(
+        return this._afs.collection<iIntentState>(
+          `${this.projectPath( 'getByContext' )}/intents`,
+          ref => ref
+            .where( 'contexto', '==', context.name )
+            .orderBy( 'index' )
+        ).valueChanges()
+          .pipe(
 
-          catchError( error => {
-            new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ contexto.name }`, error )
-            return of([])
-          } )
+            catchError( error => {
+              throw new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ context.name }`,'getByContext', error )
+            } )
 
-      )
+        )
 
-    } else {
-      let error = new MxErrorAlertModel(`No se proporionó ID del contexto`, 'getByContext')
-      throw this._alert.error(error.message, error )
+      } else {
+        throw new MxErrorAlertModel(`No se proporionó ID del contexto`, 'getByContext')
+      }
+    } catch ( error ) {
+      this.handleIntentErrors( error)
+      if ('mensaje' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(`No se pudieron obtener  los intents del contexto ${context}`, error)
+      }
+      return of([])
     }
   }
 
@@ -203,11 +223,14 @@ export class IntentsService {
    */
   getWithoutContext$(): Observable<iIntentState[]> {
 
-    return this._afs.collection<iIntentState>( this.projectPath( 'getByContext' ),
+    return this._afs.collection<iIntentState>(
+      `${this.projectPath( 'getByContext')}/intents`,
       ref => ref.where( 'contexto', '==', 'no-context' )
     ).valueChanges().pipe(
-      catchError( error => {
-        this._alert.error( `Error cargando los intents sin contextos`, error );
+      catchError( e => {
+        let error = new MxErrorAlertModel(
+          `Error cargando los intents sin contextos`, 'getWithoutContext', e )
+        this.handleIntentErrors(error)
         return of([])
       })
     )
@@ -237,6 +260,11 @@ export class IntentsService {
           return null
 
         }
+      }),
+
+      catchError( error => {
+        this.handleIntentErrors( error )
+        return of(null)
       })
     )
   }
@@ -246,7 +274,12 @@ export class IntentsService {
    * @returns {*}  {Promise<iIntentState>}
    */
   async find( displayNameOrName: string ): Promise<iIntentState | null> {
-    return await this.find$(displayNameOrName).pipe( take( 1 )).toPromise()
+    try {
+      return await this.find$(displayNameOrName).pipe( take( 1 )).toPromise()
+    } catch (error) {
+      this.handleIntentErrors( error )
+      return null
+    }
   }
 
 
@@ -302,7 +335,7 @@ export class IntentsService {
    * @param {iIntentState} intentState
    * @returns {*}
    */
-  async update( intentState: iIntentState ) {
+  async update( intentState: iIntentState ): Promise<void> {
     const path = `${ this.projectPath }/intents`
     const intent = intentState.intent
 
@@ -310,18 +343,18 @@ export class IntentsService {
       // Update in dialogflow
       await this._dialgoflowIntents.put(intent)
       // Update in firestore
-      await this._afs.collection<iIntentState>( path )
-        .doc( intentState.name )
+      await this._afs.doc<iIntentState>( `${path}/${intentState.name}` )
         .update( {
           ...intentState,
           unsaved:false
         } )
+
+        .catch( error => {
+          throw new MxErrorAlertModel( 'Error de firebase para actualizar el intent', 'intent.service#update', error )
+        } )
+
     } catch (error) {
-      if ('mensaje' in error) {
-        this._alert.error(error.message, error)
-      } else {
-        this._alert.error(`Error actualizando el intent ${intentState.displayName}`, error)
-      }
+      this.handleIntentErrors(error)
       return console.error(error)
     }
   }
@@ -351,7 +384,7 @@ export class IntentsService {
       return batch.commit()
 
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
         this._alert.error(`No se pudo actualizar el orden de los intents`, error)
@@ -376,33 +409,36 @@ export class IntentsService {
     this._loading.toggleWaiting('open');
     const batch = this._afs.firestore.batch()
     const intentsPath = `${ this.projectPath( 'restoreDefaultIntent' ) }/intents`
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
-    let intentState = await this.find(displayName)
+    const intentState = await this.find(displayName)
 
-    if ( !projectId ) {
-      throw new MxErrorAlertModel(`No se encontró el projectId`, 'restoreDefaultIntet')
-    } else {
+    try {
 
-      if ( intentState ) {
-        const intentRef = this._afs.doc( `${intentsPath}/${intentState.name}` ).ref
-        const responses = await intentRef.collection( 'responses' ).get()
+        if ( intentState ) {
+          const intentRef = this._afs.doc( `${intentsPath}/${intentState.name}` ).ref
+          const responses = await intentRef.collection( 'responses' ).get()
 
-        await this._loading.asyncForEach( responses.docs, response => {
-          batch.delete( response.ref)
-        })
+          await this._loading.asyncForEach( responses.docs, response => {
+            batch.delete( response.ref)
+          })
 
-        batch.delete( intentRef )
-        await batch.commit()
+          batch.delete( intentRef )
+          await batch.commit()
 
+        }
+
+        await this.create(displayName)
+
+        this._loading.toggleWaiting('close');
+        this._alert.notify(displayName + ' creado');
+
+    } catch (error) {
+      if ('message' in error) {
+        this._alert.error(error.message, error)
+      } else {
+        this._alert.error(`Error al restaurar el intent`, error)
       }
-
-      await this.create(displayName)
-
-      this._loading.toggleWaiting('close');
-      this._alert.notify(displayName + ' creado');
-
+      return console.error(error)
     }
-
   }
 
 
@@ -411,7 +447,7 @@ export class IntentsService {
    * @param {string} intentName name del intent
    * @returns {*}
    */
-   async delete( intentName: string ) {
+   async delete( intentName: string ): Promise<void> {
     const batch = this._afs.firestore.batch()
     const path = `${ this.projectPath( 'delete' ) }/intents/${ intentName }`;
     const intentRef = this._afs.doc(path).ref
@@ -447,7 +483,7 @@ export class IntentsService {
   // # GET DIALOGFLOW INTENTS
   /** Obtiene respuesta de los intents registrados en el agente de Dialogflow  y actualiza en firestore*/
   private async retriveFromDialogfow(): Promise<void> {
-    const path = `${ this.projectPath( 'getDialogFlowIntents' ) }/intents`
+    const path = `${ this.projectPath( 'retriveFromDialogfow' ) }/intents`
     const projectId = this._cache.getDataKey<string>( 'projectId' )
     const batch = this._afs.firestore.batch()
     const intentRef = this._afs.collection( path )
@@ -460,16 +496,16 @@ export class IntentsService {
       await this._loading.asyncForEach( list,
         (intent: iDialogflowIntent ) => {
           let name = intent.name.slice(intent.name.lastIndexOf('/') + 1)
-          return batch.update(intentRef.doc(name).ref, {intent} )
+          return batch.set(intentRef.doc(name).ref, {intent}, { merge: true} )
         } )
 
       await batch.commit().catch( error => {
-        throw new MxErrorAlertModel( `Error en el commit actualizando intents a ${path}`, error)
+        throw new MxErrorAlertModel( `Error en el commit actualizando intents a ${path}`,'intents.service#retriveFromDialogfow', error)
       })
 
       return
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
         this._alert.error(`Error desconocido actualizando los intent del agente ${projectId}`, error)
@@ -489,20 +525,32 @@ export class IntentsService {
     if ( error.error.code === 3 ) {
       this._alert.error(
         'Este nombre de intent ya existe, por favor elige otro',
-        error.error.error.details
+        error.error.error.details,
+        'intents.service#create'
       );
 
     } else if ( error.error.code === 9 ) {
       this._alert.error(
         'El nombre del intent no sólo puede contener caracteres como LETRAS: [a-z, A-Z], números:[0-9], guión bajo [_], guión medio [-] o espacios',
-        error.error.error.details
+        error.error.error.details,
+        'intents.service#create'
       );
 
     } else if ( 'message' in error ) {
-      this._alert.error(error.message, error)
+      this._alert.error(error.message, error,
+        'intents.service#create')
 
     } else {
-      this._alert.error('Error creando el intent nuevo', error.error.error.details);
+      this._alert.error('Error creando el intent nuevo', error.error.error.details,
+      'intents.service#create');
+    }
+  }
+
+  private handleIntentErrors(error: any) {
+    if ( 'message' in error ) {
+      this._alert.error(error.message, error)
+    } else {
+      this._alert.error('Error desconocido en servicio de interacciones', error)
     }
   }
 }
@@ -538,7 +586,7 @@ export class DialogflowIntentsService {
       ).toPromise()
   }
 
-  async get() {
+  async get(): Promise<iDialogflowIntent[]> {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
     const projectPath = `${ this._url }/${ projectId }`
     const headers  = new HttpHeaders({ responseType: 'json' })
@@ -552,17 +600,18 @@ export class DialogflowIntentsService {
         pluck<any, iDialogflowIntent[]>( 'result', 'intents' ),
 
         catchError( error => {
-          throw new MxErrorAlertModel( `Error desde el servidor al tratar de obtener los intent del agente ${ projectId }`, error )
+          throw new MxErrorAlertModel( `Error desde el servidor al tratar de obtener los intent del agente ${ projectId }`, 'intents.service#DialogFlowIntentservice:get', error )
         } )
 
       ).toPromise()
+
     } catch (error) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
-        this._alert.error(``, error)
+        this._alert.error(`No se pudo obtener los intents del servidor`, error)
       }
-      return console.error(error)
+      return []
     }
   }
 

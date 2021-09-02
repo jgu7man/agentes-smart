@@ -10,7 +10,7 @@
     >
       <mat-card
         *ngFor="let intent of intents; trackBy: trackByName"
-        [routerLink]="['../intent', intent.name]"
+        [routerLink]="['../interaccion', intent.name]"
         [queryParams]="{ contexto: contexto.name }"
         cdkDrag
         cdkDragBoundary="intents-list"
@@ -33,7 +33,7 @@
     <div class="intents-list">
       <mat-card
         *ngFor="let intent of intents; trackBy: trackByName"
-        [routerLink]="['../intent', intent.name]"
+        [routerLink]="['../interaccion', intent.name]"
       >
         <mat-card-content
           diagramElement

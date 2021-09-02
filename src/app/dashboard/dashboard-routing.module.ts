@@ -5,15 +5,13 @@ import { DashboardComponent } from './dashboard.component';
 import { AgenteComponent } from './agente/agente.component';
 import { SetAgenteComponent } from './agentes-crud/set-agente/set-agente.component';
 import { InicioComponent } from './inicio/inicio.component';
-// import { AgentConfigComponent } from './agente/agent-config/agent-config.component';
-// import { BienvenidaComponent } from './agente/bienvenida/bienvenida.component';
-// import { ConversacionesComponent } from './agente/conversaciones/conversaciones.component';
-// import { IntegracionesComponent } from './agente/integraciones/integraciones.component';
-// import { MensajeComponent } from './agente/mensajes/mensaje/mensaje.component';
-// import { MensajesComponent } from './agente/mensajes/mensajes.component';
-// import { OpcionesComponent } from './agente/opciones/opciones.component';
-// import { StartUiComponent } from './agente/start-ui/start-ui.component';
-// import { TiposComponent } from './agente/tipos/tipos.component';
+import { StartUiComponent } from './agente/start-ui/start-ui.component';
+import { IntentsComponent } from './agente/intents/intents.component';
+import { CurrentIntentComponent } from './agente/intents/current-intent/current-intent.component';
+import { EntityTypesComponent } from './agente/entity-types/entity-types.component';
+import { ConfigComponent } from './agente/config/config.component';
+import { IntegrationsComponent } from './agente/integrations/integrations.component';
+import { InteractionsComponent } from './agente/interactions/interactions.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent, children: [
@@ -23,16 +21,15 @@ const routes: Routes = [
     { path: 'crear_agente', component: SetAgenteComponent, data: {page: 'Crear agente'}},
     { path: 'editar_agente/:id', component: SetAgenteComponent, },
     { path: 'agente/:id', component: AgenteComponent, data: {section: 'Agente'}, children: [
-    //   // { path: '', redirectTo: 'flujo', pathMatch: 'full', },
-    //   // { path: 'start', component: StartUiComponent },
-    //   // { path: 'mensaje/bienvenida', component: BienvenidaComponent },
-    //   // { path: 'flujo', component: MensajesComponent },
-    //   // { path: 'mensaje/:name', component: MensajeComponent, },
-    //   // { path: 'tipos', component: TiposComponent },
-    //   // { path: 'configuraciones', component: AgentConfigComponent },
-    //   // { path: 'opciones', component: OpcionesComponent },
-    //   // { path:  'integraciones', component: IntegracionesComponent },
-    //   // { path:  'conversaciones', component: ConversacionesComponent },
+      { path: '', redirectTo: 'flujo', pathMatch: 'full', },
+      { path: 'start', component: StartUiComponent },
+      { path: 'flujo', component: IntentsComponent },
+      { path: 'interaccion/:name', component: CurrentIntentComponent, },
+      { path: 'entidades', component: EntityTypesComponent },
+      { path: 'configuraciones', component: ConfigComponent },
+      // { path: 'opciones', component: OpcionesComponent },
+      { path:  'integraciones', component: IntegrationsComponent },
+      { path:  'interacciones', component: InteractionsComponent },
     ],},
     // { path: 'tarjetas', component: TarjetasComponent },
     // { path: 'colecciones', component: ColeccionesComponent },

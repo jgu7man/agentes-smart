@@ -95,7 +95,7 @@ export class ContextsService {
 
   async getById( contextId: string ) {
     const contextsRef = this._afs.collection<iContext>(
-      `${ this.projectPath('setContext') }/contexts`
+      `${ this.projectPath('getById') }/contexts`
     )
     const contextDoc = await contextsRef.ref.doc(contextId).get();
     var contextGeted: iContext = contextDoc.data() as iContext;
@@ -109,7 +109,7 @@ export class ContextsService {
 
   /** Escucha todos los contextos en tiempo real */
   get list$(): Observable<iContext[]> {
-    const agentePath = `${ this.projectPath('setContext') }/contexts`
+    const agentePath = `${ this.projectPath('list$') }/contexts`
     return this._afs.collection<iContext>(agentePath,
       ref => ref.orderBy('index', 'asc')
     ).valueChanges().pipe(debounceTime(1000), ) || of([])
@@ -130,7 +130,7 @@ export class ContextsService {
   async updateIndex( contextos: iContext[] ) {
     try {
       const contextsRef = this._afs.collection<iContext>(
-        `${ this.projectPath('setContext') }/contexts`
+        `${ this.projectPath('updateIndex') }/contexts`
       ).ref
       const batch = this._afs.firestore.batch()
       await this._loading.asyncForEach(contextos,
@@ -139,7 +139,7 @@ export class ContextsService {
       });
       await batch.commit()
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alerts.error(error.message, error)
       } else {
         this._alerts.error(`No se pudo actualizar el orden de los contextos`, error)
@@ -152,7 +152,7 @@ export class ContextsService {
 
   async delete( context: iContext ) {
     const contextsRef = this._afs.collection<iContext>(
-      `${ this.projectPath('setContext') }/contexts`
+      `${ this.projectPath('delete') }/contexts`
     ).ref
     await this.deleteFromIntents(context);
     // await this.deleteContextFromIntent(context.contextName);

@@ -33,7 +33,7 @@ export class ConditionalResponseFormComponent implements OnInit {
   constructor(
     // public respuestas_: RespuestasService,
     public _params: ParametersService,
-    private _mensaje: CurrentIntentService,
+    private _intent: CurrentIntentService,
     private _entityTypes: EntityTypesService,
   ) {
     this.result = new CondicionalModel( '', '', '' );
@@ -41,7 +41,7 @@ export class ConditionalResponseFormComponent implements OnInit {
 
   async ngOnInit() {
     if (this.result.parametro) {
-      this.tipoSelected = this._mensaje
+      this.tipoSelected = this._intent
         .entityTypes$
         .getValue()
         .find((t) => t && t.displayName == this.result.parametro);
@@ -79,7 +79,7 @@ export class ConditionalResponseFormComponent implements OnInit {
     // var param = selectedSplit.length > 1 ? selectedSplit[1] : selectedSplit[0];
     // console.log( param )
     // console.log( this._mensaje.mensajeTypeEntities$.getValue() )
-    this.tipoSelected = this._mensaje.entityTypes$.getValue()
+    this.tipoSelected = this._intent.entityTypes$.getValue()
       .find((t) => t && t.displayName == displayName);
 
     console.log( this.tipoSelected )

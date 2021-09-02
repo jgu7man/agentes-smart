@@ -44,7 +44,6 @@ export class SearchResponseFormComponent implements OnInit, OnDestroy {
     private _cache: MxCache,
     public agente_: CurrentAgentService,
     private _alerts: MxAlert,
-    private _mensaje: CurrentIntentService,
     private _tarjetas: TarjetasService,
     public  params_: ParametersService,
   ) {

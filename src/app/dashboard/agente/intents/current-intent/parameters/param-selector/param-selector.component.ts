@@ -34,7 +34,6 @@ export class ParamSelectorComponent implements OnInit, AfterViewInit, OnDestroy 
     public _params: ParametersService,
     private _loading: MxLoading,
     // public respuestas_: RespuestasService,
-    private _mensaje: CurrentIntentService
   ) {
     // this.paramsSubscription =
     //   this._mensaje.state$.subscribe( intentState => {

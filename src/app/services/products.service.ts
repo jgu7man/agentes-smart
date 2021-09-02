@@ -190,7 +190,7 @@ export class ProductsService {
           let entity: iEntityType = await this._createProductsEntity(newTipo);
           if (entity) {
             let id = entity.name?.slice(entity.name.lastIndexOf('/') + 1)
-            let entityPath = `agentes/${this.projectId}/tipos`
+            let entityPath = `agentes/${this.projectId}/entityTypes`
             this.usuarioRef?.collection(entityPath).doc(id).set({...entity})
           }
         }

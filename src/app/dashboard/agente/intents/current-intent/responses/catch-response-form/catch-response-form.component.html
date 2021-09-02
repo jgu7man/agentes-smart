@@ -1,5 +1,5 @@
 <!-- Parámetro -->
-<div class="row" *ngIf="mensaje_.state$ | async as intentState">
+<div class="row" *ngIf="currentIntent.state$ | async as intentState">
   <div class="col s4 resp-label">Guardar</div>
   <div class="col s8">
     <mat-select

@@ -41,7 +41,6 @@ export class RespuestasService {
 
   constructor(
     private fs: AngularFirestore,
-    private _mensaje: CurrentIntentService,
     private _loading: MxLoading,
     private _alerts: MxAlert,
     private _cache: MxCache,

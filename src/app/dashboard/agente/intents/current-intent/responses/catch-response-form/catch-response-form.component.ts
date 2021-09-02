@@ -29,7 +29,7 @@ export class CatchResponseFormComponent implements OnInit {
 
   constructor (
       public agente_: CurrentAgentService,
-      public mensaje_: CurrentIntentService,
+      public currentIntent: CurrentIntentService,
       public _alerts: MxAlert,
       private _cache: MxCache
   ) {

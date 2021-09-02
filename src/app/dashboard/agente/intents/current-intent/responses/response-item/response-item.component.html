@@ -207,14 +207,14 @@
                       [disableRipple]="true"
                       [(ngModel)]="respuesta.nextIntent"
                       (selectionChange)="setNextIntentContext($event)"
-                      name="mensaje"
+                      name="intent"
                     >
                       <mat-option value="*fin"> Termina conversación </mat-option>
                       <mat-option
-                        *ngFor="let mensaje of nextMensajesList"
-                        [value]="mensaje?.displayName"
+                        *ngFor="let intent of nextMensajesList"
+                        [value]="intent?.displayName"
                       >
-                        {{ mensaje?.displayName }}
+                        {{ intent?.displayName }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>

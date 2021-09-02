@@ -43,7 +43,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   constructor(
     public responses: RespuestasService,
     private _loading: MxLoading,
-    public mensaje_: CurrentIntentService
+    public currentIntent: CurrentIntentService
   ) {
     this.newOutputMensaje = new SimpleModel('', []);
     // this._respuestas.getDataForRespuestas();

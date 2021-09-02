@@ -2,9 +2,9 @@
   <div class="row">
     <div class="col s12">
       <!-- ENTRENAMIENTO -->
-      <div strechHeight id="mensaje-container">
-        <div class="row mensaje-content">
-          <div id="mensaje-header">
+      <div strechHeight id="intent-container">
+        <div class="row intent-content">
+          <div id="intent-header">
             <div class="row align-cols" *ngIf="intent$ | async as intent">
               <div class="col s10"></div>
               <div class="col s2">
@@ -13,7 +13,7 @@
                   mat-raised-button
                   color="primary"
                   (keydown.enter)="$event.preventDefault()"
-                  (click)="mensaje_.saveChanges()"
+                  (click)="currentIntent.saveChanges()"
                   [disabled]="!unsaved"
                 >
                   Guardar

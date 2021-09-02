@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AgenteModel } from 'src/app/models/agent.model';
-import { MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
+import { MxAlert, MxCache, MxLoading, MxResponsive } from '@marxa/devkit';
 import { DashboardService } from 'src/app/services/dashboard.service';
 import { iNavlink } from 'src/app/models/navlink.interface';
 import { CurrentAgentService } from 'src/app/services/current-agent.service';
@@ -23,6 +23,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _router: Router,
     private _agent: CurrentAgentService,
+    private _alert: MxAlert,
     public dashboard: DashboardService,
     public responsive: MxResponsive,
     public loading: MxLoading,
@@ -43,7 +44,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
 
 
   async ngOnInit() {
-    // this.updateAgentDatabase()
+    this.updateAgentDatabase()
   }
 
 
@@ -51,11 +52,17 @@ export class AgenteComponent implements OnInit, OnDestroy {
 
   async loadAgente() {
     this.agent = await this._agent.get( this.projectId )
-    const url = this._router.url
-    if (!this.agent?.started) {
-      this._router.navigate( [ `/dashboard/agente/${ this.projectId }/start` ] )
-    } else if ( url.slice(url.lastIndexOf('/') + 1) == this.projectId) {
-      this._router.navigate([`/dashboard/agente/${this.projectId}/flujo`])
+    if ( this.agent ) {
+      this._cache.updateData('projectId', this.projectId)
+      const url = this._router.url
+      if (!this.agent.started) {
+        this._router.navigate( [ `/dashboard/agente/${ this.projectId }/start` ] )
+      } else if ( url.slice(url.lastIndexOf('/') + 1) == this.projectId) {
+        this._router.navigate([`/dashboard/agente/${this.projectId}/flujo`])
+      }
+    } else {
+      this._alert.error( `No se encontró el agente seleccionado: ${ this.projectId }`,
+      'agente.component#loadAgente')
     }
   }
 
@@ -66,12 +73,15 @@ export class AgenteComponent implements OnInit, OnDestroy {
     const projectRef = this._afs.doc(projectPath).ref
 
     const clients = await projectRef.collection( 'clientes' ).get()
+
     await this.loading.asyncForEach( clients.docs, async client => {
       let clientRef = this._afs.doc( `usuarios/${ clientId }/clients/${ client.id }` ).ref
+      console.log(client.data())
       await batch.set( clientRef, client.data() )
       let conversation = await client.ref.collection( 'conversacion' ).get()
       this.loading.asyncForEach( conversation.docs, async conv => {
-        let convRef = clientRef.collection('conversation').doc(conv.id)
+        let convRef = clientRef.collection( 'conversation' ).doc( conv.id )
+        console.log( conv.data() )
         await batch.set( convRef, conv.data() )
         await batch.delete( conv.ref )
         // return
@@ -89,29 +99,33 @@ export class AgenteComponent implements OnInit, OnDestroy {
     } )
 
     const entityTypes = await projectRef.collection( 'tipos' ).get()
-    await this.loading.asyncForEach(entityTypes.docs,  async entityType => {
+    await this.loading.asyncForEach( entityTypes.docs, async entityType => {
+      console.log( entityType.data() )
       await batch.set( projectRef.collection( 'entityTypes' ).doc( entityType.id ), entityType.data() )
       await batch.delete( entityType.ref )
       // return
     } )
 
     const params = await projectRef.collection( 'parametros' ).get()
-    await this.loading.asyncForEach(params.docs,  async param => {
+    await this.loading.asyncForEach( params.docs, async param => {
+      console.log( param.data() )
       await batch.set( projectRef.collection( 'params' ).doc( param.id ), param.data() )
       await batch.delete( param.ref )
       // return
     } )
 
     const integrations = await projectRef.collection( 'integraciones' ).get()
-    await this.loading.asyncForEach(integrations.docs,  async int => {
+    await this.loading.asyncForEach( integrations.docs, async int => {
+      console.log( int.data() )
       await batch.set( projectRef.collection( 'integrations' ).doc( int.id ), int.data() )
       await batch.delete( int.ref )
       // return
     } )
 
     const conversations = await projectRef.collection( 'conversaciones' ).get()
-    await this.loading.asyncForEach(conversations.docs,  async conv => {
-      await batch.set( projectRef.collection( 'conversations' ).doc( conv.id ), conv.data() )
+    await this.loading.asyncForEach( conversations.docs, async conv => {
+      console.log( conv.data() )
+      await batch.set( projectRef.collection( 'interactions' ).doc( conv.id ), conv.data() )
       await batch.delete( conv.ref )
       // return
     } )
@@ -125,6 +139,7 @@ export class AgenteComponent implements OnInit, OnDestroy {
 
       await this.loading.asyncForEach( responses.docs, async response => {
         let responseRef = intentRef.collection( 'responses' ).doc( response.id )
+        console.log( response.data() )
         await batch.set( responseRef, response.data() )
         await batch.delete( response.ref )
         // return
@@ -138,9 +153,9 @@ export class AgenteComponent implements OnInit, OnDestroy {
   }
 
   agentLinks:iNavlink[] = [
-    { path: 'intent/welcome', label: 'Filtro', icon: 'fa-filter' },
+    { path: 'interaccion/welcome', label: 'Filtro', icon: 'fa-filter' },
     { path: 'flujo', label: 'Flujo', icon:'fa-sitemap' },
-    { path: 'tipos', label: 'Tipos', icon:'fa-list-alt' },
+    { path: 'entidades', label: 'Entidades', icon:'fa-list-alt' },
     // { path: 'configuraciones', label: 'Configuración', icon: 'fa-cog' },
     // { path: 'integraciones', label: 'Integraciones', icon: 'fa-plug' },
     // { path: 'conversasiones', label: 'Conversaciones', icon: 'fa-comment-dots' },

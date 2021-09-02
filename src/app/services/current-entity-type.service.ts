@@ -33,7 +33,7 @@ export class CurrentEntityTypeService {
   /** Obtiene la ruta a la colección de firestore */
   get tiposPath() {
     let agentePath = this._cache.getDataKey('agentePath');
-    return `${agentePath}/tipos`;
+    return `${agentePath}/entityTypes`;
   }
 
   /** Define el tipo de dato seleccionado */
@@ -191,7 +191,7 @@ export class CurrentEntityTypeService {
         return;
       } else throw new MxErrorAlertModel( `No se tiene la entityType actual`)
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alerts.error(error.message, error)
       } else {
         this._alerts.error(``, error)
@@ -248,7 +248,7 @@ export class CurrentEntityTypeService {
         return;
       }
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alerts.error(error.message, error)
       } else {
         this._alerts.error(``, error)
@@ -284,7 +284,7 @@ export class CurrentEntityTypeService {
         return;
       }
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alerts.error(error.message, error)
       } else {
         this._alerts.error(``, error)

@@ -19,12 +19,12 @@ export class StartTrainingPhrasesComponent implements OnInit {
   @Output() saved = new EventEmitter<any>();
   constructor(
     public responsive: MxResponsive,
-    public mensaje_: CurrentIntentService,
+    public currentIntent: CurrentIntentService,
     private _alerts: MxAlert,
     private _cache: MxCache
   ) {
     this.stateSubs =
-      this.mensaje_.state$.subscribe( state => {
+      this.currentIntent.state$.subscribe( state => {
         if ( state ) {
           this.unsaved = state.unsaved as boolean;
           if (this.listenSaved && !this.unsaved) {
@@ -46,7 +46,7 @@ export class StartTrainingPhrasesComponent implements OnInit {
 
   async getWelcomeIntent() {
     this.intent$ = this._cache.listenForChanges<iIntentState>('currentIntent');
-    await this.mensaje_.set('Default Welcome Intent');
+    await this.currentIntent.set('Default Welcome Intent');
     // await this.intent$.pipe(take(1)).toPromise()
     // this._loading.toggleWaitingSpinner(false)
   }
@@ -59,6 +59,6 @@ export class StartTrainingPhrasesComponent implements OnInit {
 
   ngOnDestroy() {
     this.stateSubs.unsubscribe();
-    this.mensaje_.unsubscribe();
+    this.currentIntent.unsubscribe();
   }
 }

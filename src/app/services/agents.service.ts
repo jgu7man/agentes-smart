@@ -234,7 +234,7 @@ export class AgentsService {
             try {
               return await this.removeFromFirestore(usuario.uid, projectId)
             } catch (error) {
-              if ('mensaje' in error) {
+              if ('message' in error) {
                 this._alert.error(error.message, error)
               } else {
                 this._alert.error(``, error)
@@ -283,9 +283,9 @@ private async removeFromFirestore( uid: string, projectId: string) {
         }
 
         // Delete conversaciones
-        const conversacionesCol = await agenteRef.collection( 'conversaciones' ).ref.get()
-        if ( !conversacionesCol.empty ) {
-          conversacionesCol.forEach( async conv => { batch.delete(conv.ref)})
+        const interactionsCol = await agenteRef.collection( 'interactions' ).ref.get()
+        if ( !interactionsCol.empty ) {
+          interactionsCol.forEach( async conv => { batch.delete(conv.ref)})
         }
 
         // Delete mensajes
@@ -317,7 +317,7 @@ private async removeFromFirestore( uid: string, projectId: string) {
         return
       }
     } catch (error) {
-      if ('mensaje' in error) {
+      if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
         this._alert.error(``, error)
