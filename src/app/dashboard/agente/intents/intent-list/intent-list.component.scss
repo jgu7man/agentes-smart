@@ -19,15 +19,22 @@
   min-width: 100px;
 }
 
-::ng-deep.intents-list {
-  position: relative;
-  display: flex;
-  flex-flow: wrap row;
-  mat-card {
-      margin: .5em 1em;
-      z-index: 2;
-      cursor: pointer;
-      min-width: 200px;
+::ng-deep {
+  .intents-list {
+    position: relative;
+    display: flex;
+    flex-flow: wrap row;
+    mat-card {
+        margin: .5em 1em;
+        z-index: 2;
+        cursor: pointer;
+        min-width: 200px;
+    }
+  }
+  .add-input {
+    .mat-form-field-infix {
+      padding: .0em 0em .5em 0
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 <div class="row align-cols">
   <div class="col s10">
-    <h5>Frases de entrenamiento</h5>
+    <h4>Frases de entrenamiento</h4>
   </div>
   <div class="col s2">
     <button mat-button color="primary" (click)="toAddPhrase()">
@@ -8,6 +8,8 @@
     </button>
   </div>
 </div>
+
+<!-- TRAINING PHRASES LIST -->
 <div class="row">
   <div class="col s12" *ngIf="phrasesIndex.currentPage$ | async as currentPage">
 
@@ -21,7 +23,7 @@
 
     <mat-divider></mat-divider>
 
-    <!-- READ Muestra las frases -->
+    <!-- LIST-->
     <ul class="phrases-list" >
 
       <!-- <ng-container *ngIf="Frases.length > 0 || addPhraseInput; else noPhrases"> -->
@@ -37,6 +39,8 @@
           [disabled]="disableFrase(phrase)"
           [expanded]="validateFraseExpanded(i)"
           >
+
+          <!--# PHRASE VIEW -->
             <mat-expansion-panel-header>
               <as-phrase-item
                 [phrase]="phrase"
@@ -44,6 +48,8 @@
               ></as-phrase-item>
             </mat-expansion-panel-header>
 
+
+            <!--# PHRASE CONFIG -->
             <as-phrase-params-form
               [phrase]="phrase"
             ></as-phrase-params-form>

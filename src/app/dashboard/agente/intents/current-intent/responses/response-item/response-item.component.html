@@ -6,10 +6,10 @@
   >
     <button
       mat-fab
-      *ngIf="selectedRes"
-      [ngStyle]="{ background: selectedRes.color }"
+      *ngIf="responseType"
+      [ngStyle]="{ background: responseType.color }"
     >
-      <i class="fas" [ngClass]="selectedRes.icono"></i>
+      <i class="fas" [ngClass]="responseType.icono"></i>
     </button>
   </div>
 
@@ -29,7 +29,7 @@
                   <span><b>Sugerencias</b></span>
                 </div>
                 <div *ngSwitchDefault>
-                  <div *ngIf="respuesta.tipo == 'simple'">
+                  <div *ngIf="respuesta.tipo == 'default'">
                     <span style="font-size: x-small"
                       >Siguiente conversacion</span
                     >
@@ -42,25 +42,25 @@
                 <div [ngSwitch]="respuesta.tipo">
 
 
-                  <div *ngSwitchCase="'condicional'" >
-                    <span *asConditional="respuesta.result as result">
-                      Si {{ result["parametro"] }}
+                  <div *ngSwitchCase="'conditional'" >
+                    <span *ngIf="isConditional(respuesta.result) as result" style="font-size: x-small">
+                      Si {{ result.parametro }}
                       <span *ngIf="!disableEScondition()">es</span>
-                      {{ result["condicion"] }}
-                      {{ result["valor"] }}
+                      {{  result["condicion"] }}
+                      {{  result["valor"] }}
                     </span>
                   </div>
 
-                  <div *ngSwitchCase="'grupo_datos'">
-                    <span *asCatch="respuesta.result as result"  style="font-size: x-small">
+                  <div *ngSwitchCase="'catch'">
+                    <span *ngIf="isCatch(respuesta.result) as result"  style="font-size: x-small">
                       Guarda {{ result["key"] }} en
                       {{ result["coleccion"] }}
                     </span>
                   </div>
 
-                  <div *ngSwitchCase="'buscar'">
+                  <div *ngSwitchCase="'search'">
                     <span style="font-size: x-small"
-                    *asSearch="respuesta.result as result" >
+                    *ngIf="isSearch(respuesta.result) as result" >
                       Busca {{ result["parametro"] }} en
                       {{ result["database"] }}
                     </span>
@@ -104,10 +104,10 @@
                 (selectionChange)="onTipoSelected($event)"
               >
                 <mat-option
-                  *ngFor="let tipoRes of tiposRes"
-                  [value]="tipoRes.name"
+                  *ngFor="let typeResponse of typeResponses"
+                  [value]="typeResponse.type"
                 >
-                  {{ tipoRes.display }}
+                  {{ typeResponse.display }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
@@ -136,32 +136,33 @@
             </div>
           </ng-container>
 
+          {{respuesta.tipo}}
           <!-- SWITCH TIPO RESPUESAS -->
           <div [ngSwitch]="respuesta.tipo">
-            <div *ngSwitchCase="'condicional'">
+            <div *ngSwitchCase="'conditional'">
               <as-conditional-response-form
-              *asConditional="respuesta.result as result"
+              *ngIf="isConditional(respuesta.result) as result"
                 [result]="result"
                 (onRespChanges)="catchResult($event)"
               ></as-conditional-response-form>
             </div>
-            <div *ngSwitchCase="'grupo_datos'">
+            <div *ngSwitchCase="'catch'">
               <as-catch-response-form
-              *asCatch="respuesta.result as result"
+              *ngIf="isCatch(respuesta.result) as result"
                 [RegistroDatosForm]="result"
                 (edited)="catchResult($event)"
               ></as-catch-response-form>
             </div>
-            <div *ngSwitchCase="'buscar'">
+            <div *ngSwitchCase="'search'">
               <as-search-response-form
-              *asSearch="respuesta.result as result"
+              *ngIf="isSearch(respuesta.result) as result"
                 [BuscarRes]="result"
                 (onRespChanges)="catchResult($event)"
               ></as-search-response-form>
             </div>
 
             <as-default-response-form
-            *asDefault="respuesta.result as result"
+            *ngIf="isDefault(respuesta.result) as result"
               [result]="result"
               (onRespChanges)="catchResult($event)"
               (toggleSugerencias)="sugerenciasActivated = $event"

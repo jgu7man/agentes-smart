@@ -42,10 +42,10 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
 
 
   getCurrentIntent() {
-    this.routeIntentName = this._route.snapshot.params['name']
-    this.currentContext = this._route.snapshot.queryParams['contexto']
+    const route = this._route.snapshot.params[ 'name' ]
+    this.routeIntentName = route !== 'welcome' ? route : 'Default Welcome Intent'
+    this.currentContext = this._route.snapshot.queryParams[ 'contexto' ]
     this._intent.set(this.routeIntentName, this.currentContext)
-    // console.log(this.intentName, this.currentContext);
 
   }
 
@@ -80,7 +80,7 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._intent.unsubscribe()
     this.inIntentSubs.unsubscribe()
-    this.stateSubs.unsubscribe()
+    // this.stateSubs.unsubscribe()
     // console.log('unsubscribe');
   }
 }

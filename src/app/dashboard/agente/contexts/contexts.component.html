@@ -13,7 +13,7 @@
     </div>
   </div>
 
-  <ng-container *ngFor="let contexto of list">
+  <ng-container *ngFor="let contexto of contextos.list$ | async">
     <div
       class="col s12 en-Column"
       cdkDrag

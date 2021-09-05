@@ -10,10 +10,10 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
-  RespuestaModel,
-  SimpleModel,
+  ResponseModel,
+  DefaultResponseModel,
 } from 'src/app/models/intent-response.model';
-import { RespuestasService } from 'src/app/services/respuestas.service';
+import { ResponsesService } from 'src/app/services/responses.service';
 import { MxLoading } from '@marxa/devkit';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { ResponseItemComponent } from './response-item/response-item.component';
@@ -26,9 +26,9 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 })
 export class ResponsesComponent implements OnInit, OnDestroy {
   /** Respuestas obtenidas de la función de obtener respuestas */
-  respuestasList: RespuestaModel[] = [];
+  respuestasList: ResponseModel[] = [];
   /** Modelo de inicio para crear una nueva respuesta simple */
-  newOutputMensaje: SimpleModel;
+  newOutputMensaje: DefaultResponseModel;
   /** Suscripción a los cambios de la lista de respuestas */
   respuestasChangesSubs!: Subscription;
   /** Lista de componentes de respuestas */
@@ -36,23 +36,23 @@ export class ResponsesComponent implements OnInit, OnDestroy {
 
   openedCard?: number;
 
-  emptyResponse?: RespuestaModel;
+  emptyResponse?: ResponseModel;
 
   @Output() lastPositionChange = new EventEmitter<number>();
 
   constructor(
-    public responses: RespuestasService,
+    public responses: ResponsesService,
     private _loading: MxLoading,
     public currentIntent: CurrentIntentService
   ) {
-    this.newOutputMensaje = new SimpleModel('', []);
+    this.newOutputMensaje = new DefaultResponseModel('', []);
     // this._respuestas.getDataForRespuestas();
   }
 
   ngOnInit(): void {
-    this.respuestasChangesSubs = this.responses.onRespuestasChanged.subscribe(
+    this.respuestasChangesSubs = this.responses.onResponsesChanged.subscribe(
       () => {
-        this.newOutputMensaje = new SimpleModel('', []);
+        this.newOutputMensaje = new DefaultResponseModel('', []);
       }
     );
   }
@@ -65,7 +65,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
     let lastIndex = (await this.responses.getList()).length;
 
     this.emptyResponse =
-      new RespuestaModel(this.newOutputMensaje, lastIndex, '*fin', undefined),
+      new ResponseModel(this.newOutputMensaje, lastIndex, '*fin', undefined),
 
     await this._loading.waitFor( 500 );
     this.cards.last.switchEditResp = true;
@@ -88,7 +88,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
     this.openedCard = index;
   }
 
-  async drop(event: CdkDragDrop<RespuestaModel[]>) {
+  async drop(event: CdkDragDrop<ResponseModel[]>) {
     let respuestas = await this.responses.getList()
     moveItemInArray(respuestas, event.previousIndex, event.currentIndex);
     this.responses.updateRespuestasOrder(respuestas);

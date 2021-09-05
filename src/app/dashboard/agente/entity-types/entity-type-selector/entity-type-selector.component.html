@@ -1,1 +1,22 @@
-<p>entity-type-selector works!</p>
+<mat-form-field appearance="outline" floatLabel="always">
+  <mat-label>Tipo de dato</mat-label>
+  <input
+    matInput
+    #partEntityInput
+    type="text"
+    [formControl]="tipoControl"
+    [matAutocomplete]="auto"
+    [value]="value"
+  />
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    placeholder="Selecciona uno"
+    showPanel="false"
+    [panelWidth]="300"
+    (optionSelected)="onTipoSelected($event)"
+  >
+    <mat-option *ngFor="let tipo of tiposFiltered | async" [value]="tipo">
+      @{{ tipo }}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>

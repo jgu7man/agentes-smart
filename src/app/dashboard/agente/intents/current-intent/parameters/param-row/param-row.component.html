@@ -3,7 +3,7 @@
   <div class="col s3" (click)="toEditDisplayName()">
     <ng-container *ngIf="!switchNameInput; else nameInput">
       <span
-        [ngStyle]="{ background: params_.getColor(param.displayName) }"
+        [ngStyle]="{ background: params_.getColor( param.displayName ) }"
         class="paramName"
         >{{ param.displayName }}</span
       >

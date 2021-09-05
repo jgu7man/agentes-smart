@@ -3,13 +3,13 @@ import { MatSelectChange } from '@angular/material/select';
 import { MxAlert, MxCache } from '@marxa/devkit';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { distinctUntilKeyChanged } from 'rxjs/operators';
-import { RespuestaBuscarModel } from 'src/app/models/intent-response.model';
+import { SearchResponseModel } from 'src/app/models/intent-response.model';
 import { iParameter } from 'src/app/models/intent.model';
 import { TarjetaModel } from 'src/app/models/tarjeta.model';
 import { CurrentAgentService } from 'src/app/services/current-agent.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { ParametersService } from 'src/app/services/parameters.service';
-import { RespuestasService } from 'src/app/services/respuestas.service';
+import { ResponsesService } from 'src/app/services/responses.service';
 import { TarjetasService } from 'src/app/services/tarjetas.service';
 
 @Component({
@@ -19,10 +19,10 @@ import { TarjetasService } from 'src/app/services/tarjetas.service';
 })
 export class SearchResponseFormComponent implements OnInit, OnDestroy {
 
-  @Input() response: RespuestaBuscarModel = new RespuestaBuscarModel( '', '' )
+  @Input() response: SearchResponseModel = new SearchResponseModel( '', '' )
 
-  private _BuscarRes : BehaviorSubject<RespuestaBuscarModel> = new BehaviorSubject(this.response);
-  @Input() set BuscarRes(form: RespuestaBuscarModel) { this._BuscarRes.next(form); }
+  private _BuscarRes : BehaviorSubject<SearchResponseModel> = new BehaviorSubject(this.response);
+  @Input() set BuscarRes(form: SearchResponseModel) { this._BuscarRes.next(form); }
   get BuscarRes() { return this._BuscarRes.getValue()}
 
   // paramSelected: string
@@ -34,20 +34,20 @@ export class SearchResponseFormComponent implements OnInit, OnDestroy {
 
   tarjetas: TarjetaModel[] = []
 
-  @Output() onRespChanges: EventEmitter<RespuestaBuscarModel> = new EventEmitter()
-  respuesta: RespuestaBuscarModel
+  @Output() onRespChanges: EventEmitter<SearchResponseModel> = new EventEmitter()
+  respuesta: SearchResponseModel
   // paramList: iParameter[]  = []
   // paramsSubscription: Subscription
 
   constructor (
-    public respuestas_: RespuestasService,
+    public respuestas_: ResponsesService,
     private _cache: MxCache,
     public agente_: CurrentAgentService,
     private _alerts: MxAlert,
     private _tarjetas: TarjetasService,
     public  params_: ParametersService,
   ) {
-    this.respuesta = new RespuestaBuscarModel('', '')
+    this.respuesta = new SearchResponseModel('', '')
     // this.paramsSubscription =
     // this._mensaje.state$.subscribe(({ intent }) => {
     //   this.paramList = intent.parameters

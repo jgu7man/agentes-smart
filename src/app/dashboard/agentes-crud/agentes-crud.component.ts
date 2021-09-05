@@ -36,10 +36,16 @@ export class AgentesCrudComponent implements OnInit, OnDestroy {
     })
   }
 
-  // onSelectAgent(projectId: string):void {
-  //   this._cache.updateData( 'projectId', projectId )
-  //   this._router.navigate(['/dashboard/agente/', projectId])
-  // }
+  onSelectAgent(agent: iAgente):void {
+    this._cache.updateData( 'projectId', agent.projectId )
+    this._router.navigate( [
+      '/dashboard/agente/',
+      agent.projectId,
+      agent.started ? 'flujo' : 'start'
+    ] )
+
+
+  }
 
 
   deleteAgent( projectId: string ) {

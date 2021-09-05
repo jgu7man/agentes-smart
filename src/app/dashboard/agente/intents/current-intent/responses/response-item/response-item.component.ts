@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
 import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
@@ -6,12 +7,12 @@ import { pull, uniq } from 'lodash';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { iContext, iContextList, iContextSelected } from 'src/app/models/context.model';
-import { CondicionalModel, iResponseType, RespuestaModel, ResultResponse, SimpleModel } from 'src/app/models/intent-response.model';
+import { ConditionalResponseModel, iResponseType, ResponseModel, ResultResponse, DefaultResponseModel, ResponseType, CatchResponseModel, SearchResponseModel } from 'src/app/models/intent-response.model';
 import { iIntentState, IntentStateModel } from 'src/app/models/intent.model';
 import { ContextsService } from 'src/app/services/contexts.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { IntentsService } from 'src/app/services/intents.service';
-import { RespuestasService } from 'src/app/services/respuestas.service';
+import { ResponsesService } from 'src/app/services/responses.service';
 import { AddIntentDialog } from '../../../add-intent/add-intent.dialog';
 
 @Component( {
@@ -21,13 +22,14 @@ import { AddIntentDialog } from '../../../add-intent/add-intent.dialog';
 } )
 export class ResponseItemComponent implements OnInit, OnDestroy {
   /** Resive la data de la respuesta desde el arreglo padre */
-  @Input() respuesta: RespuestaModel;
+  @Input() respuesta: ResponseModel;
+  responseType?: iResponseType
   /** Activa la visa para elegir acciones */
   activateAccion: boolean = false;
   /** Activa la opción de editar la respuesta */
   switchEditResp: boolean = false;
   /** Obtiene el tipo de respuesta seleccionado y da estilo a la vista */
-  selectedRes?: iResponseType;
+  selectedRes?: ResponseModel;
   /** El mensaje de salida */
   public result: ResultResponse;
   /** Almacena el contexto y permite que se muestre la lista de contextos */
@@ -48,42 +50,63 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
   @ViewChild( 'respuestaCard' ) public ownElement!: ElementRef
 
   constructor (
-    public respuestas_: RespuestasService,
+    public respuestas_: ResponsesService,
     private _alerts: MxAlert,
     private _loading: MxLoading,
     private _cache: MxCache,
     public contextos_: ContextsService,
     private _dialog: MatDialog,
     private _intent: CurrentIntentService,
-    private _intents: IntentsService
+    private _intents: IntentsService,
+    private _afs: AngularFirestore,
   ) {
-    this.result = new SimpleModel( '' );
+    this.result = new DefaultResponseModel( '' );
     this.intentSubscription =
       this._intent.state$.subscribe( async mensaje => {
         this.contextLists = await this._cache.getDataKey<any>( 'contextosLists' );
         await this.setNextIntents( this.currentContext );
       } )
     this.currentContext = this._cache.getDataKey<string>( 'currentContexto' ) || ''
-    this.respuesta = new RespuestaModel( this.result, 0, '*fin', 'simple', [] );
+    this.respuesta = new ResponseModel( this.result, 0, '*fin', 'default', [] );
   }
 
+  oldTipos: Map<string, ResponseType> = new Map( [
+    [ 'simple', 'default' ],
+    [ 'buscar', 'search' ],
+    [ 'condicional', 'conditional' ],
+    [ 'grupo_datos', 'catch' ],
+  ])
   async ngOnInit() {
-
-    // this.respuestas_.getDataForRespuestas();
     if ( this.respuesta.result[ 'suggestions' ] ) {
       if ( this.respuesta.result[ 'suggestions' ].length )
         this.sugerenciasActivated = true;
     }
-    this.selectedRes = this.tiposRes.find(
-      ( tipo ) => tipo.name == this.respuesta.tipo
+
+    let nuevo = this.oldTipos.get( this.respuesta.tipo as string )
+    if ( nuevo ) {
+      this.respuesta.tipo  = nuevo
+      // this.updateType()
+    }
+
+    this.responseType = this.typeResponses.find(
+      ( tipo ) => tipo.type == this.respuesta.tipo
     );
   }
 
-  validateResult(response: RespuestaModel) {
+  updateType() {
+    const projectId = this._cache.getDataKey( 'projectId' )
+    const userId = this._cache.getDataKey( 'userId' )
+    const intentId = this._cache.getDataKey( 'intentId' )
+    const path = `usuarios/${ userId }/agentes/${ projectId }/intents/${ intentId }`;
+    this._afs.doc( `${ path }/responses/${ this.respuesta.id }` )
+      .update({...this.respuesta})
+  }
+
+  validateResult(response: ResponseModel) {
     if ( 'parametro' in response.result )
-      return response.result as CondicionalModel
+      return response.result as ConditionalResponseModel
     else
-      return response.result as SimpleModel
+      return response.result as DefaultResponseModel
   }
 
   emitOpened() {
@@ -147,8 +170,24 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  isConditional( result: ResultResponse ): false | ConditionalResponseModel {
+    return 'parametro' in result ? result as ConditionalResponseModel : false
+  }
+
+  isCatch( result: ResultResponse ): false | CatchResponseModel {
+    return 'parametro' in result ?  result as CatchResponseModel : false
+  }
+
+  isSearch( result: ResultResponse ): false | SearchResponseModel {
+    return 'parametro' in result ? result as SearchResponseModel : false
+  }
+
+  isDefault( result: ResultResponse ): false | DefaultResponseModel {
+    return 'text' in result ? result as DefaultResponseModel : false
+  }
+
     get activeContextSelector() {
-      if (this.respuesta.tipo == 'simple') {
+      if (this.respuesta.tipo == 'default') {
         return true;
       } else if (this.currentContext) {
         return false;
@@ -157,14 +196,13 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
 
     get isBienvenida() {
       let intentState = this._intent.state$.getValue()
-      console.log(  )
       return intentState?.intent.displayName == 'Default Welcome Intent'
     }
 
     get activeIntentSelector() {
-      if (this.respuesta.tipo == 'simple') {
+      if (this.respuesta.tipo == 'default') {
         return false;
-      } else if (this.respuesta.tipo == 'sugerencias') {
+      } else if (this.respuesta.tipo == 'suggests') {
         return false;
       } else if (!this.currentContext) {
         return false;
@@ -294,16 +332,17 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
      */
     onTipoSelected(tipoSelected: MatSelectChange) {
       // let simpleStored = this._mensaje.respuestasList$.filter(
-      //     (r) => r.tipo == 'simple'
+      //     (r) => r.tipo == 'default'
       // );
-      // if (tipoSelected.value == 'simple' && simpleStored.length > 1) {
+      // if (tipoSelected.value == 'default' && simpleStored.length > 1) {
       //     console.log(this._mensaje.respuestasList, tipoSelected.value);
       //     this._alerts.sendMessageAlert(
       //         'No puedes agregar más de una respuesta simple'
       //     );
       // } else {
-      this.selectedRes = this.tiposRes.find( ( t ) => t.name == tipoSelected.value );
-      if ( this.selectedRes) this.respuesta.tipo = this.selectedRes.name;
+      this.responseType = this.typeResponses.find( ( t ) => t.type == tipoSelected.value );
+      console.log( this.responseType )
+      if ( this.responseType) this.respuesta.tipo = this.responseType.type;
       // }
     }
 
@@ -315,10 +354,10 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     /**
      * Valida la respuesta que se ha de guardar en FIRESTORE
      *
-     * @param {RespuestaModel} respuestaObj Objeto de respuesta modelado como RespuestaModel
-     * @returns {RespuestaModel} Respuesta como objeto sin tipo declarado
+     * @param {ResponseModel} respuestaObj Objeto de respuesta modelado como RespuestaModel
+     * @returns {ResponseModel} Respuesta como objeto sin tipo declarado
      */
-    async validateRespuesta(respuestaObj: RespuestaModel) {
+    async validateRespuesta(respuestaObj: ResponseModel) {
       let nextIntentContext = await this.setNextContext(respuestaObj.nextIntent || '')
       if (
         !respuestaObj.outputContexts ||
@@ -343,7 +382,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       let output:ResultResponse = { ...respuestaObj.result, ...this.result };
       let respuesta = output.text;
 
-      if (!respuesta && respuestaObj.tipo != 'buscar') {
+      if (!respuesta && respuestaObj.tipo != 'search') {
         throw this._alerts.message('Agrega al menos un mensaje de texto');
       } else if (output['suggestions'] && output['suggestions'].length == 1) {
         throw this._alerts.message(
@@ -352,8 +391,8 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       } else {
         var respuestaKeys = Object.keys(respuestaObj);
         await this._loading.asyncForEach(respuestaKeys, (key) => {
-          if ( respuestaObj[ key as keyof RespuestaModel] === undefined )
-            delete respuestaObj[ key as keyof RespuestaModel];
+          if ( respuestaObj[ key as keyof ResponseModel] === undefined )
+            delete respuestaObj[ key as keyof ResponseModel];
           return;
         });
 
@@ -378,9 +417,9 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       // console.log(cleanRespuesta['nextIntent']);
       this.switchEditResp = false;
 
-      if (cleanRespuesta) this.respuestas_.setRespuesta(cleanRespuesta);
+      if (cleanRespuesta) this.respuestas_.set(cleanRespuesta);
       this.respuesta.tipo = undefined;
-      this.respuesta.result = new SimpleModel('');
+      this.respuesta.result = new DefaultResponseModel('');
     }
 
     ngOnDestroy() {
@@ -388,40 +427,40 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
 
     /** Lista de tipo de respuestas con sus respectivos estilos */
-    tiposRes: iResponseType[] = [
+    typeResponses: iResponseType[] = [
       {
         display: '',
-        name: undefined,
+        type: undefined,
         color: 'grey',
         icono: 'fa-plus'
       },
       {
         display: 'Simple',
-        name: 'simple',
+        type: 'default',
         color: '#935cff',
         icono: 'fa-comment-alt',
       },
       {
         display: 'Condicional',
-        name: 'condicional',
+        type: 'conditional',
         color: '#42cbff',
         icono: 'fa-code-branch',
       },
       {
         display: 'Grupo de datos',
-        name: 'grupo_datos',
+        type: 'catch',
         color: '#26a69a',
         icono: 'fa-clipboard-list',
       },
       {
         display: 'Buscar',
-        name: 'buscar',
+        type: 'search',
         color: '#eadb51',
         icono: 'fa-search',
       },
       // {
       //     display: 'Sugerencias',
-      //     name: 'sugerencias',
+      //     name: 'suggests',
       //     color: '#f44336',
       //     icono: 'fa-list-ul',
       // },

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
-import { RespuestaModel, ResultResponse, SimpleModel } from 'src/app/models/intent-response.model';
+import { ResponseModel, ResultResponse, DefaultResponseModel } from 'src/app/models/intent-response.model';
 import { iIntentState } from 'src/app/models/intent.model';
 import { IntentsService } from 'src/app/services/intents.service';
 
@@ -14,7 +14,7 @@ import { IntentsService } from 'src/app/services/intents.service';
 export class FallbackComponent implements OnInit {
 
   intent?: iIntentState;
-  respuesta!: RespuestaModel;
+  respuesta!: ResponseModel;
   result!: ResultResponse;
   respuestaPath: string = ''
   constructor(
@@ -25,8 +25,8 @@ export class FallbackComponent implements OnInit {
     private _intents: IntentsService,
     public dialog_: MatDialogRef<FallbackComponent>,
   ) {
-    this.result = new SimpleModel('', []);
-    this.respuesta = new RespuestaModel( this.result, 0, undefined, 'simple');
+    this.result = new DefaultResponseModel('', []);
+    this.respuesta = new ResponseModel( this.result, 0, undefined, 'default');
   }
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class FallbackComponent implements OnInit {
 
       if (respuestasCol.size > 0) {
         const respuestaDoc = respuestasCol.docs[0];
-        this.respuesta = respuestaDoc.data() as RespuestaModel;
+        this.respuesta = respuestaDoc.data() as ResponseModel;
         this.result = this.respuesta.result;
       }
     } else {
@@ -69,8 +69,8 @@ export class FallbackComponent implements OnInit {
   saveRespuesta() {
     this.respuesta.result = { ...this.result };
     Object.keys(this.respuesta).forEach((key) => {
-      if ( this.respuesta[ key as keyof RespuestaModel ] == undefined )
-        delete this.respuesta[ key as keyof RespuestaModel ];
+      if ( this.respuesta[ key as keyof ResponseModel ] == undefined )
+        delete this.respuesta[ key as keyof ResponseModel ];
     });
 
     try {

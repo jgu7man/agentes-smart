@@ -2,14 +2,17 @@
 <ng-container *ngIf="!switchPhraseInput; else phraseInput">
   <div class="row">
     <div class="col s9 frase-text">
+
       <span class="frase-handler">
         <i class="fas fa-quote-right"></i>
       </span>
+
+      <!-- PHRASE -->
       <span *ngFor="let part of phrase.parts">
         <ng-container *ngIf="part && part.alias; else unSelected">
           <span
             class="selected"
-            [ngStyle]="{ background: params_.getColor(part.alias) }"
+            [ngStyle]="{ background: params_.getColor( part.alias )}"
           >
             {{ part.text }}
           </span>
@@ -18,6 +21,7 @@
           {{ part ? part.text : "" }}
         </ng-template>
       </span>
+
     </div>
     <div class="col s3">
       <span class="delItem" (click)="delItem()">

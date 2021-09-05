@@ -23,7 +23,7 @@ export class ContextsComponent implements OnInit, OnDestroy {
   switchAddContext: boolean = false
   switchEditContext: boolean = false
   list: iContext[] = []
-  list$: Observable<iContext[]>
+  // list$: Observable<iContext[]>
   contextToEdit: string = ''
 
   @ViewChild(AddContextComponent) addContext!: AddContextComponent
@@ -36,15 +36,6 @@ export class ContextsComponent implements OnInit, OnDestroy {
     public agente_: CurrentAgentService
   ) {
 
-    this.list$ = this.contextos.list$
-      ? this.contextos.list$
-      : this.agente_.loaded$.pipe(
-        flatMap(() => this.contextos.list$)
-      )
-
-      this.list$.subscribe(list => {
-        this.list = list;
-      })
 
   }
 

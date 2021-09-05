@@ -1,11 +1,13 @@
 import firebase from 'firebase/app'
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import { AgentsService } from './agents.service';
 import { iAgente } from '../models/agent.model';
+import { iAgentParameter } from '../models/parameter.model';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +42,8 @@ export class CurrentAgentService {
   // tarjetasList$: Observable<TarjetaModel[]>
   // coleccionesList$: Observable<ColeccionModel[]>
 
+  params$ = new BehaviorSubject<iAgentParameter[]>( [] )
+  paramsSubscription?: Subscription
 
   constructor(
     private _afs: AngularFirestore,
@@ -53,12 +57,18 @@ export class CurrentAgentService {
     // this.tiposList$ = this.setObservables('tipos')
     // this.tarjetasList$ = this.setObservables('taretas')
     // this.coleccionesList$ = this.setObservables('colecciones')
+    const path = this.currentPath('current-agent.service', 'current')
+    this.paramsSubscription = this._afs
+      .collection<iAgentParameter>( `${ path }/params` )
+      .valueChanges()
+      .subscribe( this.params$ )
 
   }
 
-  get current$(): Observable<iAgente | undefined> {
+  current$(): Observable<iAgente | undefined> {
     const path = this.currentPath('current-agent.service', 'current')
-    return this._afs.doc<iAgente>(path).valueChanges()
+    return this._afs.doc<iAgente>( path ).valueChanges()
+
   }
 
   currentPath(document?: string, functionName?: string): string {
@@ -81,24 +91,20 @@ export class CurrentAgentService {
    * @return {iAgente} Agente o null
    */
   async get( projectId: string ): Promise<iAgente | null> {
-    const userId = this._cache.getDataKey<string>( 'userId' )
+    const path = this.currentPath('current-agent.service', 'get')
 
     try {
-      if ( !userId ) {
-        throw new MxErrorAlertModel( `No se encontró el userId`, 'get')
-      } else if (!projectId) {
-        throw new MxErrorAlertModel( `No se pudo obtener 'projectId': ${projectId}`, 'get' );
-      } else {
-        const agentDoc = await this._afs.doc<iAgente>
-          ( `usuarios/${ userId }/agentes/${ projectId }` )
-          .ref.get()
+      const agentDoc = await this._afs.doc<iAgente>( path ).ref.get()
 
-        if (agentDoc.exists) {
-          return agentDoc.data() as iAgente;
-        } else {
-          throw new MxErrorAlertModel( `No se encontró el agente ${projectId}`, 'get' );
-        }
+      if ( agentDoc.exists ) {
+        this._afs.collection<iAgentParameter>( `${ path }/params` )
+            .valueChanges()
+            .subscribe( this.params$ )
+        return agentDoc.data() as iAgente;
+      } else {
+        throw new MxErrorAlertModel( `No se encontró el agente ${projectId}`, 'get' );
       }
+
     } catch (error) {
       console.error( error );
       if ( 'message' in error ) {
@@ -272,5 +278,10 @@ export class CurrentAgentService {
       sessionId: firebase.firestore.FieldValue.delete(),
       sessionParams: firebase.firestore.FieldValue.delete(),
     });
+  }
+
+
+  unsubscribe() {
+    if(this.paramsSubscription) this.paramsSubscription.unsubscribe()
   }
 }

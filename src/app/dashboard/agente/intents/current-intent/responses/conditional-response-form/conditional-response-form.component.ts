@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { EntityTypeModel, iSystemEntity } from 'src/app/models/entity-type.model';
-import { CondicionalModel, iCondition, SimpleModel } from 'src/app/models/intent-response.model';
+import { ConditionalResponseModel, iCondition, DefaultResponseModel } from 'src/app/models/intent-response.model';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 import { ParametersService } from 'src/app/services/parameters.service';
@@ -16,8 +16,8 @@ export class ConditionalResponseFormComponent implements OnInit {
   isOriginal: boolean = true;
   tipoSelected?: EntityTypeModel | iSystemEntity ;
 
-  @Input() result: CondicionalModel;
-  @Output() onRespChanges: EventEmitter<CondicionalModel> = new EventEmitter();
+  @Input() result: ConditionalResponseModel;
+  @Output() onRespChanges: EventEmitter<ConditionalResponseModel> = new EventEmitter();
 
   condicionesList: iCondition[] = [
     { displayText: 'igual a', operator: 'igual' },
@@ -36,7 +36,7 @@ export class ConditionalResponseFormComponent implements OnInit {
     private _intent: CurrentIntentService,
     private _entityTypes: EntityTypesService,
   ) {
-    this.result = new CondicionalModel( '', '', '' );
+    this.result = new ConditionalResponseModel( '', '', '' );
   }
 
   async ngOnInit() {
@@ -95,7 +95,7 @@ export class ConditionalResponseFormComponent implements OnInit {
     return !this.isOriginal && this.tipoSelected;
   }
 
-  async catchresult(msg: SimpleModel) {
+  async catchresult(msg: DefaultResponseModel) {
     this.result.text = msg.text;
     // await this._loading.waitFor(100)
     this.onRespChanges.emit(this.result);

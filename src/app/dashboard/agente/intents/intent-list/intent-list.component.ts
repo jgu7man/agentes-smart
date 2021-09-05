@@ -31,18 +31,20 @@ export class IntentListComponent implements OnInit, OnDestroy {
     private _contexts: ContextsService
   ) {
 
-    this.listSubscription = ( this.contexto
-      ? this._intents.getByContext$( this.contexto )
-      : this._intents.getWithoutContext$()
-    ).subscribe((list) => {
-      this.intents = list;
-      if ( this.contexto )
-        this._contexts.setContextosList( this.contexto.name, list );
-    } );
 
   }
 
   async ngOnInit() {
+    this.listSubscription = ( this.contexto
+      ? this._intents.getByContext$( this.contexto.name )
+      : this._intents.getWithoutContext$()
+    ).subscribe( async ( list ) => {
+      this.intents = list;
+      if ( this.contexto ) {
+        await this._loading.waitFor( this.contexto.index * 1000 )
+        this._contexts.setContextosList( this.contexto.name, list );
+      }
+    } );
   }
 
 

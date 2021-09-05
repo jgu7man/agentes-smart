@@ -12,15 +12,16 @@ export class TrainingPhrasesService {
 
   paramAdded$: Subject<any> = new Subject();
   partSelected!: iPhrasePartMap
+  public list$: Observable<iTrainingPhrase[]>
   constructor(
     private _currentIntent: CurrentIntentService,
     private _loading: MxLoading,
     private _alert: MxAlert,
   ) {
-
+    this.list$ = this.listen$()
   }
 
-  get list$(): Observable<iTrainingPhrase[]> {
+  listen$(): Observable<iTrainingPhrase[]> {
     return this._currentIntent.state$.pipe(
       map( state => state ? state.intent.trainingPhrases : [])
     )

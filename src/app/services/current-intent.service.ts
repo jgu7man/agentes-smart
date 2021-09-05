@@ -7,7 +7,7 @@ import { map, pluck, tap, debounceTime, flatMap, filter, take, catchError, merge
 import { emptyIntent, iDialogflowIntent, iIntentState, IntentStateModel, iParameter } from '../models/intent.model';
 import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { DialogflowIntentsService, IntentsService } from './intents.service';
-import { RespuestaModel } from '../models/intent-response.model';
+import { ResponseModel } from '../models/intent-response.model';
 import { SystemEntitiesService } from '../admin/utils/system-entities.service';
 import { EntityTypeModel, iSystemEntity } from '../models/entity-type.model';
 import { environment } from 'src/environments/environment';
@@ -75,21 +75,24 @@ export class CurrentIntentService {
    * @param {string} displayNameOname
    * @param {string} [contexto]
    */
-  set(displayNameOname: string, contexto?: string): Observable<iIntentState> {
+  async set(displayNameOname: string, contexto?: string): Promise<iIntentState> {
     return this._intents.find$( displayNameOname ).pipe(
+      take( 1 ),
       map( intentState => {
         if ( intentState ) {
           this._cache.updateData( 'currentContexto', contexto );
-          this._cache.updateData( 'intentId', intentState.name)
+          this._cache.updateData( 'intentId', intentState.name )
+          console.log( 'Set Intent' )
           this.state$.next( intentState )
           this._entityTypes.filterByParams( intentState.intent.parameters )
-            .pipe(take( 1 ))
-            .subscribe(this.entityTypes$)
+          .pipe(take( 1 ))
+          .subscribe( this.entityTypes$ )
           return intentState
         } else {
           throw new MxErrorAlertModel( `No se encontró el intent seleccionado`, 'set')
         }
-      }),
+      } ),
+
       catchError( ( error ) => {
         if ( 'message' in error ) {
           throw this._alerts.error(error.message, error)
@@ -97,7 +100,7 @@ export class CurrentIntentService {
           throw this._alerts.error(`No se pudo setear el intenr actual`, error)
         }
       })
-    )
+    ).toPromise()
 
     // this.getResponses(intentState.intent.name)
   }

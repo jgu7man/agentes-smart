@@ -132,6 +132,6 @@ export class TrainingPhrasesComponent
   ngOnDestroy() {
     // this.listenerParamDeleted.unsubscribe()
     this.paramAddedSub.unsubscribe();
-    this.phrasesSub.unsubscribe();
+    // this.phrasesSub.unsubscribe();
   }
 }

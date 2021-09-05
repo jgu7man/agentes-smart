@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
+import { Observable } from 'rxjs';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { RespuestaModel, ResultResponse } from '../models/intent-response.model';
+import { ResponseModel, ResultResponse } from '../models/intent-response.model';
 import { CurrentIntentService } from './current-intent.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class RespuestasService {
-  /** @module Respuestas */
+export class ResponsesService {
 
   // tarjetasList: TarjetaModel[];
   /** El mensae en curso de edición */
@@ -21,7 +21,7 @@ export class RespuestasService {
   /** Observable de la lista de respuestas */
   // respuestasList: RespuestaModel[];
   /** Observable de las respuestas cuando se agregó, editó o eliminó alguna respuesta */
-  onRespuestasChanged: Subject<any> = new Subject();
+  onResponsesChanged: Subject<any> = new Subject();
 
 
   /** Lista de tipos de respuesta
@@ -33,19 +33,22 @@ export class RespuestasService {
    */
   estiloResps: EstiloResp[] = [
     { name: 'texto', display: 'Texto' },
-    { name: 'sugerencias', display: 'Sugerencias' },
+    { name: 'suggests', display: 'Sugerencias' },
     // { name: 'card', display: 'Tarjeta' },
   ];
 
-  emptyResponse?: RespuestaModel
+  emptyResponse?: ResponseModel
+
+  public list$: Observable<ResponseModel[]>
 
   constructor(
-    private fs: AngularFirestore,
+    private _afs: AngularFirestore,
     private _loading: MxLoading,
     private _alerts: MxAlert,
     private _cache: MxCache,
     private _commons: MxCommonsService,
   ) {
+    this.list$ = this.listen$()
   }
 
   intentPath(functionName?: string): string {
@@ -65,11 +68,11 @@ export class RespuestasService {
   }
 
 
-  get list$() {
+  listen$() {
     const path = `${ this.intentPath( 'list' ) }/responses`
-    return this.fs.collection( path ).valueChanges( { idField: 'id' } )
+    return this._afs.collection( path ).valueChanges( { idField: 'id' } )
     .pipe( map((respuestas) =>
-      this._commons.sortBy<RespuestaModel>( respuestas, 'index' ) ),
+      this._commons.sortBy<ResponseModel>( respuestas, 'index' ) ),
     )
   }
 
@@ -81,12 +84,12 @@ export class RespuestasService {
   /**
    * Agrega o actualiza respuestas al mensaje en curso en FIRESTORE
    *
-   * @param {RespuestaModel} respuesta - El objeto de respuesta
+   * @param {ResponseModel} respuesta - El objeto de respuesta
    * @return {Subject} Aviso al observable de cambios en la lista de respuestas
    */
-  async setRespuesta( respuesta: RespuestaModel ) {
+  async set( respuesta: ResponseModel ) {
     const intentPath = `${ this.intentPath( 'set' ) }`
-    const intentRef = this.fs.doc( intentPath)
+    const intentRef = this._afs.doc( intentPath)
     if (respuesta.id) {
       console.log('update');
 
@@ -102,7 +105,7 @@ export class RespuestasService {
       console.log('create');
 
       if ( respuesta.tipo &&
-        respuesta.tipo != 'condicional' &&
+        respuesta.tipo != 'conditional' &&
         (await this.checkKindResponses(respuesta.tipo) > 1)
       ) {
         this._alerts.message(
@@ -113,8 +116,8 @@ export class RespuestasService {
         // Object.keys(respuesta).forEach(key => { if (respuesta[key] == undefined) delete respuesta[key]})
         // Object.keys(respuesta.result).forEach(key => { if (respuesta.result[key] == undefined) delete respuesta.result[key]})
         for (let [key, value] of Object.entries(respuesta)) {
-          console.log(respuesta[key as keyof RespuestaModel]);
-          if (respuesta[key as keyof RespuestaModel] === undefined) delete respuesta[key as keyof RespuestaModel];
+          console.log(respuesta[key as keyof ResponseModel]);
+          if (respuesta[key as keyof ResponseModel] === undefined) delete respuesta[key as keyof ResponseModel];
         }
         let result = respuesta.result;
         for (let [key, value] of Object.entries(result)) {
@@ -129,22 +132,22 @@ export class RespuestasService {
       }
     }
 
-    return this.onRespuestasChanged.next(true);
+    return this.onResponsesChanged.next(true);
   }
 
   /**
    * Revisa si existe alguna respuesta del tipo seleccionado
    *
-   * @param {('simple' | 'grupo_datos' | 'buscar')} kind Tipo de respuesta. Puede ser 'simple' | 'grupo_datos' | 'buscar'
+   * @param {('default' | 'catch' | 'search')} kind Tipo de respuesta. Puede ser 'default' | 'catch' | 'search'
    * @return {number} Cantidad de veces que existe el tipo de respuesta
    */
   async checkKindResponses(
-    kind: 'simple' | 'grupo_datos' | 'buscar' | 'sugerencias'
+    kind: 'default' | 'catch' | 'search' | 'suggests'
   ) {
     var resCant: boolean[] = [];
     const list = await this.getList();
     await this._loading.asyncForEach(
-      list, (res: RespuestaModel) => {
+      list, (res: ResponseModel) => {
         if (res.tipo == kind) resCant.push(true);
       }
     );
@@ -159,11 +162,11 @@ export class RespuestasService {
    */
   async delRespuesta( respuestaId: string ) {
     const intentPath = `${ this.intentPath( 'delRespuesta' ) }`
-    const intentRef = this.fs.doc( intentPath)
+    const intentRef = this._afs.doc( intentPath)
     try {
       await intentRef.collection('responses').doc(respuestaId).delete();
 
-      return this.onRespuestasChanged.next(true);
+      return this.onResponsesChanged.next(true);
     } catch (error) {
       console.error(error);
       this._alerts.error('No se pudo eliminar', error);
@@ -171,11 +174,11 @@ export class RespuestasService {
   }
 
 
-  async updateRespuestasOrder( list: RespuestaModel[] ) {
+  async updateRespuestasOrder( list: ResponseModel[] ) {
     const intentPath = `${ this.intentPath( 'updateRespuestasOrder' ) }`
-    const intentRef = this.fs.doc( intentPath)
+    const intentRef = this._afs.doc( intentPath)
     const respRef = intentRef.collection('responses').ref
-    const batch = this.fs.firestore.batch()
+    const batch = this._afs.firestore.batch()
 
     await this._loading.asyncForEach(list, (r, i) => {
       r.index = i

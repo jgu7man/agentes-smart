@@ -17,7 +17,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   ResultResponse,
   Sugerencia,
-  RespuestaBuscarModel,
+  SearchResponseModel,
 } from '../models/intent-response.model';
 import { RespuestaCard } from '../models/dialogflow-responses.model';
 import { environment } from 'src/environments/environment';
@@ -135,7 +135,7 @@ export class ChatService {
             console.log( 'Sugerencias' );
             this.conversation.push(new Interaction(resp.text, 'that'))
             this.sendSuggestions(resp.suggestions);
-          } else if (resp instanceof RespuestaBuscarModel) {
+          } else if (resp instanceof SearchResponseModel) {
             console.log( 'Cards' );
             if (resp.card) this.sendCard(resp.card);
           } else {

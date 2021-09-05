@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { debounceTime, map, take,  } from 'rxjs/operators';
+import { catchError, debounceTime, map, take, tap,  } from 'rxjs/operators';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { MxAlert, MxCache, MxColor, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { IntentsService } from './intents.service';
@@ -12,6 +12,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { AgentsService } from './agents.service';
 import { of } from 'rxjs';
+import firebase from 'firebase/app'
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,7 @@ import { of } from 'rxjs';
 export class ContextsService {
 
   private _url = environment.restURL;
+  list$:Observable<iContext[]>
 
   constructor(
     private _afs: AngularFirestore,
@@ -31,6 +33,7 @@ export class ContextsService {
     private _text: MxText,
     private _tipo: CurrentEntityTypeService,
   ) {
+    this.list$ = this.listen$()
   }
 
   projectPath(functionName?: string) {
@@ -104,18 +107,25 @@ export class ContextsService {
 
   // READ ALL
 
+
   /** Se suscribe para optener todos los contexto del agente en curso */
   // private subscribeAllContext: Subscription;
 
   /** Escucha todos los contextos en tiempo real */
-  get list$(): Observable<iContext[]> {
-    const agentePath = `${ this.projectPath('list$') }/contexts`
-    return this._afs.collection<iContext>(agentePath,
+  listen$(): Observable<iContext[]> {
+    const batch = this._afs.firestore.batch()
+    const path = `${ this.projectPath( 'list$' ) }/contexts`
+    return this._afs.collection<iContext>(path,
       ref => ref.orderBy('index', 'asc')
-    ).valueChanges().pipe(debounceTime(1000), ) || of([])
+    ).valueChanges({ idField: 'id'}).pipe(
+      catchError( error => {
+        this._alerts.error( 'No se pudieron obtener los contextos. Error de conexión con la base de datos', 'contexts.service#list$', error )
+        return of([])
+      })
+      )
   }
 
-  get list(): Promise<iContext[]> {
+  get(): Promise<iContext[]> {
     return this.list$.pipe( take( 1 ) ).toPromise()
   }
 
@@ -196,7 +206,7 @@ export class ContextsService {
   }
 
   private async deleteFromIntents(context: iContext) {
-    this._intents.getByContext$( context ).pipe(
+    this._intents.getByContext$( context.name ).pipe(
         take( 1 ),
         map(list => list ? list : [])
       ).subscribe( ( list ) => {
@@ -218,17 +228,22 @@ export class ContextsService {
     return;
   }
 
-  setContextosList(contextName: string, list: iIntentState[]) {
+  async setContextosList( contextName: string, list: iIntentState[] ) {
     let contextsLists = this._cache.getDataKey<iContextList>('contextosLists');
-    let agentContexts = this._cache.getDataKey<iContext[]>('contextos') || [];
+    let agentContexts = await this.get()
 
-    if (!contextsLists) contextsLists = { [contextName]: list };
-    else contextsLists[contextName] = list;
-    Object.keys(contextsLists).forEach((name) => {
+    if ( !contextsLists ) contextsLists = {};
+
+    this._cache.updateData( 'contextosLists',
+      { ...contextsLists, [ contextName ]: list }
+    );
+
+    Object.keys( contextsLists ).forEach( ( name ) => {
       let contexto = agentContexts.find((c) => c.name == name);
-      if (!contexto && contextsLists) delete contextsLists[name];
-    });
-
-    this._cache.updateData('contextosLists', contextsLists);
+      if ( !contexto && contextsLists ) {
+        console.log( `No está el contexto ${contexto}` )
+        delete contextsLists[ name ];
+      }
+    } );
   }
 }

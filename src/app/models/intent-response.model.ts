@@ -1,4 +1,4 @@
-import { Directive, Input } from '@angular/core';
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
 import { RespuestaCard } from './dialogflow-responses.model';
 
 /**
@@ -13,12 +13,12 @@ import { RespuestaCard } from './dialogflow-responses.model';
  * @param {string} [accion] Alguna acción en particual alterna que se realizará en el momento de hacer uso de esta respuesta.
  * @param {string} [id] El identificador establecido aleatoriamente por FIRESTORE. Si se declara quedará este como identificador.
  */
-export class RespuestaModel {
+export class ResponseModel {
   constructor(
     public result: ResultResponse,
     public index: number,
     public nextIntent?: string,
-    public tipo?: TipoRespuesta,
+    public tipo?: ResponseType,
     public outputContexts?: string[],
     public inputContexts?: string[],
     public accion?: string,
@@ -28,7 +28,7 @@ export class RespuestaModel {
 
 export interface iResponseType {
   display: string;
-  name?: 'simple' | 'condicional' | 'grupo_datos' | 'buscar' | 'sugerencias';
+  type?: 'default' | 'conditional' | 'catch' | 'search' | 'suggests';
   color: string;
   icono: string;
 }
@@ -36,10 +36,10 @@ export interface iResponseType {
 
 /**
  * Modelo de una respuesta simple. Este modelo es usado sólo para crear una respuesta estática y simple ante la request a DIALOGFLOW. Si existe este tipo de respuesta, siempre se debe retornar.
- * @param {EstiloRespuesta} estiloRespuesta El estilo de la respuesta de la cuál se espera
- * @param {RespuestaDisplay} respuesta La respuesta que se espera
+ * @param {ResponseStyle} estiloRespuesta El estilo de la respuesta de la cuál se espera
+ * @param {ResponseDisplay} respuesta La respuesta que se espera
  */
-export class SimpleModel {
+export class DefaultResponseModel {
   constructor(
     public text: string,
     public suggestions?: Sugerencia[],
@@ -63,20 +63,20 @@ export class DefaultContextDirective<T> {
   static ngTemplateContextGuard<T>(
     dir: DefaultContextDirective<T>,
     ctx: unknown
-  ): ctx is DefaultCtx<SimpleModel> {
+  ): ctx is DefaultCtx<DefaultResponseModel> {
     return true
   };
 }
 
 /**
  * Modelo de una respuesta condicional. Este modelo es para  previamente comparar los parámetros encontrados en la request a DIALOGDFLOW a través del nombre de parámetro esperado con los datos de una entityType. TODOS LOS PARÁMETROS SON REQUERIDOS
- * @param {EstiloRespuesta} estiloRespuesta El estilo de la respuesta de la cuál se espera
- * @param {RespuestaDisplay} respuesta La respuesta que se espera mostrar
+ * @param {ResponseStyle} estiloRespuesta El estilo de la respuesta de la cuál se espera
+ * @param {ResponseDisplay} respuesta La respuesta que se espera mostrar
  * @param {string} parametro El parámetro que se buscará en la request del cliente
  * @param {string} condicion La condición que comparará el valor
  * @param {(string | number | any[])} valor Los valores con los que se comparará el parámetro
  */
-export class CondicionalModel extends SimpleModel {
+export class ConditionalResponseModel extends DefaultResponseModel {
   constructor(
     public parametro: string,
     public condicion: string,
@@ -101,27 +101,38 @@ class ConditionalCtx<T> {
   }
 }
 
-@Directive({ selector: '[asConditional]'})
-export class ConditionalContextDirective<T> {
 
-  @Input( 'asConditional' ) set response( response: T ) { }
-  static ngTemplateContextGuard<T>(
-    dir: ConditionalContextDirective<T>,
-    ctx: unknown
-  ): ctx is ConditionalCtx<CondicionalModel> {
+
+@Directive({ selector: '[asConditional]'})
+export class ConditionalContextDirective {
+
+  constructor(
+    private templateRef: TemplateRef<any>,
+    private viewContainer: ViewContainerRef) { }
+
+  @Input( 'asConditional' ) set response( response: ResultResponse ) {
+    // console.log( response )
+    // console.log( this.templateRef )
+    this.viewContainer.createEmbeddedView(this.templateRef)
+   }
+  static ngTemplateGuard_Result(
+    dir: ConditionalContextDirective,
+    expr: ResultResponse
+  ): expr is ConditionalResponseModel {
+    console.log( expr )
     return true
   };
 }
 
 /**
  * Modelo de una respuesta de registro de datos. Esta respuesta respeta el modelo creado en una colección de datos y va generando un objeto con los datos obtenidos. TODOS LOS PARÁMETROS SON REQUERIDOS
- * @param {EstiloRespuesta} estiloRespuesta El estilo de la respuesta de la cuál se espera
- * @param {RespuestaDisplay} respuesta  La respuesta que se espera mostrar
+ * @param {ResponseStyle} estiloRespuesta El estilo de la respuesta de la cuál se espera
+ * @param {ResponseDisplay} respuesta  La respuesta que se espera mostrar
  * @param {string} parametro El parámetro al cuál se le pondrá atención del array de parámetros que haya regresado la request a Dialogflow
  * @param {string} grupoDatos El grupo de datos al cuál se agregará el parámetro encontrado.
  * @param {string} key La variable del grupo de datos a la cuál se asignará el valor del parámetro encontrado.
  */
-export class RegistroDatosModel extends SimpleModel {
+export class CatchResponseModel extends DefaultResponseModel {
   constructor(
     public parametro: string,
     public coleccion: string,
@@ -149,7 +160,7 @@ export class CatchContextDirective<T> {
   static ngTemplateContextGuard<T>(
     dir: CatchContextDirective<T>,
     ctx: unknown
-  ): ctx is CatchCtx<RegistroDatosModel> {
+  ): ctx is CatchCtx<CatchResponseModel> {
     return true
   };
 }
@@ -161,7 +172,7 @@ export class CatchContextDirective<T> {
  * @param {RespuestaCard} [respuesta] La respuesta que será mostrada en la interfaz
  * @param {'card'} [estiloRespuesta] El estidlo de respuesta que siempre es 'card'.
  */
-export class RespuestaBuscarModel extends SimpleModel {
+export class SearchResponseModel extends DefaultResponseModel {
   constructor(
     public parametro: string,
     public database: string,
@@ -188,7 +199,7 @@ export class SearchContextDirective<T> {
   static ngTemplateContextGuard<T>(
     dir: SearchContextDirective<T>,
     ctx: unknown
-  ): ctx is SearchCtx<RespuestaBuscarModel> {
+  ): ctx is SearchCtx<SearchResponseModel> {
     return true
   };
 }
@@ -199,13 +210,13 @@ export class SugerenciasModel {
 
 /**
  * Modelo de repsuesta binaria. Este modelo permite responder sólo una de dos formas ante una respuesta positiva o negativa del cliente. IMPORTANTE: Aún no es utilizada en el fronend. Ambos parámetros son requeridos.
- * @param {EstiloRespuesta} respuestaYES Lo que se responderá ante una respuesta positiva del cliente.
- * @param {EstiloRespuesta} respuestaNO Lo que se responderá ante una respuesta negativa del cliente.
+ * @param {ResponseStyle} respuestaYES Lo que se responderá ante una respuesta positiva del cliente.
+ * @param {ResponseStyle} respuestaNO Lo que se responderá ante una respuesta negativa del cliente.
  */
-export class RespuestaBinaria {
+export class BinaryResponseModel {
   constructor(
-    public respuestaYES: EstiloRespuesta,
-    public respuestaNO: EstiloRespuesta
+    public respuestaYES: ResponseStyle,
+    public respuestaNO: ResponseStyle
   ) {}
 }
 
@@ -233,17 +244,17 @@ export interface TextRespuesta {
   param: string;
 }
 
-export type TipoRespuesta =
-  | 'simple'
-  | 'condicional'
-  | 'grupo_datos'
-  | 'buscar'
-  | 'sugerencias';
+export type ResponseType =
+  | 'default'
+  | 'conditional'
+  | 'catch'
+  | 'search'
+  | 'suggests';
 export type ResultResponse =
-  | SimpleModel
-  | CondicionalModel
-  | RegistroDatosModel
-  | RespuestaBuscarModel;
-export type EstiloRespuesta = 'texto' | 'sugerencias' | RespuestaBinaria;
-export type RespuestaDisplay = string | Sugerencia | RespuestaCard;
+  | DefaultResponseModel
+  | ConditionalResponseModel
+  | CatchResponseModel
+  | SearchResponseModel;
+export type ResponseStyle = 'texto' | 'suggests' | BinaryResponseModel;
+export type ResponseDisplay = string | Sugerencia | RespuestaCard;
 

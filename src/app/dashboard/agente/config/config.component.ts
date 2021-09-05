@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
-import { RespuestaModel, ResultResponse } from 'src/app/models/intent-response.model';
+import { ResponseModel, ResultResponse } from 'src/app/models/intent-response.model';
 import { iIntentState } from 'src/app/models/intent.model';
 import { IntentsService } from 'src/app/services/intents.service';
 import { FallbackComponent } from './fallback/fallback.component';
@@ -15,7 +15,7 @@ import { FallbackComponent } from './fallback/fallback.component';
 export class ConfigComponent implements OnInit {
 
   intent?: iIntentState;
-  respuesta!: RespuestaModel;
+  respuesta!: ResponseModel;
   result!: ResultResponse;
   respuestaPath: string = ''
   constructor(
@@ -27,7 +27,7 @@ export class ConfigComponent implements OnInit {
     public dialog_: MatDialogRef<FallbackComponent>,
   ) {
     // this.result = new SimpleModel('', []);
-    // this.respuesta = new RespuestaModel('simple', this.result, 0);
+    // this.respuesta = new RespuestaModel('default', this.result, 0);
   }
 
   ngOnInit(): void {
@@ -53,7 +53,7 @@ export class ConfigComponent implements OnInit {
 
       if (respuestasCol.size > 0) {
         const respuestaDoc = respuestasCol.docs[0];
-        this.respuesta = respuestaDoc.data() as RespuestaModel;
+        this.respuesta = respuestaDoc.data() as ResponseModel;
         this.result = this.respuesta.result;
       }
     } else {
@@ -70,8 +70,8 @@ export class ConfigComponent implements OnInit {
   saveRespuesta() {
     this.respuesta.result = { ...this.result };
     Object.keys(this.respuesta).forEach((key) => {
-      if ( this.respuesta[ key as keyof RespuestaModel ] == undefined )
-        delete this.respuesta[ key as keyof RespuestaModel ];
+      if ( this.respuesta[ key as keyof ResponseModel ] == undefined )
+        delete this.respuesta[ key as keyof ResponseModel ];
     });
 
     try {

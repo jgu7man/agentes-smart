@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { SimpleModel, Sugerencia } from 'src/app/models/intent-response.model';
-import { RespuestasService } from 'src/app/services/respuestas.service';
+import { DefaultResponseModel, Sugerencia } from 'src/app/models/intent-response.model';
+import { ResponsesService } from 'src/app/services/responses.service';
 
 @Component({
   selector: 'as-default-response-form',
@@ -10,15 +10,15 @@ import { RespuestasService } from 'src/app/services/respuestas.service';
 })
 export class DefaultResponseFormComponent implements OnInit {
 
-  @Input() result: SimpleModel;
+  @Input() result: DefaultResponseModel;
 
-  @Output() onRespChanges: EventEmitter<SimpleModel> = new EventEmitter();
+  @Output() onRespChanges: EventEmitter<DefaultResponseModel> = new EventEmitter();
   @Output() toggleSugerencias: EventEmitter<boolean> = new EventEmitter()
 
   switchSuggestions: boolean = false;
 
-  constructor(public resService: RespuestasService) {
-      this.result = new SimpleModel('', [], false);
+  constructor(public resService: ResponsesService) {
+      this.result = new DefaultResponseModel('', [], false);
   }
 
   ngOnInit(): void {

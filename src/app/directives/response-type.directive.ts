@@ -1,5 +1,5 @@
 import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
-import { CondicionalModel, ResultResponse } from '../models/intent-response.model';
+import { ConditionalResponseModel, ResultResponse } from '../models/intent-response.model';
 
 
 class Context<T> {
@@ -29,7 +29,7 @@ export class ResponseTypeDirective<T> {
   static ngTemplateContextGuard<T>(
     dir: ResponseTypeDirective<T>,
     ctx: unknown
-  ): ctx is Context<CondicionalModel> {
+  ): ctx is Context<ConditionalResponseModel> {
     return true
   };
 }

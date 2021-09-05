@@ -23,7 +23,7 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   @Input() index!: number;
 
   switchEntitySelector: boolean = false;
-  paramNameCtrl: FormControl = new FormControl('')
+  paramNameCtrl: FormControl = new FormControl({value:'', disabled: this.isProductParam})
   param?: iParameter;
 
   toggleAddClase: boolean = false;

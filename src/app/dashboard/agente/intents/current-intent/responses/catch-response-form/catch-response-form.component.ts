@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MxAlert, MxCache } from '@marxa/devkit';
 import { BehaviorSubject } from 'rxjs';
-import { RegistroDatosModel } from 'src/app/models/intent-response.model';
+import { CatchResponseModel } from 'src/app/models/intent-response.model';
 import { CurrentAgentService } from 'src/app/services/current-agent.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 
@@ -19,13 +19,13 @@ export class CatchResponseFormComponent implements OnInit {
 
   // KeySpected: ParamExpected[]
 
-  dataForm: RegistroDatosModel = new RegistroDatosModel('', this.paramSelected, this.dataGroupSelected)
+  dataForm: CatchResponseModel = new CatchResponseModel('', this.paramSelected, this.dataGroupSelected)
 
-  private _RegistroDatosForm = new BehaviorSubject<RegistroDatosModel>(this.dataForm);
-  @Input() set RegistroDatosForm(form: RegistroDatosModel) {this._RegistroDatosForm.next(form);}
+  private _RegistroDatosForm = new BehaviorSubject<CatchResponseModel>(this.dataForm);
+  @Input() set RegistroDatosForm(form: CatchResponseModel) {this._RegistroDatosForm.next(form);}
   get RegistroDatosForm() {return this._RegistroDatosForm.getValue()}
 
-  @Output() edited = new EventEmitter<RegistroDatosModel>();
+  @Output() edited = new EventEmitter<CatchResponseModel>();
 
   constructor (
       public agente_: CurrentAgentService,

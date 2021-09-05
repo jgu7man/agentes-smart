@@ -5,6 +5,7 @@ import { MxCache } from '@marxa/devkit';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { EntityTypeModel } from 'src/app/models/entity-type.model';
+import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 
 @Component({
   selector: 'as-entity-value-selector',
@@ -29,6 +30,7 @@ export class EntityValueSelectorComponent implements OnInit {
 
   constructor(
     private _cache: MxCache,
+    private _entityTypes: EntityTypesService
   ) {
     this.nameSubscription =
       this._displayName.subscribe((name: string) => {
@@ -40,7 +42,6 @@ export class EntityValueSelectorComponent implements OnInit {
   }
 
   async ngOnInit() {
-    console.log( this.value )
     if (this.value) {
       this.valueCtrl.setValue(typeof this.value == 'string' ? this.value : '')
     }
@@ -51,7 +52,7 @@ export class EntityValueSelectorComponent implements OnInit {
 
 
   async getClases(name: string) {
-    this._cache.listenForChanges<EntityTypeModel[]>('tipos')
+    this._entityTypes.list$
       .pipe(take(1))
       .subscribe((list) => {
         const tipoFinded = list.find(t => t.displayName === name)

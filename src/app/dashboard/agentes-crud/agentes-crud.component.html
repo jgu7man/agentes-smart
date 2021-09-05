@@ -12,12 +12,12 @@
             [ngStyle]="{
               'background-image': 'url(' + agent.avatarUri.url + ')'
             }"
-            [routerLink]="['/dashboard/agente', agent.projectId]"
+            (click)="onSelectAgent(agent)"
           ></div>
 
           <!-- Nombre del agente -->
           <mat-card-title
-            [routerLink]="['/dashboard/agente', agent.projectId]"
+          (click)="onSelectAgent(agent)"
             >{{ agent.displayName }}
           </mat-card-title>
 

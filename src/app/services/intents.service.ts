@@ -2,27 +2,32 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, first, map, mergeMap, pluck, take } from 'rxjs/operators';
+import { catchError, filter, first, map, mergeMap, pluck, take, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel, iIntentState } from '../models/intent.model';
-import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
+import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { iContext } from '../models/context.model';
-import { RespuestaModel } from '../models/intent-response.model';
+import { ResponseModel } from '../models/intent-response.model';
+import firebase from 'firebase/app'
+import { merge } from 'rxjs';
 
 @Injectable({ providedIn: 'root', })
 export class IntentsService {
 
   /** Observable de la lista de mensajes filtrados por contexto en firebase */
-  public intentListByContext$ = new BehaviorSubject<IntentStateModel[]>([]);
+  public intentListByContext$ = new BehaviorSubject<IntentStateModel[]>( [] );
+  public list$: Observable<iIntentState[]>
 
   constructor(
     private _afs: AngularFirestore,
     private _cache: MxCache,
     private _alert: MxAlert,
+    private _text: MxText,
     private _loading: MxLoading,
     private _dialgoflowIntents: DialogflowIntentsService
   ) {
     this.retriveFromDialogfow()
+    this.list$ = this.listen$()
   }
 
 
@@ -144,7 +149,7 @@ export class IntentsService {
    * @readonly
    * @type {Observable<iIntentState[]>}
    */
-  public get list$(): Observable<iIntentState[]>{
+  public listen$(): Observable<iIntentState[]>{
     const path = `${this.projectPath('list$')}/intents`
 
     return this._afs.collection<iIntentState>( path ).valueChanges()
@@ -184,34 +189,25 @@ export class IntentsService {
    * @param {iContext} context Indica el contexto al cual pertenece la fila donde se invoca la lista de mensajes
    * @return {Observable<IntentStateModel[]>} Observable de intents states en array
    */
-  getByContext$(context: iContext): Observable<iIntentState[]> {
+  getByContext$(context: string): Observable<iIntentState[]> {
     try {
-      if ( context.id ) {
 
-        return this._afs.collection<iIntentState>(
-          `${this.projectPath( 'getByContext' )}/intents`,
-          ref => ref
-            .where( 'contexto', '==', context.name )
-            .orderBy( 'index' )
-        ).valueChanges()
-          .pipe(
+      return this._afs.collection<iIntentState>(
+        `${this.projectPath( 'getByContext' )}/intents`,
+        ref => ref
+          .where( 'contexto', '==', context )
+          .orderBy( 'index' )
+      ).valueChanges()
+        .pipe(
 
-            catchError( error => {
-              throw new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ context.name }`,'getByContext', error )
-            } )
+          catchError( error => {
+            throw new MxErrorAlertModel( `Error obteniendo los intents del contexto ${ context }`,'getByContext', error )
+          } )
 
-        )
+      )
 
-      } else {
-        throw new MxErrorAlertModel(`No se proporionó ID del contexto`, 'getByContext')
-      }
     } catch ( error ) {
       this.handleIntentErrors( error)
-      if ('mensaje' in error) {
-        this._alert.error(error.message, error)
-      } else {
-        this._alert.error(`No se pudieron obtener  los intents del contexto ${context}`, error)
-      }
       return of([])
     }
   }
@@ -240,11 +236,14 @@ export class IntentsService {
   find$( displayNameOrName: string ): Observable<iIntentState | null> {
     let path = `${ this.projectPath( 'find' ) }/intents`
 
-    return this._afs.collection<iIntentState>( path, ref => ref
-      .where( 'name', '==', displayNameOrName )
-      .where( 'displayName', '==', displayNameOrName )
-    ).get().pipe(
-
+    console.log( path, displayNameOrName )
+    return merge(
+      this._afs.collection<iIntentState>( path, ref => ref
+        .where( 'displayName', '==', displayNameOrName ) ).get(),
+      this._afs.collection<iIntentState>( path, ref => ref
+        .where( 'name', '==', displayNameOrName ) ).get()
+    ).pipe(
+      filter(intent => !intent.empty),
       map( result => {
         if ( result.size === 1 ) {
           return result.docs[ 0 ].data()
@@ -308,7 +307,7 @@ export class IntentsService {
   async getNextIntents( intentName: string ): Promise<string[]> {
     let path = `${this.projectPath('getMensajes')}/intents/${intentName}/respuestas`
 
-    return this._afs.collection<RespuestaModel>( path )
+    return this._afs.collection<ResponseModel>( path )
       .valueChanges()
       .pipe(
         take( 1 ),
@@ -494,9 +493,13 @@ export class IntentsService {
 
       // ACTUALIZA EN FIRESTORE
       await this._loading.asyncForEach( list,
-        (intent: iDialogflowIntent ) => {
-          let name = intent.name.slice(intent.name.lastIndexOf('/') + 1)
-          return batch.set(intentRef.doc(name).ref, {intent}, { merge: true} )
+        ( intent: iDialogflowIntent ) => {
+          const name = intent.name.slice( intent.name.lastIndexOf( '/' ) + 1 )
+
+          return batch.set( intentRef.doc( name ).ref, {
+            intent, name,
+            displayName: intent.displayName,
+          }, { merge: true } )
         } )
 
       await batch.commit().catch( error => {

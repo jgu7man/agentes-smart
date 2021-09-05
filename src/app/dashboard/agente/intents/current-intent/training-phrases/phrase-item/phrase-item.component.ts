@@ -1,6 +1,9 @@
+import { OnDestroy } from '@angular/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { MxLoading } from '@marxa/devkit';
+import { Subscription } from 'rxjs';
 import { iTrainingPhrase } from 'src/app/models/intent.model';
+import { iAgentParameter } from 'src/app/models/parameter.model';
 import { ParametersService } from 'src/app/services/parameters.service';
 import { PhraseService, TrainingPhrasesService } from 'src/app/services/training-phrases.service';
 
@@ -9,7 +12,7 @@ import { PhraseService, TrainingPhrasesService } from 'src/app/services/training
   templateUrl: './phrase-item.component.html',
   styleUrls: ['./phrase-item.component.scss']
 })
-export class PhraseItemComponent implements OnInit {
+export class PhraseItemComponent implements OnInit, OnDestroy {
 
   @Input() switchPhraseInput: boolean = false
   @Input() phrase!: iTrainingPhrase
@@ -18,13 +21,18 @@ export class PhraseItemComponent implements OnInit {
   phraseToEdit: string = ''
 
   @Output() onDeleted = new EventEmitter<boolean>()
+  agentParams: iAgentParameter[] = []
+  private agentParamsSubs: Subscription
 
   constructor (
     private _loading: MxLoading,
     private _frases: TrainingPhrasesService,
     public params_: ParametersService,
     private _phrases: PhraseService
-  ) { }
+  ) {
+    this.agentParamsSubs = this.params_.getAgentParams()
+      .subscribe( params => this.agentParams = params)
+   }
 
   ngOnInit(): void {
   }
@@ -42,7 +50,12 @@ export class PhraseItemComponent implements OnInit {
     this.inputPhrase.nativeElement.focus()
   }
 
-
+  getColor(displayName: string | boolean) {
+    let param = this.agentParams.find(
+      (p) => p.displayName == displayName
+    )
+    return param ? param.color : '#ffee588c';
+  }
 
   onSetPhrase( phrase: string ) {
 
@@ -60,5 +73,9 @@ export class PhraseItemComponent implements OnInit {
     this._frases.delete( this.phrase ).then( () => {
       this.onDeleted.emit(true)
     })
+  }
+
+  ngOnDestroy() {
+    this.agentParamsSubs.unsubscribe()
   }
 }

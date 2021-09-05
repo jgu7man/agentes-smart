@@ -12,6 +12,7 @@ import { PreciosComponent } from './pages/precios/precios.component';
 import { TratamientoDatosComponent } from './pages/legal/tratamiento-datos/tratamiento-datos.component';
 import { DocsComponent } from './pages/docs/docs.component';
 import { MessengerIntegrationComponent } from './pages/docs/messenger-integration/messenger-integration.component';
+import { PageFooterComponent } from './page-footer/page-footer.component';
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import { MessengerIntegrationComponent } from './pages/docs/messenger-integratio
     PreciosComponent,
     TratamientoDatosComponent,
     DocsComponent,
-    MessengerIntegrationComponent
+    MessengerIntegrationComponent,
+    PageFooterComponent
   ],
   imports: [
     CommonModule,

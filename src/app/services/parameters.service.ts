@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MxAlert, MxCache, MxColor, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { iIntentState, IntentStateModel, iParameter, iPhrasePart, iTrainingPhrase, ParameterModel } from '../models/intent.model';
 import { iAgentParameter } from '../models/parameter.model';
+import { CurrentAgentService } from './current-agent.service';
 import { CurrentIntentService } from './current-intent.service';
 import { PhraseService, TrainingPhrasesService } from './training-phrases.service';
 
@@ -22,6 +23,9 @@ export class ParametersService {
   // list: iParameter[]
   agentParams: any[] = [];
 
+  public list$: Observable<iParameter[]>
+
+
   constructor(
     private _currentIntent: CurrentIntentService,
     private _frases: TrainingPhrasesService,
@@ -31,8 +35,9 @@ export class ParametersService {
     private _color: MxColor,
     private _afs: AngularFirestore,
     private _cache: MxCache,
+    private _currentAgent: CurrentAgentService
   ) {
-    this.getAgentParams();
+    this.list$ = this.listen$()
   }
 
   projectPath(functionName?: string): string {
@@ -49,7 +54,7 @@ export class ParametersService {
   }
 
 
-  get list$(): Observable<iParameter[]> {
+  listen$(): Observable<iParameter[]> {
     return this._currentIntent.state$.pipe(
       map(state =>  state ? state.intent.parameters : [])
     )
@@ -100,26 +105,18 @@ export class ParametersService {
   }
 
 
-  async getAgentParams() {
-    const path = `${ this.projectPath( 'getFirestoreParams' ) }/parameters`
-    this._afs.collection<iParameter>(path).valueChanges()
-      .subscribe(async (list) => {
-        this.agentParams = list
-      });
+  getAgentParams() {
+    const path = `${ this.projectPath( 'getFirestoreParams' ) }/params`
+    return this._afs.collection<iAgentParameter>(path).valueChanges()
   }
 
-  getColor( displayName: string | boolean ): Observable<string> {
-    const path = `${ this.projectPath( 'getFirestoreParams' ) }/parameters`
-    const agentParams = this._afs.collection<iAgentParameter>(path).valueChanges()
+  getColor( displayName: string | boolean ): string {
+    const agentParams = this._currentAgent.params$.value
 
-    return agentParams.pipe(
-      map( list => {
-        let param = list.find(
-          (p) => p.displayName == displayName
-        );
-        return param ? param.color : '#ffee588c';
-      })
-    )
+    let param = agentParams.find(
+      (p) => p.displayName == displayName
+    );
+    return param ? param.color : '#ffee588c';
   }
 
   // UPDATE Mensaje Parametro
