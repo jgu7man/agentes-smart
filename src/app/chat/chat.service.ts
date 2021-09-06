@@ -38,7 +38,7 @@ export class ChatService {
     'https://us-central1-main-agentesmart.cloudfunctions.net/dialogflow/';
   private _localhost =
     'http://localhost:5001/main-agentesmart/us-central1/rest/';
-  private _url = environment.restURL + 'session';
+  private _url = environment.restURL + '/session';
   private _sessionId?: string | null;
 
 

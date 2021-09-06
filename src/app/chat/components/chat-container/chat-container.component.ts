@@ -13,9 +13,9 @@ export class ChatContainerComponent implements OnInit, OnDestroy {
 
   public conversation: Interaction[] = []
 
-  @Input() clientId: string = ''
-  @Input() projectId: string = ''
-  @Input() userId: string = 'TEST'
+  @Input() userId: string
+  @Input() projectId: string
+  @Input() clientId: string = 'TEST'
 
   @Output() closeChatWindow: EventEmitter<void> = new EventEmitter()
   @Output() sendedMessage: EventEmitter<boolean> = new EventEmitter()
@@ -27,7 +27,11 @@ export class ChatContainerComponent implements OnInit, OnDestroy {
 
   constructor (
     public chat: ChatService,
+    private _cache: MxCache
   ) {
+    this.userId = this._cache.getDataKey<string>( 'userId' ) || ''
+    this.projectId = this._cache.getDataKey<string>( 'projectId' ) || ''
+    this.clientId = 'TEST'
     this.sendedSubscription = this.chat.messageSended$.subscribe( sended => {
       this.sendedMessage.emit( sended );
     } )
@@ -37,8 +41,9 @@ export class ChatContainerComponent implements OnInit, OnDestroy {
    }
 
   ngOnInit(): void {
+    console.log( this.userId, this.projectId, this.clientId )
     this._listenSubscription = this.chat.listenForMessage(
-      this.clientId, this.projectId, this.userId
+      this.userId, this.projectId, this.clientId || 'TEST'
     );
   }
 

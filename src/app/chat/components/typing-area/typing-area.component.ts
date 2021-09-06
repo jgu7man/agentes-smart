@@ -25,7 +25,7 @@ export class TypingAreaComponent implements OnInit {
   ngOnInit(): void {}
 
   onSend() {
-    this._chat.conversation.push( new Interaction(this.message, 'this'))
+    // this._chat.conversation.push( new Interaction(this.message, 'this'))
     console.log(this.message);
     this._chat.sendMessage$.next(this.message);
     this.message = '';
