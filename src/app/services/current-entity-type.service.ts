@@ -111,11 +111,11 @@ export class CurrentEntityTypeService {
   }
 
   /** Edita el DisplayName del tipo de dato en la memoria */
-  editDisplayName( displayName: string ) {
+  editDisplayName( displayName: string, saved: boolean = false) {
     if(this.current$.value) {
       this.current$.next({
         ...this.current$.value,
-        saved: false,
+        saved,
         body: {
           ...this.current$.value.body,
           displayName
@@ -131,13 +131,13 @@ export class CurrentEntityTypeService {
 
     try {
       if ( entityType ) {
-        if ( name || entityType.body.entities) {
+        if ( name && entityType.body.entities ) {
           let entityFinded = entityType.body.entities.find( e => e.value == name )
           if ( entityFinded ) return entityFinded
 
           else throw new MxErrorAlertModel( `No se pudo encontrar la entidad ${ name }` )
 
-        } else throw new MxErrorAlertModel('No obtuvo el name del entity o no se encontraron entities en la entityType actual')
+        } else throw new MxErrorAlertModel('No obtuvo el name de la entidad o no se encontraron entidades en la entityType actual')
 
       } else throw new MxErrorAlertModel( 'No se estableció entity type actual' )
 

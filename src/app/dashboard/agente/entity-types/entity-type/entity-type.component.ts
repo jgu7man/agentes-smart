@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MxText } from '@marxa/devkit';
+import { timer } from 'rxjs';
 import { Subscription } from 'rxjs';
-import { debounceTime, take } from 'rxjs/operators';
+import { debounceTime, distinct, distinctUntilChanged, skipUntil, take } from 'rxjs/operators';
 import { EntityTypeStateModel } from 'src/app/models/entity-type.model';
 import { CurrentEntityTypeService } from 'src/app/services/current-entity-type.service';
 import { EntityTypesService } from 'src/app/services/entitiy-types.service';
@@ -26,27 +27,21 @@ export class EntityTypeComponent implements OnInit, OnDestroy {
     public text: MxText
   ) {
     this.displayNameSubs = this.displayNameCtrl.valueChanges
-      .pipe(debounceTime(1000))
-      .subscribe( changes => {
+      .pipe(
+        debounceTime( 1000 ),
+        skipUntil(timer(1100))
+    ).subscribe( changes => {
       this.currentEntityType.editDisplayName(changes)
     })
   }
 
-  @Input() set selected(tipo: EntityTypeStateModel) {
-    this.currentEntityType.setCurrentTipo(tipo)
-      .subscribe(changes => {
-        // console.log( changes )
-        // this.tipo.saved = false
-      })
+  @Input() set selected(entityType: EntityTypeStateModel) {
+    this.currentEntityType.setCurrentTipo( entityType )
+    this.displayNameCtrl.setValue( entityType.body.displayName )
   }
 
 
-  async ngOnInit() {
-    this.currentEntityType.current$.pipe( take( 1 ) )
-      .subscribe( entityType => {
-      if ( entityType ) this.displayNameCtrl.patchValue(entityType.body.displayName)
-    })
-  }
+  async ngOnInit() {}
 
 
   async onSave() {
@@ -68,7 +63,7 @@ export class EntityTypeComponent implements OnInit, OnDestroy {
 
 
   ngOnDestroy() {
-
+    this.displayNameSubs.unsubscribe()
   }
   // onDeleteTipo() {
   //   this.tiposService.deleteTipo( this.tipo.name )

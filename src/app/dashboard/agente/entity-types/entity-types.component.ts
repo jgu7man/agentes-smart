@@ -44,7 +44,8 @@ export class EntityTypesComponent implements OnInit, OnDestroy {
 
   onSelected( selected: MatSelectionListChange ) {
     if (this.tipoDrawer.opened) { this.tipoDrawer.close() }
-    this.tipoSelected = new EntityTypeStateModel(selected.option.value)
+    this.tipoSelected = new EntityTypeStateModel( selected.option.value )
+    console.log( this.tipoSelected )
     this.tipoDrawer.open()
   }
 

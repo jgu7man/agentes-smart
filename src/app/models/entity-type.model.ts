@@ -1,5 +1,5 @@
 export class EntityTypeModel {
-  public kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP';
+  public kind: EntityKind;
   public autoExpansionMode:
     | 'AUTO_EXPANSION_MODE_UNSPECIFIED'
     | 'AUTO_EXPANSION_MODE_DEFAULT';
@@ -9,7 +9,7 @@ export class EntityTypeModel {
   constructor(
     public displayName: string,
     entities?: iEntity[],
-    kind?: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP'
+    kind?: EntityKind
   ) {
     this.kind = kind || 'KIND_MAP';
     this.autoExpansionMode = 'AUTO_EXPANSION_MODE_DEFAULT';
@@ -54,3 +54,4 @@ export class EntityTypeStateModel {
 }
 
 export interface iEntityTypeState extends EntityTypeStateModel {}
+export type EntityKind = 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP'
