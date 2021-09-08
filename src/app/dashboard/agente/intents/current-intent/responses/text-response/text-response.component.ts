@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { AfterViewInit, OnDestroy } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
-import { tap } from 'lodash';
+import { FormControl } from '@angular/forms';
 import { fromEvent, Subscription } from 'rxjs';
 import {
   debounceTime,
@@ -23,22 +23,42 @@ import { iParamSelected } from 'src/app/models/intent.model';
   templateUrl: './text-response.component.html',
   styleUrls: ['./text-response.component.scss'],
 })
-export class TextResponseComponent implements AfterViewInit, OnDestroy {
+export class TextResponseComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() text!: string;
+  textCtrl: FormControl = new FormControl('');
   textSub!: Subscription;
   selectParameter: boolean = false;
   paramSelected: iParamSelected = {value:''};
   @ViewChild('dialgbox') mensajeInput!: ElementRef;
   @Output() onTextEvent: EventEmitter<string> = new EventEmitter();
 
-  constructor() {}
+  constructor () {
+    this.textSub = this.textCtrl.valueChanges.pipe(
+      map( value => {
+        if ( value.endsWith( '$' ) ) this.selectParameter = true;
+        return value
+      } ),
+      debounceTime( 1000 ),
+      distinctUntilChanged(),
+    ).subscribe( ( value: string ) => {
+      value = value.split('\n').join('\\n');
+      this.onTextEvent.emit(value)
+    })
+  }
+
+  ngOnInit() {
+    if ( this.text ) {
+      this.text = this.text.replace("\\n", "\n")
+      this.textCtrl.patchValue( this.text )
+    }
+  }
 
   ngAfterViewInit() {
     let splited = this.text.split('$');
     if (splited.length > 1) {
       this.paramSelected.value = splited[1].split(' ')[0];
     }
-    this.listenText();
+    // this.listenText();
   }
 
   listenText() {

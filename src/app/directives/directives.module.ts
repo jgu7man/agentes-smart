@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ResponseTypeDirective } from './response-type.directive';
 import { CatchContextDirective, ConditionalContextDirective, DefaultContextDirective, SearchContextDirective } from '../models/intent-response.model';
 import { DiagramElementDirective } from './diagram-element.directive';
+import { FocusOnShowDirective } from './focus-on-show.directive';
 
 
 
@@ -13,7 +14,8 @@ import { DiagramElementDirective } from './diagram-element.directive';
     CatchContextDirective,
     SearchContextDirective,
     DefaultContextDirective,
-    DiagramElementDirective
+    DiagramElementDirective,
+    FocusOnShowDirective
   ],
   imports: [
     CommonModule
@@ -24,7 +26,8 @@ import { DiagramElementDirective } from './diagram-element.directive';
     CatchContextDirective,
     SearchContextDirective,
     DefaultContextDirective,
-    DiagramElementDirective
+    DiagramElementDirective,
+    FocusOnShowDirective
   ]
 })
 export class DirectivesModule { }

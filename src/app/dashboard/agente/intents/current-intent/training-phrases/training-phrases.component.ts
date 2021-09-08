@@ -67,8 +67,6 @@ export class TrainingPhrasesComponent
   // CREATE frase
   async toAddPhrase() {
     this.addPhraseInput = true;
-    await this._loading.waitFor(200);
-    this.newPhraseInput.nativeElement.focus();
   }
 
 

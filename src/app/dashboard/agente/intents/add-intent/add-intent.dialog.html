@@ -13,10 +13,11 @@
       id="intentName"
       #intentNuevo
       [(ngModel)]="newIntent"
+      (keypress)="text.onlyAllow(['letters', 'backspace', 'space'], $event)"
     />
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions style="display: flex; justify-content: space-around">
   <button mat-raised-button (click)="dialog.close()">Cancelar</button>
-  <button mat-raised-button (click)="onAddIntent()">Crear</button>
+  <button mat-raised-button color="primary" (click)="onAddIntent()">Crear</button>
 </mat-dialog-actions>

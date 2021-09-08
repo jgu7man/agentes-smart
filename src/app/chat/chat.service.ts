@@ -15,7 +15,7 @@ import { BehaviorSubject, Subject, Subscription, throwError } from 'rxjs';
 // import { AppState } from '../../app.state';
 import { HttpClient } from '@angular/common/http';
 import {
-  ResultResponse,
+  IntentResponseResult,
   Sugerencia,
   SearchResponseModel,
 } from '../models/intent-response.model';
@@ -24,6 +24,7 @@ import { environment } from 'src/environments/environment';
 import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
 import firebase from 'firebase/app'
 import { ChatSessionModel, Interaction, iSessionResponse, QuickResponse } from './chat.model';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -46,21 +47,38 @@ export class ChatService {
     private _cache: MxCache,
     private _http: HttpClient,
     private _alert: MxAlert,
+    private _afs: AngularFirestore
   ) {}
 
 
 
-  //   reciveMessage(message) {
-  //     this._store.dispatch(actions.recive(message))
-  //   }
+  /** Define la ruta del angente actual
+   * @param {string} [functionName] Opcionalmente, ingresa el nombre de la funcion para seguimiento del error
+   * @returns {*}  {string} Ruta del proyecto
+   */
+   projectPath(functionName?: string): string {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const userId = this._cache.getDataKey<string>( 'userId' )
 
-  restoreConvesation(conversation: Interaction[]) {
-    conversation.forEach( ( interaction ) => {
+    if ( !userId ) {
+      throw new MxErrorAlertModel( `No se encontró el userId`, `itents.service#${functionName}` )
+    } else if ( !projectId ) {
+      throw new MxErrorAlertModel( `No se encontró el projectId`, `itents.service#${functionName}` )
+    } else {
+      return `usuarios/${userId}/agentes/${ projectId }`
+    }
+  }
+
+  restoreConvesation( conversation?: Interaction[] ) {
+    // if ( !conversation ) {
+    //   this._afs.
+    // }
+    conversation?.forEach( ( interaction ) => {
       this.conversation.push(interaction);
     });
   }
 
-  listenForMessage(clientId: string, projectId: string, userId: string ): Subscription {
+  listenForMessage(userId: string, projectId: string, clientId: string ): Subscription {
     this.messageSended$.next(false)
     return this.sendMessage$.pipe(
       map<string, ChatSessionModel>( ( message: string ) => {
@@ -68,15 +86,14 @@ export class ChatService {
         if ( !projectId ) {
           let error = new MxErrorAlertModel(`No se tiene el project id`,'sendMessage')
           throw error
-        } else if ( !clientId ) {
+        } else if ( !userId ) {
           let error = new MxErrorAlertModel(`No se tiene el client id`,'sendMessage')
           throw error
         } else {
 
           // BUILD BODY REQUEST
           let request = new ChatSessionModel(
-            projectId, clientId,
-            {userId: userId }, message
+            projectId, userId, { clientId }, message
           )
           // search for sessionId in storage
           this._sessionId = this._cache.getDataKey<string>( 'currentSession' );
@@ -126,9 +143,9 @@ export class ChatService {
     } );
   }
 
-  reciveMessage(respuestas: ResultResponse[]) {
+  reciveMessage(respuestas: IntentResponseResult[]) {
     if (respuestas.length > 0) {
-      respuestas.forEach((resp: ResultResponse) => {
+      respuestas.forEach((resp: IntentResponseResult) => {
         if (resp != null) {
           console.log(resp);
           if (resp.suggestions && resp.suggestions.length > 0) {
@@ -140,8 +157,12 @@ export class ChatService {
             if (resp.card) this.sendCard(resp.card);
           } else {
             console.log('Texto');
-            console.log(resp.text);
-            this.conversation.push(new Interaction(resp.text, 'that'))
+            console.log( resp.text );
+            let lines = resp.text.split( `\\n` );
+            console.log( lines )
+            lines.forEach( line => {
+              this.conversation.push(new Interaction(line, 'that'))
+            })
           }
         }
       });
@@ -175,6 +196,23 @@ export class ChatService {
   }
 
 
+  async clearSession() {
+    const userId = this._cache.getDataKey<string>( 'userId' )
 
+    if ( !userId ) {
+      throw new MxErrorAlertModel( `No se encontró el userId`, `chat.service#clearSession` )
+    } else {
+      const path = `usuarios/${userId}/clients/TEST`
+      const testDoc = await this._afs.doc( path ).ref.get()
+
+      if ( testDoc.exists ) {
+        testDoc.ref.update( {
+          session: firebase.firestore.FieldValue.delete()
+        } )
+        this._alert.notify('Sesión eliminada')
+      }
+    }
+
+  }
 
 }

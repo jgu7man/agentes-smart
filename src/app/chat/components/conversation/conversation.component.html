@@ -4,27 +4,29 @@
     [ngClass]="msg.emiter"
     *ngFor="let msg of chat.conversation"
   >
-    <div [ngSwitch]="messageType(msg.message)">
-      <div *ngSwitchCase="'image'">
-        <div class="globe">
-          <span class="message-date">{{ formatDate(msg.time) }}</span>
+    <ng-container *ngIf="msg.message">
+      <div [ngSwitch]="messageType(msg.message)">
+        <div *ngSwitchCase="'image'">
+          <div class="globe">
+            <!-- <span *ngIf="msg.emiter == 'this'" class="message-date">{{ formatDate(msg.time) }}</span> -->
+          </div>
+        </div>
+
+        <div class="sugerencias" *ngSwitchCase="'quickresponse'">
+          <span
+            *ngFor="let item of toQuickResponses(msg.message)"
+            class="suggest"
+            (click)="onSuggest(item)"
+          >
+            {{ item["displayText"] }}
+          </span>
+        </div>
+
+        <div *ngSwitchDefault>
+          <p class="globe" [innerHTML]="msg.message"></p>
+          <!-- <span *ngIf="msg.emiter == 'this'" class="message-date">{{ formatDate(msg.time) }}</span> -->
         </div>
       </div>
-
-      <div class="sugerencias" *ngSwitchCase="'quickresponse'">
-        <span
-          *ngFor="let item of toQuickResponses(msg.message)"
-          class="suggest"
-          (click)="onSuggest(item)"
-        >
-          {{ item["displayText"] }}
-        </span>
-      </div>
-
-      <div *ngSwitchDefault>
-        <p class="globe">{{ msg.message }}</p>
-        <span class="message-date">{{ formatDate(msg.time) }}</span>
-      </div>
-    </div>
+    </ng-container>
   </div>
 </div>

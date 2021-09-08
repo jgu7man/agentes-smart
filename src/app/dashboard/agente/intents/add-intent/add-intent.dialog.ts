@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MxCache, MxLoading } from '@marxa/devkit';
+import { MxCache, MxLoading, MxText } from '@marxa/devkit';
 import { iContextList, iContextSelected } from 'src/app/models/context.model';
 import { iIntentState } from 'src/app/models/intent.model';
 import { IntentsService } from 'src/app/services/intents.service';
@@ -20,6 +20,7 @@ export class AddIntentDialog implements OnInit {
     private _loading: MxLoading,
     private _cache: MxCache,
     private _intents: IntentsService,
+    public text: MxText,
     public dialog: MatDialogRef<AddIntentDialog>
   ) {}
 
@@ -39,16 +40,15 @@ export class AddIntentDialog implements OnInit {
   }
 
   async onAddIntent() {
-    this._loading.toggleWaiting('open');
     this.switchAddIntent = false;
 
-    if (this.newIntent) {
-      await this._intents.create(
+    if ( this.newIntent ) {
+      const intentCreated =  await this._intents.create(
         this.newIntent,
         this.lastIndex,
         this.context ? this.context : undefined
       );
-      this.dialog.close(this.newIntent);
+      this.dialog.close(intentCreated);
     }
   }
 }

@@ -6,6 +6,7 @@ import {
   OnInit,
   Output,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
@@ -32,7 +33,8 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   /** Suscripción a los cambios de la lista de respuestas */
   respuestasChangesSubs!: Subscription;
   /** Lista de componentes de respuestas */
-  @ViewChildren(ResponseItemComponent) cards!: QueryList<ResponseItemComponent>;
+  @ViewChildren( ResponseItemComponent ) cards!: QueryList<ResponseItemComponent>;
+  @ViewChild('blankResponse') blankResponse?: ResponseItemComponent;
 
   openedCard?: number;
 
@@ -41,7 +43,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   @Output() lastPositionChange = new EventEmitter<number>();
 
   constructor(
-    public responses: ResponsesService,
+    public responses_: ResponsesService,
     private _loading: MxLoading,
     public currentIntent: CurrentIntentService
   ) {
@@ -50,7 +52,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.respuestasChangesSubs = this.responses.onResponsesChanged.subscribe(
+    this.respuestasChangesSubs = this.responses_.onResponsesChanged.subscribe(
       () => {
         this.newOutputMensaje = new DefaultResponseModel('', []);
       }
@@ -62,26 +64,28 @@ export class ResponsesComponent implements OnInit, OnDestroy {
    * con la creación de la misma y la abre por defecto
    */
   async addRespuesta() {
-    let lastIndex = (await this.responses.getList()).length;
+    let lastIndex = (await this.responses_.getList()).length;
 
-    this.emptyResponse =
+    this.responses_.emptyResponse =
       new ResponseModel(this.newOutputMensaje, lastIndex, '*fin', undefined),
 
-    await this._loading.waitFor( 500 );
-    this.cards.last.switchEditResp = true;
-    let lastPosition = this.cards.last.ownElement.nativeElement.offsetTop;
-    this.lastPositionChange.emit(lastPosition);
+      await this._loading.waitFor( 500 );
+    if ( this.blankResponse ) {
+      this.blankResponse.switchEditResp = true;
+      let lastPosition = this.blankResponse.ownElement?.nativeElement.offsetTop;
+      this.lastPositionChange.emit(lastPosition);
+    }
     // window.scrollTo(lastPosition)
   }
 
   public deleteRespuesta(responseId: string) {
     if (responseId) {
-      this.responses.delRespuesta(responseId);
+      this.responses_.delRespuesta(responseId);
     }
   }
 
   cancelAddResponse() {
-    delete this.responses.emptyResponse
+    delete this.responses_.emptyResponse
   }
 
   onOpened(index: number) {
@@ -89,9 +93,9 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   }
 
   async drop(event: CdkDragDrop<ResponseModel[]>) {
-    let respuestas = await this.responses.getList()
+    let respuestas = await this.responses_.getList()
     moveItemInArray(respuestas, event.previousIndex, event.currentIndex);
-    this.responses.updateRespuestasOrder(respuestas);
+    this.responses_.updateRespuestasOrder(respuestas);
   }
 
   /** Se desuscribe de los cambios en la lista de respuestas */

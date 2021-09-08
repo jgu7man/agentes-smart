@@ -1,5 +1,6 @@
 <mat-dialog-content>
-  <mat-form-field style="min-width: 100%">
+  <mat-form-field style="min-width: 100%" appearance="outline">
+    <mat-label>Nuevo tipo de dato</mat-label>
     <input
       matInput
       type="text"
@@ -7,7 +8,7 @@
       name="addInput"
       id="addInput"
       [formControl]="displayNameCtrl"
-      (keydown)="text.onlyAllow(['letters', 'backspace'], $event)"
+      (keypress)="text.onlyAllow(['letters', 'backspace'], $event)"
     />
   </mat-form-field>
 </mat-dialog-content>

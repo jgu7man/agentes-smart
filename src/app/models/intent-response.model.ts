@@ -5,7 +5,7 @@ import { RespuestaCard } from './dialogflow-responses.model';
  * Modelo de respuestas guardadas en FIRESTORE para cada intent
  * Creates an instance of RespuestaModel.
  * @param {iResponseType} tipo REQUERIDO. El tipo de respuesta que espera
- * @param {ResultResponse} result REQUERIDO. El mensaje que se muestra en la salida o en la interfaz de chat de cada plataforma
+ * @param {IntentResponseResult} result REQUERIDO. El mensaje que se muestra en la salida o en la interfaz de chat de cada plataforma
  * @param {number} index REQUERIDO. El orden de aparición y de importancia
  * @param {string} [nextIntent] El siguiente intent al que se pretende continuar con la conversación
  * @param {string} [inputContext] El contexto en el cuál se encuentra el inetnt al que pertenece esta respuesta.
@@ -15,10 +15,10 @@ import { RespuestaCard } from './dialogflow-responses.model';
  */
 export class ResponseModel {
   constructor(
-    public result: ResultResponse,
+    public result: IntentResponseResult,
     public index: number,
     public nextIntent?: string,
-    public tipo?: ResponseType,
+    public tipo?: IntentResponseType,
     public outputContexts?: string[],
     public inputContexts?: string[],
     public accion?: string,
@@ -83,7 +83,7 @@ export class ConditionalResponseModel extends DefaultResponseModel {
     public valor: string | number | any[]
   ) // public text: string,
   {
-    super('', []);
+    super('', [], false);
   }
 }
 
@@ -110,14 +110,14 @@ export class ConditionalContextDirective {
     private templateRef: TemplateRef<any>,
     private viewContainer: ViewContainerRef) { }
 
-  @Input( 'asConditional' ) set response( response: ResultResponse ) {
+  @Input( 'asConditional' ) set response( response: IntentResponseResult ) {
     // console.log( response )
     // console.log( this.templateRef )
     this.viewContainer.createEmbeddedView(this.templateRef)
    }
   static ngTemplateGuard_Result(
     dir: ConditionalContextDirective,
-    expr: ResultResponse
+    expr: IntentResponseResult
   ): expr is ConditionalResponseModel {
     console.log( expr )
     return true
@@ -140,7 +140,7 @@ export class CatchResponseModel extends DefaultResponseModel {
   ) // public text: string,
   // public suggestions?: Suggest[],
   {
-    super('', []);
+    super('', [], false);
   }
 }
 
@@ -179,7 +179,7 @@ export class SearchResponseModel extends DefaultResponseModel {
     public card?: RespuestaCard
   ) // public text?: string ,
   {
-    super('', []);
+    super('', [], false);
   }
 }
 
@@ -244,13 +244,13 @@ export interface TextRespuesta {
   param: string;
 }
 
-export type ResponseType =
+export type IntentResponseType =
   | 'default'
   | 'conditional'
   | 'catch'
   | 'search'
   | 'suggests';
-export type ResultResponse =
+export type IntentResponseResult =
   | DefaultResponseModel
   | ConditionalResponseModel
   | CatchResponseModel

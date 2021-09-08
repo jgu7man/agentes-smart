@@ -136,9 +136,9 @@
             </div>
           </ng-container>
 
-          {{respuesta.tipo}}
           <!-- SWITCH TIPO RESPUESAS -->
           <div [ngSwitch]="respuesta.tipo">
+
             <div *ngSwitchCase="'conditional'">
               <as-conditional-response-form
               *ngIf="isConditional(respuesta.result) as result"
@@ -146,6 +146,7 @@
                 (onRespChanges)="catchResult($event)"
               ></as-conditional-response-form>
             </div>
+
             <div *ngSwitchCase="'catch'">
               <as-catch-response-form
               *ngIf="isCatch(respuesta.result) as result"
@@ -153,6 +154,7 @@
                 (edited)="catchResult($event)"
               ></as-catch-response-form>
             </div>
+
             <div *ngSwitchCase="'search'">
               <as-search-response-form
               *ngIf="isSearch(respuesta.result) as result"

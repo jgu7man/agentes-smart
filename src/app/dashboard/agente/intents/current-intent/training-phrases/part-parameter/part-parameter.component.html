@@ -52,12 +52,12 @@
           <!-- Add new entity at entityType -->
           <ng-container *ngIf="toggleAddClase; else select">
             <mat-form-field appearance="outline" floatLabel="always">
-              <mat-label>Agregar Parámetro</mat-label>
+              <mat-label>Nombre Parámetro</mat-label>
               <input
                 placeholder="Lo que quiso decir..."
                 matInput
                 type="text"
-                [(ngModel)]="parte.text"
+                [formControl]="paramNameCtrl"
                 name="paramName"
               />
             </mat-form-field>
@@ -117,7 +117,7 @@
     <div class="col s6" *ngIf="!isSystemEntity">
       <button mat-raised-button
       (click)="setSinonimo()"
-      [disabled]="disableSinonimo || synonymExists"
+      [disabled]="synonymStored !== undefined "
       [matTooltip]="addSynonymToolTip "
       >Agregar como sinónimo</button>
     </div>

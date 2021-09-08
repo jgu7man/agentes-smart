@@ -67,8 +67,9 @@ export class ParametersService {
 
   // CREATE Parametros
   async add( param: iParameter, example?: string ) {
-    const path = `${ this.projectPath( 'add' ) }/parameters`
+    const path = `${ this.projectPath( 'add' ) }/params`
     const intentState = this._currentIntent.state$.value
+
     if ( intentState ) {
       const parameters = intentState.intent.parameters || []
       const paramInList = parameters.find(

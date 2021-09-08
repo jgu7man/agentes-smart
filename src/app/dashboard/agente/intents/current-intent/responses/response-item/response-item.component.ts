@@ -7,7 +7,7 @@ import { pull, uniq } from 'lodash';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { iContext, iContextList, iContextSelected } from 'src/app/models/context.model';
-import { ConditionalResponseModel, iResponseType, ResponseModel, ResultResponse, DefaultResponseModel, ResponseType, CatchResponseModel, SearchResponseModel } from 'src/app/models/intent-response.model';
+import { ConditionalResponseModel, iResponseType, ResponseModel, IntentResponseResult, DefaultResponseModel, IntentResponseType, CatchResponseModel, SearchResponseModel } from 'src/app/models/intent-response.model';
 import { iIntentState, IntentStateModel } from 'src/app/models/intent.model';
 import { ContextsService } from 'src/app/services/contexts.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
@@ -31,7 +31,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
   /** Obtiene el tipo de respuesta seleccionado y da estilo a la vista */
   selectedRes?: ResponseModel;
   /** El mensaje de salida */
-  public result: ResultResponse;
+  public result: IntentResponseResult;
   /** Almacena el contexto y permite que se muestre la lista de contextos */
   public currentContext: string;
   /** Almacena la lista de contextos del cache */
@@ -70,7 +70,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     this.respuesta = new ResponseModel( this.result, 0, '*fin', 'default', [] );
   }
 
-  oldTipos: Map<string, ResponseType> = new Map( [
+  oldTipos: Map<string, IntentResponseType> = new Map( [
     [ 'simple', 'default' ],
     [ 'buscar', 'search' ],
     [ 'condicional', 'conditional' ],
@@ -170,19 +170,19 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  isConditional( result: ResultResponse ): false | ConditionalResponseModel {
+  isConditional( result: IntentResponseResult ): false | ConditionalResponseModel {
     return 'parametro' in result ? result as ConditionalResponseModel : false
   }
 
-  isCatch( result: ResultResponse ): false | CatchResponseModel {
+  isCatch( result: IntentResponseResult ): false | CatchResponseModel {
     return 'parametro' in result ?  result as CatchResponseModel : false
   }
 
-  isSearch( result: ResultResponse ): false | SearchResponseModel {
+  isSearch( result: IntentResponseResult ): false | SearchResponseModel {
     return 'parametro' in result ? result as SearchResponseModel : false
   }
 
-  isDefault( result: ResultResponse ): false | DefaultResponseModel {
+  isDefault( result: IntentResponseResult ): false | DefaultResponseModel {
     return 'text' in result ? result as DefaultResponseModel : false
   }
 
@@ -280,7 +280,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
 
     disableEScondition() {
-      return this.respuesta.result['condicion' as keyof ResultResponse] == 'no existe' || this.respuesta.result['condicion' as keyof ResultResponse] == 'existe'
+      return this.respuesta.result['condicion' as keyof IntentResponseResult] == 'no existe' || this.respuesta.result['condicion' as keyof IntentResponseResult] == 'existe'
     }
 
     async setNextContext(nextIntent: string) {
@@ -322,6 +322,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       });
 
       dialog.afterClosed().subscribe((newIntent) => {
+        console.log( newIntent )
         this.nextMensajesList.push(newIntent);
       });
     }
@@ -331,19 +332,18 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
      * @param {MatSelectChange} tipoSelected - Contiene la propidad valor que es de tipo `TipoEntityType.name`
      */
     onTipoSelected(tipoSelected: MatSelectChange) {
-      // let simpleStored = this._mensaje.respuestasList$.filter(
-      //     (r) => r.tipo == 'default'
-      // );
-      // if (tipoSelected.value == 'default' && simpleStored.length > 1) {
-      //     console.log(this._mensaje.respuestasList, tipoSelected.value);
-      //     this._alerts.sendMessageAlert(
-      //         'No puedes agregar más de una respuesta simple'
-      //     );
-      // } else {
       this.responseType = this.typeResponses.find( ( t ) => t.type == tipoSelected.value );
-      console.log( this.responseType )
-      if ( this.responseType) this.respuesta.tipo = this.responseType.type;
-      // }
+      if ( this.responseType ) this.respuesta.tipo = this.responseType.type;
+      switch ( this.respuesta.tipo ) {
+        case 'conditional':
+          this.respuesta.result = new ConditionalResponseModel( '', '', '' )
+          break;
+        case 'catch':
+          this.respuesta.result = new CatchResponseModel( '', '', '' )
+          break;
+        case 'search':
+          this.respuesta.result = new SearchResponseModel( '', '')
+      }
     }
 
     /** Recibe los cambios en los formularios hijos como simple, CODICIONAL, BUSCAR Y GRUPO DE DATOS */
@@ -354,52 +354,47 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     /**
      * Valida la respuesta que se ha de guardar en FIRESTORE
      *
-     * @param {ResponseModel} respuestaObj Objeto de respuesta modelado como RespuestaModel
+     * @param {ResponseModel} response Objeto de respuesta modelado como RespuestaModel
      * @returns {ResponseModel} Respuesta como objeto sin tipo declarado
      */
-    async validateRespuesta(respuestaObj: ResponseModel) {
-      let nextIntentContext = await this.setNextContext(respuestaObj.nextIntent || '')
-      if (
-        !respuestaObj.outputContexts ||
-        respuestaObj.outputContexts.length == 0
+    async validateRespuesta(response: ResponseModel) {
+      let nextIntentContext = await this.setNextContext(response.nextIntent || '')
+      const responses = await this.respuestas_.getList()
+
+      if ( !response.outputContexts ||
+        response.outputContexts.length == 0
       ) {
-        respuestaObj.outputContexts = [nextIntentContext];
+        response.outputContexts = [nextIntentContext];
       }
       // else {
       //   respuestaObj.outputContexts.push(nextIntentContext)
       // }
-      const responses = await this.respuestas_.getList()
-      if (respuestaObj.result.asDefault) {
+      if (response.result.asDefault) {
         var defaultStored = responses.filter((r) => r.result.asDefault);
         if (defaultStored.length > 1) {
           this._alerts.message(
             'No puedes asignar dos respuestas como "Default"'
           );
         }
-      }
+      } else response.result.asDefault = false
 
-      let respuestaClean
-      let output:ResultResponse = { ...respuestaObj.result, ...this.result };
-      let respuesta = output.text;
+      console.log( response, this.result  )
+      response.result = { ...this.result };
+      // let text = output.text || response.result.text
+      // console.log( text )
+      console.log( response.result )
 
-      if (!respuesta && respuestaObj.tipo != 'search') {
+      if (!response.result.text && response.tipo != 'search') {
         throw this._alerts.message('Agrega al menos un mensaje de texto');
-      } else if (output['suggestions'] && output['suggestions'].length == 1) {
+      } else if ( response.result[ 'suggestions' ]
+        && response.result[ 'suggestions' ].length == 1 ) {
         throw this._alerts.message(
           'Agrega 2 o más sugerencias o desactiva las sugerencias'
         );
       } else {
-        var respuestaKeys = Object.keys(respuestaObj);
-        await this._loading.asyncForEach(respuestaKeys, (key) => {
-          if ( respuestaObj[ key as keyof ResponseModel] === undefined )
-            delete respuestaObj[ key as keyof ResponseModel];
-          return;
-        });
 
-        respuestaClean = { ...respuestaObj };
-        respuestaClean['result'] = output;
-
-        return respuestaObj;
+        console.log( response )
+        return response;
       }
     }
 
@@ -410,6 +405,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     async onSave() {
       // console.log(this.respuesta.nextIntent);
       this.respuesta.outputContexts;
+      console.log( this.respuesta )
       let cleanRespuesta = await this.validateRespuesta(this.respuesta);
       if (!cleanRespuesta['nextIntent']) {
         cleanRespuesta['nextIntent'] = '*sug';
@@ -417,9 +413,9 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       // console.log(cleanRespuesta['nextIntent']);
       this.switchEditResp = false;
 
-      if (cleanRespuesta) this.respuestas_.set(cleanRespuesta);
-      this.respuesta.tipo = undefined;
-      this.respuesta.result = new DefaultResponseModel('');
+      if (cleanRespuesta) await this.respuestas_.set(cleanRespuesta);
+      // this.respuesta.tipo = undefined;
+      // this.respuesta.result = new DefaultResponseModel('');
     }
 
     ngOnDestroy() {
@@ -435,7 +431,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
         icono: 'fa-plus'
       },
       {
-        display: 'Simple',
+        display: 'Default',
         type: 'default',
         color: '#935cff',
         icono: 'fa-comment-alt',
@@ -447,7 +443,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
         icono: 'fa-code-branch',
       },
       {
-        display: 'Grupo de datos',
+        display: 'Guarda datos',
         type: 'catch',
         color: '#26a69a',
         icono: 'fa-clipboard-list',

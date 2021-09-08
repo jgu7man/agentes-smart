@@ -38,7 +38,6 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   @Output() paramAdded = new EventEmitter<iPhrasePart>();
   @Output() onTipoChange: EventEmitter<iPhrasePart> = new EventEmitter();
 
-  private paramNameSubscription!: Subscription;
 
   constructor(
     private _params: ParametersService,
@@ -52,10 +51,6 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.paramNameSubscription =
-    this.paramNameCtrl.valueChanges.subscribe( changes => {
-      if (this.param) this.parte.alias = this.param.displayName = changes
-    })
     if (this.parte) {
       this.paramNameCtrl.patchValue(
         this.parte.alias == true ? '' : this.parte.alias
@@ -94,9 +89,6 @@ export class PartParameterComponent implements OnInit, OnDestroy {
     } else {
       this.paramNameCtrl.patchValue( this.parte.text )
     }
-
-    this.addParameter()
-    // this.tipoSelected.emit(this.parte);
   }
 
   get isSystemEntity() {
@@ -107,48 +99,57 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   }
 
   addParameter() {
-    if ( this.parte.entityType ) {
-
-      this.param = {
-        displayName: this.parte.entityType.substring(1),
-        entityTypeDisplayName: this.parte.entityType,
-        value: typeof this.parte.alias == 'string' ?
-          this.parte.alias.startsWith('$')
-            ? this.parte.alias
-            : `$${this.parte.alias}`
-          : this.parte.entityType.substring(1)
-      };
-      // console.log( this.parte )
-      this.paramAdded.emit(this.parte);
-      this._params.getList()
-        .then( list => {
-          let paramStored = list.find( ( p ) => p.displayName == this.param?.displayName );
-          if (!paramStored && this.param) {
-            this._params.add(this.param)
-          }
-        })
-
-        // console.log( paramStored )
-    }
+    console.log( this.parte )
+    this.paramAdded.emit(this.parte);
+    this._params.getList()
+    .then( list => {
+        console.log( this.param?.displayName, list  )
+        let paramStored = list.find( ( p ) => p.displayName == this.param?.displayName );
+        if (!paramStored && this.param) {
+          this._params.add(this.param)
+        }
+      })
   }
 
   setNewEntity() {
+    console.log( this.param )
+    const paramName = this.paramNameCtrl.value
+
+    if ( this.param ) this.parte.alias = this.param.displayName = paramName
+    else {
+      this.param = {
+        displayName: paramName,
+        value: `$${ paramName }`,
+        entityTypeDisplayName: this.parte.entityType || '',
+      }
+    }
+
     if ( this.param ) {
-      this._tipos.putEntityOnType(this.param.displayName, {
-        value: this.parte.text,
+      this._tipos.putEntityOnType(this.param.entityTypeDisplayName, {
+        value: paramName,
         synonyms: [this.parte.text]
       })
       this.disableSinonimo = true
     }
+
+    this.addParameter()
   }
 
-  get entitySelected$() {
-    const entities = this.tipoSelected ? this.tipoSelected.entities : []
-    return entities.find(e => e.value == this.parte.alias )
-  }
+
 
   onEntitySelect(entitySelected: string) {
-    this.parte.alias = entitySelected;
+    this.parte.alias = this.text.normalize( entitySelected );
+
+    this.param = {
+      displayName: this.parte.alias,
+      entityTypeDisplayName: this.parte.entityType as string,
+      value: typeof this.parte.alias == 'string' ?
+        this.parte.alias.startsWith('$')
+          ? this.parte.alias
+          : `$${this.parte.alias}`
+        : this.parte.entityType?.substring(1) as string
+    };
+
     if ( this.entitySelected$ ) {
       if (!this.entitySelected$.synonyms) this.entitySelected$.synonyms = []
       this.synonymExists = this.entitySelected$.synonyms.some(
@@ -160,6 +161,20 @@ export class PartParameterComponent implements OnInit, OnDestroy {
     } else return ''
   }
 
+
+
+
+
+  get entitySelected$(): iEntity | undefined {
+    const entities = this.tipoSelected ? this.tipoSelected.entities : []
+    return entities.find(e => e.value == this.parte.alias )
+  }
+
+  get synonymStored(): string | undefined {
+    const synonyms = this.entitySelected$?.synonyms || []
+    return synonyms.find(s => s == this.parte.text)
+  }
+
   get addSynonymToolTip():string {
     return this.synonymExists ? 'El sinónimo ya existe, no es necesario agregarlo de nuevo': ''
   }
@@ -169,14 +184,17 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   }
 
   setSinonimo() {
+    console.log( this.parte )
     const synonym = this.parte.text
     if ( this.parte.entityType ) {
-      if ( this.entitySelected ) {
-        if (!this.entitySelected.synonyms) this.entitySelected.synonyms = []
-        if (!this.entitySelected.synonyms.some(s => s === synonym)) {
-          this.entitySelected.synonyms.push(synonym)
+      console.log( this.entitySelected$ )
+      if ( this.entitySelected$ ) {
+        if ( !this.entitySelected$.synonyms ) this.entitySelected$.synonyms = []
+        console.log( this.entitySelected$.synonyms.some(s => s === synonym) )
+        if (!this.entitySelected$.synonyms.some(s => s === synonym)) {
+          this.entitySelected$.synonyms.push(synonym)
           console.log( this.entitySelected )
-          this._tipos.putEntityOnType(this.parte.entityType, this.entitySelected)
+          this._tipos.putEntityOnType(this.parte.entityType, this.entitySelected$)
           .then(() => this.disableSinonimo = true)
         }
       }
@@ -186,7 +204,6 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.paramNameSubscription.unsubscribe()
   }
 
 }

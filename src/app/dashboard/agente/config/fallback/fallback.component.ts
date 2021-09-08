@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
-import { ResponseModel, ResultResponse, DefaultResponseModel } from 'src/app/models/intent-response.model';
+import { ResponseModel, IntentResponseResult, DefaultResponseModel } from 'src/app/models/intent-response.model';
 import { iIntentState } from 'src/app/models/intent.model';
 import { IntentsService } from 'src/app/services/intents.service';
 
@@ -15,7 +15,7 @@ export class FallbackComponent implements OnInit {
 
   intent?: iIntentState;
   respuesta!: ResponseModel;
-  result!: ResultResponse;
+  result!: IntentResponseResult;
   respuestaPath: string = ''
   constructor(
     private _alerts: MxAlert,

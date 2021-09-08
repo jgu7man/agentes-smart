@@ -38,8 +38,8 @@ export class DefaultResponseFormComponent implements OnInit {
   }
 
   catchText(text: string) {
-      this.result.text = text
-      this.onRespChanges.emit(this.result);
+    this.result.text = text
+    this.onRespChanges.emit(this.result);
   }
 
   catchSugerencias(sugerencias: Sugerencia[]) {

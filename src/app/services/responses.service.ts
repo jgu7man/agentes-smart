@@ -3,8 +3,8 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { Observable } from 'rxjs';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { map, take } from 'rxjs/operators';
-import { ResponseModel, ResultResponse } from '../models/intent-response.model';
+import { distinct, map, mergeMap, take, tap } from 'rxjs/operators';
+import { ResponseModel, IntentResponseResult } from '../models/intent-response.model';
 import { CurrentIntentService } from './current-intent.service';
 
 @Injectable({
@@ -60,19 +60,28 @@ export class ResponsesService {
       throw new MxErrorAlertModel( `No se encontró el clientId`, `responses.service#${functionName}` )
     } else if ( !projectId ) {
       throw new MxErrorAlertModel( `No se encontró el projectId`, `responses.service#${functionName}` )
-    } else if ( !intentId ) {
-      throw new MxErrorAlertModel( `No se encontró el intentId`, `responses.service#${functionName}` )
     } else {
+
       return `usuarios/${clientId}/agentes/${ projectId }/intents/${intentId}`
     }
   }
 
 
   listen$() {
-    const path = `${ this.intentPath( 'list' ) }/responses`
-    return this._afs.collection( path ).valueChanges( { idField: 'id' } )
-    .pipe( map((respuestas) =>
-      this._commons.sortBy<ResponseModel>( respuestas, 'index' ) ),
+    return this._cache.listenForChanges<string>( 'intentId' ).pipe(
+      distinct(),
+      mergeMap( ( intentId => {
+        console.log( intentId )
+        const path = `${ this.intentPath( 'list' ) }/responses`
+        return this._afs.collection( path ).valueChanges( { idField: 'id' } )
+        .pipe( map((respuestas) =>
+          this._commons.sortBy<ResponseModel>( respuestas, 'index' ) ),
+          tap( responses => {
+            console.log( responses )
+            return responses
+          })
+        )
+      }))
     )
   }
 
@@ -121,13 +130,14 @@ export class ResponsesService {
         }
         let result = respuesta.result;
         for (let [key, value] of Object.entries(result)) {
-          console.log(result[key as keyof ResultResponse]);
-          if (result[key as keyof ResultResponse] === undefined) delete result[key as keyof ResultResponse];
+          console.log(result[key as keyof IntentResponseResult]);
+          if (result[key as keyof IntentResponseResult] === undefined) delete result[key as keyof IntentResponseResult];
         }
-        respuesta.result = result;
+        respuesta.result = {...result};
 
-        let res = await intentRef.collection('responses').add(respuesta);
-        await intentRef.collection( 'responses' ).doc( res.id ).update( { id: res.id } );
+        console.log( respuesta )
+        let res = await intentRef.collection( 'responses' ).add( { ...respuesta } )
+        await res.update({ id: res.id })
         delete this.emptyResponse
       }
     }

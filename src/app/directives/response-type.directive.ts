@@ -1,5 +1,5 @@
 import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
-import { ConditionalResponseModel, ResultResponse } from '../models/intent-response.model';
+import { ConditionalResponseModel, IntentResponseResult } from '../models/intent-response.model';
 
 
 class Context<T> {

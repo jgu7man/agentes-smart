@@ -26,24 +26,22 @@ export class IntentStateModel {
 export interface iIntentState extends IntentStateModel {}
 
 export class DialogflowIntentModel {
-  public rootContext?: string
   public inputContextNames: string[] = []
-  private contextPath: string
 
   constructor (
     private projectId: string,
     public displayName: string,
     rootContext?: string,
   ) {
-    this.contextPath = `projects/${ this.projectId }/agent/sessions/-/contexts/`
+    const contextPath = `projects/${ this.projectId }/agent/sessions/-/contexts/`
 
     var nameContext = normalize(displayName).toLowerCase();
         nameContext = nameContext.replace( /\s/g, '' );
-    this.inputContextNames.push( this.contextPath + nameContext )
+    this.inputContextNames.push( contextPath + nameContext )
 
     if (rootContext) {
       rootContext = normalize(rootContext).toLowerCase();
-      this.inputContextNames.push(this.contextPath + rootContext)
+      this.inputContextNames.push(contextPath + rootContext)
     }
   }
 }

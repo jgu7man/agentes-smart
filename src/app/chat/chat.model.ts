@@ -12,7 +12,7 @@ export class ChatSessionModel {
 }
 
 export interface iUserIDs {
-  userId?: string,
+  clientId?: string,
   messengerId?: string,
   whatsappId?:string
 }

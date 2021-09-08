@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment';
 import { iDialogflowIntent, DialogflowIntentModel, IntentStateModel, iIntentState } from '../models/intent.model';
 import { MxAlert, MxCache, MxErrorAlertModel, MxLoading, MxText } from '@marxa/devkit';
 import { iContext } from '../models/context.model';
-import { ResponseModel } from '../models/intent-response.model';
+import { IntentResponseType, ResponseModel } from '../models/intent-response.model';
 import firebase from 'firebase/app'
 import { merge } from 'rxjs';
 
@@ -17,6 +17,13 @@ export class IntentsService {
   /** Observable de la lista de mensajes filtrados por contexto en firebase */
   public intentListByContext$ = new BehaviorSubject<IntentStateModel[]>( [] );
   public list$: Observable<iIntentState[]>
+
+  oldTipos: Map<string, IntentResponseType> = new Map( [
+    [ 'simple', 'default' ],
+    [ 'buscar', 'search' ],
+    [ 'condicional', 'conditional' ],
+    [ 'grupo_datos', 'catch' ],
+  ])
 
   constructor(
     private _afs: AngularFirestore,
@@ -28,6 +35,26 @@ export class IntentsService {
   ) {
     this.retriveFromDialogfow()
     this.list$ = this.listen$()
+    // this.updateResponseTypes()
+  }
+
+  updateResponseTypes() {
+    this.list$.subscribe( intentStates => {
+      const path = `${ this.projectPath() }/intents`
+      const intentsRef = this._afs.collection(path)
+      intentStates.forEach( async state => {
+        const responseRef = intentsRef
+          .doc( state.name )
+          .collection<ResponseModel>( 'responses' )
+        const responsesCol = await responseRef.ref.get()
+        responsesCol.forEach( response => {
+          const oldType = response.data().tipo as string
+          const newType = this.oldTipos.get( oldType )
+          console.log( 'Get new type', newType )
+          if (newType) response.ref.update({tipo: newType})
+        })
+      })
+    })
   }
 
 
@@ -61,7 +88,7 @@ export class IntentsService {
     displayName: string,
     index?: number,
     contexto?: string
-  ): Promise<void> {
+  ): Promise<iIntentState> {
     this._loading.toggleWaiting('open');
     const projectId = this._cache.getDataKey<string>( 'projectId' )
 
@@ -69,6 +96,7 @@ export class IntentsService {
       if ( projectId ) {
 
         const dfIntent = new DialogflowIntentModel( projectId, displayName, contexto )
+        console.log( dfIntent )
         const intentResult = await this._dialgoflowIntents.post( dfIntent );
 
         const intentState: IntentStateModel = new IntentStateModel(intentResult, index, contexto)
@@ -84,14 +112,13 @@ export class IntentsService {
         // this.getDialogFlowIntents();
         this._loading.toggleWaiting('close');
         this._alert.notify('Mensaje creado')
-        return
+        return intentState
       } else throw new MxErrorAlertModel(`No se encontró el projectId`, 'create')
 
     } catch (error) {
       this._loading.toggleWaiting('close');
       this.catchCreateErrors(error)
-      console.error( error );
-      return
+      throw console.error( error );
     }
   }
 
@@ -335,7 +362,7 @@ export class IntentsService {
    * @returns {*}
    */
   async update( intentState: iIntentState ): Promise<void> {
-    const path = `${ this.projectPath }/intents`
+    const path = `${ this.projectPath('update') }/intents`
     const intent = intentState.intent
 
     try {
@@ -571,11 +598,12 @@ export class DialogflowIntentsService {
   ){}
 
   async post(
-    { displayName, inputContextNames }: DialogflowIntentModel
+    intent: DialogflowIntentModel
   ): Promise<iDialogflowIntent> {
     const projectId = this._cache.getDataKey<string>( 'projectId' )
-    const intentRequest: any = { displayName, inputContextNames };
-    const body = { projectId, intentRequest };
+    // const intentRequest: any = { displayName, inputContextNames };
+    console.log( { projectId, intent } )
+    const body = { projectId, intent };
 
     return this._http.post( this._url, body, { responseType: 'json' } )
       .pipe(
@@ -625,8 +653,10 @@ export class DialogflowIntentsService {
    */
    put(intent: iDialogflowIntent): Promise<iDialogflowIntent> {
     const projectId = this._cache.getDataKey('projectId');
-    const path = `projects/${projectId}/agent/intents/${intent.name}`;
-    const body = { intent: { ...intent, name: path }};
+    // const path = `projects/${projectId}/agent/intents/${intent.name}`;
+    const body = { intent };
+
+    console.log( body )
 
     const headers = { responseType: 'json' };
 

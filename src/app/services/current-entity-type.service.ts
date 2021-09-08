@@ -15,7 +15,7 @@ export class CurrentEntityTypeService {
   /** Estado en tiempo real del Tipo de dato seleccionado */
   current$ = new BehaviorSubject<EntityTypeStateModel|null>(null);
   /** Obtine y almacena la ruta a la API */
-  private _url = environment.restURL + 'entity';
+  private _url = environment.restURL + '/entity';
   /** Tipo de dato que será activado */
   activatedToEdit?: string
   /** Activa el campo de agregado de clase */
@@ -30,10 +30,19 @@ export class CurrentEntityTypeService {
   ) {
   }
 
-  /** Obtiene la ruta a la colección de firestore */
-  get tiposPath() {
-    let agentePath = this._cache.getDataKey('agentePath');
-    return `${agentePath}/entityTypes`;
+  projectPath(functionName?: string) {
+    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const clientId = this._cache.getDataKey<string>( 'userId' )
+
+    if ( !clientId ) {
+      throw new MxErrorAlertModel( `No se encontró el clientId`,
+      `entityTypes.service#${functionName}` )
+    } else if ( !projectId ) {
+      throw new MxErrorAlertModel( `No se encontró el projectId`,
+      `entityTypes.service#${functionName}` )
+    } else {
+      return `usuarios/${clientId}/agentes/${ projectId }`
+    }
   }
 
   /** Define el tipo de dato seleccionado */
@@ -62,7 +71,8 @@ export class CurrentEntityTypeService {
   /** Prepara la entity para ser actualizada en el backend y posterior lo guarda en Firestore */
   public async updateTipo(tipo: iEntityType) {
     // GdevLoading animation
-    this._loading.toggleWaiting('open');
+    this._loading.toggleWaiting( 'open' );
+    const path = `${ this.projectPath('updateTipo')}/entityTypes`
 
     console.log(tipo);
     // clean object
@@ -76,7 +86,7 @@ export class CurrentEntityTypeService {
     console.log(resourceID);
 
     this._afs
-      .collection(this.tiposPath)
+      .collection(path)
       .doc(resourceID)
       .set(tipo, { merge: true });
 

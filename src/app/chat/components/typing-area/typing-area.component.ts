@@ -33,8 +33,8 @@ export class TypingAreaComponent implements OnInit {
 
   cleanConversation() {
     this._chat.conversation = []
-    // this._cache.deleteDataKey( 'currentSession' )
-    // this._cache.deleteDataKey( 'inputContexts')
-    // this._agente.cleanTestChat();
+    this._cache.deleteDataKey( 'currentSession' )
+    this._cache.deleteDataKey( 'inputContexts')
+    this._chat.clearSession()
   }
 }

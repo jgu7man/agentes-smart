@@ -24,7 +24,7 @@ export class EntityTypesService {
   /** Almacena la ruta a los intent */
   // private agentePath: string;
   /** Obtine y almacena la ruta a la API */
-  private _url = environment.restURL + 'entity';
+  private _url = environment.restURL + '/entity';
   /** Almacena el id del proyecto del caché */
   // private projectId: String;
 /** Lista observable de los tipos */
@@ -107,14 +107,20 @@ export class EntityTypesService {
     entityType: EntityTypeModel
   ): Promise<iEntityType> {
     console.log( { entityType: { ...entityType } } );
+
     const projectId = this._cache.getDataKey<string>( 'projectId' )
     if (!projectId) throw new MxErrorAlertModel(`No se encontró el projectId`)
-    return new Promise((resolve, reject) => {
+
+    return new Promise( ( resolve, reject ) => {
       this._http.post(
           `${this._url}/${projectId}`,
           { entityType: { ...entityType } },
           { responseType: 'json' }
-        ).pipe(take(1)).toPromise()
+      ).pipe( take( 1 ) ).toPromise()
+        .then( (response: any) => {
+          console.log( response )
+          resolve( response['result'] );
+        })
         .catch((err) => {
           if (err) {
             console.error(err);
@@ -168,7 +174,7 @@ export class EntityTypesService {
           return entityType
         }
       } else {
-        throw new MxErrorAlertModel( `No se encontró el entityType`, 'tipos.service#putEntityOnType')
+        throw new MxErrorAlertModel( `No se encontró el tipo de dato al que quieres agregar esta entidad`, 'tipos.service#putEntityOnType')
       }
 
     } catch ( error ) {
