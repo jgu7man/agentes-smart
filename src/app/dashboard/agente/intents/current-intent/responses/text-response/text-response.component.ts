@@ -41,14 +41,16 @@ export class TextResponseComponent implements OnInit, AfterViewInit, OnDestroy {
       debounceTime( 1000 ),
       distinctUntilChanged(),
     ).subscribe( ( value: string ) => {
-      value = value.split('\n').join('\\n');
+      console.log( value )
+      value = value.split('\n').join('\\');
       this.onTextEvent.emit(value)
     })
   }
 
   ngOnInit() {
     if ( this.text ) {
-      this.text = this.text.replace("\\n", "\n")
+      this.text = this.text.split('\\').join('\u000A')
+      console.log( this.text )
       this.textCtrl.patchValue( this.text )
     }
   }

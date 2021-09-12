@@ -57,8 +57,14 @@ export class IntegracionesService {
     const integrationsPath = `${ projectPath }/integrations`
     return this._fs.doc<MessengerStatus>
       ( integrationsPath + '/messenger' )
-      .valueChanges().pipe( skip( 2 ) )
-      }
+      .valueChanges().pipe(  )
+  }
+
+  toggleMessenger(toggleValue: boolean) {
+    const projectPath = this.projectPath( 'saveMessengerPageAccessToken' )
+    const path = `${ projectPath }/integrations/messenger`
+    this._fs.doc<MessengerStatus>(path).update({active: toggleValue})
+  }
 
 
   listenQRCode() {

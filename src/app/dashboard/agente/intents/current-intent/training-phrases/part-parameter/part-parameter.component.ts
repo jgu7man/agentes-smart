@@ -140,8 +140,13 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   onEntitySelect(entitySelected: string) {
     this.parte.alias = this.text.normalize( entitySelected );
 
+
     this.param = {
       displayName: this.parte.alias,
+      // displayName: this.parte.entityType
+      //   ? this.parte.entityType.startsWith( '@' )
+      //     ? this.parte.entityType.substr(1) : this.parte.entityType
+      //   : this.parte.alias,
       entityTypeDisplayName: this.parte.entityType as string,
       value: typeof this.parte.alias == 'string' ?
         this.parte.alias.startsWith('$')
