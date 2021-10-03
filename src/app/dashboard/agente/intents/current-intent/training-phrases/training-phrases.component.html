@@ -11,7 +11,7 @@
 
 <!-- TRAINING PHRASES LIST -->
 <div class="row">
-  <div class="col s12" *ngIf="phrasesIndex.currentPage$ | async as currentPage">
+  <div class="col s12" *ngIf="currentPage$ | async as currentPage">
 
     <mat-paginator
     [length]="phrasesIndex.length"

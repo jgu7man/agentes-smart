@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { iIntentState, IntentStateModel, iParameter, iPhrasePart, iTrainingPhrase, ParameterModel } from '../models/intent.model';
 import { iAgentParameter } from '../models/parameter.model';
+import { ContextsService } from './contexts.service';
 import { CurrentAgentService } from './current-agent.service';
 import { CurrentIntentService } from './current-intent.service';
 import { PhraseService, TrainingPhrasesService } from './training-phrases.service';
@@ -35,7 +36,8 @@ export class ParametersService {
     private _color: MxColor,
     private _afs: AngularFirestore,
     private _cache: MxCache,
-    private _currentAgent: CurrentAgentService
+    private _currentAgent: CurrentAgentService,
+    private _contexts: ContextsService
   ) {
     this.list$ = this.listen$()
   }
@@ -66,9 +68,20 @@ export class ParametersService {
 
 
   // CREATE Parametros
-  async add( param: iParameter, example?: string ) {
+  async add( param: iParameter, entityType?: string ) {
     const path = `${ this.projectPath( 'add' ) }/params`
     const intentState = this._currentIntent.state$.value
+    const contextList = await this._contexts.listen$().pipe(take( 1 )).toPromise()
+    const context = entityType?.startsWith( '@' )
+      ? entityType.substring( 1 )
+      : entityType
+    const color = contextList.find( c => c.name == context )?.color
+    const brightColor = color?.split( ',' ).map( (prop, i) => {
+      if ( i === 0 ) return prop
+      else if ( i === 1 ) return '60%'
+      else return '90%'
+    } ).join( ',' );
+    console.log( {brightColor} )
 
     if ( intentState ) {
       const parameters = intentState.intent.parameters || []
@@ -81,13 +94,13 @@ export class ParametersService {
           .doc<iAgentParameter>( param.displayName ).set(
           {
             displayName: param.displayName,
-            color: this._color.generateBrightColor(),
+            color: brightColor!,
           },
           { merge: true }
         );
+        parameters.push(param);
       }
 
-      parameters.push(param);
       this._currentIntent.change('parameters', parameters)
 
       // console.log(param);

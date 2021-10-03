@@ -19,18 +19,17 @@ import { TrainingPhrasesService } from 'src/app/services/training-phrases.servic
 })
 export class PartParameterComponent implements OnInit, OnDestroy {
 
-  @Input() parte!: iPhrasePart;
+  @Input() part!: iPhrasePart;
   @Input() index!: number;
 
   switchEntitySelector: boolean = false;
   paramNameCtrl: FormControl = new FormControl({value:'', disabled: this.isProductParam})
   param?: iParameter;
 
-  toggleAddClase: boolean = false;
+  allowAddEntity: boolean = false;
   disableSinonimo: boolean = false;
   synonymExists: boolean = false;
 
-  entitySelected?: iEntity
 
   @ViewChild('partEntityInput') partEntityInput!: ElementRef;
 
@@ -47,60 +46,58 @@ export class PartParameterComponent implements OnInit, OnDestroy {
     public text: MxText,
     private _dialog: MatDialog,
     private _cache: MxCache,
-    private _tipos: EntityTypesService
+    private _entityTypes: EntityTypesService
   ) {}
 
   ngOnInit(): void {
-    if (this.parte) {
+    if (this.part) {
       this.paramNameCtrl.patchValue(
-        this.parte.alias == true ? '' : this.parte.alias
+        this.part.alias == true ? '' : this.part.alias
       )
     }
   }
 
-  onAddTipo() {
-    this._dialog
-      .open(AddEntityTypeComponent, {
-        minWidth: 300,
-      })
+  onAddEntityType() {
+    this._dialog.open(AddEntityTypeComponent, { minWidth: 300, })
       .afterClosed()
       .pipe(take(1))
-      .subscribe((entityType: EntityTypeModel) => {
-        this.parte.entityType = entityType.displayName;
+      .subscribe( ( entityType: EntityTypeModel ) => {
+        this.part.entityType = entityType.displayName;
+        this.part.alias = ''
       });
   }
 
-  get tipoSelected(): EntityTypeModel | undefined {
-    const tiposList = this._tipos.list$.value
-    if ( this.parte && this.parte.entityType ) {
-      let entityType = this.parte.entityType.startsWith('@')
-        ? this.parte.entityType.substring(1) : this.parte.entityType
-      return tiposList.find(t => t.displayName == entityType)
+  get entityTypeSelected(): EntityTypeModel | undefined {
+    const entityTypeList = this._entityTypes.list$.value
+    if ( this.part && this.part.entityType ) {
+      let entityType = this.part.entityType.startsWith('@')
+        ? this.part.entityType.substring(1) : this.part.entityType
+      return entityTypeList.find(t => t.displayName == entityType)
     } else return
   }
 
 
-  onTipoSelected(tipoSelected: string) {
-    this.parte.entityType = tipoSelected.startsWith('@')
-      ? tipoSelected : `@${tipoSelected}`
-    if (tipoSelected === 'productos') {
-      this.parte.alias = 'productos'
-      this.paramNameCtrl.patchValue('productos')
+  onEntityTypeSelected(entityTypeSelected: string) {
+    this.part.entityType = entityTypeSelected.startsWith('@')
+      ? entityTypeSelected : `@${entityTypeSelected}`
+    if (this.part.entityType === '@productos') {
+      this.part.alias = 'producto'
+      this.paramNameCtrl.patchValue('producto')
     } else {
-      this.paramNameCtrl.patchValue( this.parte.text )
+      this.paramNameCtrl.patchValue( this.part.text )
     }
   }
 
   get isSystemEntity() {
-    return this.parte.entityType
-      ? this.parte.entityType.includes('sys.')
-      || this.parte.entityType.includes('productos')
+    return this.part.entityType
+      ? this.part.entityType.includes('sys.')
+      || this.part.entityType.includes('productos')
       : false
   }
 
   addParameter() {
-    console.log( this.parte )
-    this.paramAdded.emit(this.parte);
+    console.log( this.part )
+    this.paramAdded.emit(this.part);
     this._params.getList()
     .then( list => {
         console.log( this.param?.displayName, list  )
@@ -113,21 +110,21 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
   setNewEntity() {
     console.log( this.param )
-    const paramName = this.paramNameCtrl.value
+    const paramDisplayName = this.paramNameCtrl.value
 
-    if ( this.param ) this.parte.alias = this.param.displayName = paramName
+    if ( this.param ) this.part.alias = this.param.displayName = paramDisplayName
     else {
       this.param = {
-        displayName: paramName,
-        value: `$${ paramName }`,
-        entityTypeDisplayName: this.parte.entityType || '',
+        displayName: paramDisplayName,
+        value: `$${ paramDisplayName }`,
+        entityTypeDisplayName: this.part.entityType || '',
       }
     }
 
     if ( this.param ) {
-      this._tipos.putEntityOnType(this.param.entityTypeDisplayName, {
-        value: paramName,
-        synonyms: [this.parte.text]
+      this._entityTypes.putEntityOnType(this.param.entityTypeDisplayName, {
+        value: paramDisplayName,
+        synonyms: [this.part.text]
       })
       this.disableSinonimo = true
     }
@@ -138,32 +135,26 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
 
   onEntitySelect(entitySelected: string) {
-    this.parte.alias = this.text.normalize( entitySelected );
-
+    this.part.alias = this.text.normalize( entitySelected );
 
     this.param = {
-      displayName: this.parte.alias,
-      // displayName: this.parte.entityType
-      //   ? this.parte.entityType.startsWith( '@' )
-      //     ? this.parte.entityType.substr(1) : this.parte.entityType
-      //   : this.parte.alias,
-      entityTypeDisplayName: this.parte.entityType as string,
-      value: typeof this.parte.alias == 'string' ?
-        this.parte.alias.startsWith('$')
-          ? this.parte.alias
-          : `$${this.parte.alias}`
-        : this.parte.entityType?.substring(1) as string
+      displayName: this.part.alias,
+      entityTypeDisplayName: this.part.entityType as string,
+      value: this.part.alias.startsWith('$')
+        ? this.part.alias
+        : `$${this.part.alias}`
     };
 
     if ( this.entitySelected$ ) {
       if (!this.entitySelected$.synonyms) this.entitySelected$.synonyms = []
+
       this.synonymExists = this.entitySelected$.synonyms.some(
-        s => s.toLowerCase() == this.parte.text.toLowerCase()
+        s => s.toLowerCase() == this.part.text.toLowerCase()
       )
 
       this.addParameter()
-      return this.entitySelected
-    } else return ''
+      // return this.entitySelected
+    }
   }
 
 
@@ -171,13 +162,13 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
 
   get entitySelected$(): iEntity | undefined {
-    const entities = this.tipoSelected ? this.tipoSelected.entities : []
-    return entities.find(e => e.value == this.parte.alias )
+    const entities = this.entityTypeSelected ? this.entityTypeSelected.entities : []
+    return entities.find(e => e.value == this.part.alias )
   }
 
   get synonymStored(): string | undefined {
     const synonyms = this.entitySelected$?.synonyms || []
-    return synonyms.find(s => s == this.parte.text)
+    return synonyms.find(s => s == this.part.text)
   }
 
   get addSynonymToolTip():string {
@@ -189,17 +180,17 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   }
 
   setSinonimo() {
-    console.log( this.parte )
-    const synonym = this.parte.text
-    if ( this.parte.entityType ) {
+    console.log( this.part )
+    const synonym = this.part.text
+    if ( this.part.entityType ) {
       console.log( this.entitySelected$ )
       if ( this.entitySelected$ ) {
         if ( !this.entitySelected$.synonyms ) this.entitySelected$.synonyms = []
         console.log( this.entitySelected$.synonyms.some(s => s === synonym) )
         if (!this.entitySelected$.synonyms.some(s => s === synonym)) {
           this.entitySelected$.synonyms.push(synonym)
-          console.log( this.entitySelected )
-          this._tipos.putEntityOnType(this.parte.entityType, this.entitySelected$)
+          console.log( this.entitySelected$ )
+          this._entityTypes.putEntityOnType(this.part.entityType, this.entitySelected$)
           .then(() => this.disableSinonimo = true)
         }
       }

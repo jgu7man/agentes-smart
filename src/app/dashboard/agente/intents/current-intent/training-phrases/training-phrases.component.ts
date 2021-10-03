@@ -12,7 +12,7 @@ import { FormControl } from '@angular/forms';
 import { MatAccordion, MatExpansionPanel } from '@angular/material/expansion';
 import { MatPaginatorIntl, PageEvent } from '@angular/material/paginator';
 import { MxLoading } from '@marxa/devkit';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { iPhrasePart, iTrainingPhrase } from 'src/app/models/intent.model';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { ParametersService } from 'src/app/services/parameters.service';
@@ -37,7 +37,8 @@ export class TrainingPhrasesComponent
   phrasesList: iTrainingPhrase[] = [];
 
   @ViewChild('newPhraseInput') newPhraseInput!: ElementRef;
-  @ViewChild('accordeon') accordion!: MatAccordion;
+  @ViewChild( 'accordeon' ) accordion!: MatAccordion;
+  currentPage$: Observable<iTrainingPhrase[]>
 
   constructor(
     private _loading: MxLoading,
@@ -46,6 +47,7 @@ export class TrainingPhrasesComponent
     public phrasesIndex: TrainingPhrasesIndex,
     private _paginator: MatPaginatorIntl,
   ) {
+    this.currentPage$ = this.phrasesIndex.currentPage$
     this._paginator.itemsPerPageLabel = 'Frases por página';
     this._paginator.firstPageLabel = 'Primera página';
     this._paginator.lastPageLabel = 'Última página';

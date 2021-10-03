@@ -23,11 +23,12 @@ export class TrainingPhrasesService {
 
   listen$(): Observable<iTrainingPhrase[]> {
     return this._currentIntent.state$.pipe(
-      map( state => state ? state.intent.trainingPhrases : [])
+      filter(value => !!value),
+      map( state => state ? state.intent.trainingPhrases : [] )
     )
   }
 
-  get list() {
+  list() {
     return this.list$.pipe( take( 1 ) ).toPromise()
   }
 
@@ -75,7 +76,7 @@ export class TrainingPhrasesService {
 
 
   async findIndex(frase: iTrainingPhrase) {
-    const frasesList = await this.list
+    const frasesList = await this.list()
     var fraseIndex: number
     if (frase.name) {
       fraseIndex = frasesList.findIndex(f => f.name === frase.name)
@@ -138,7 +139,7 @@ export class TrainingPhrasesIndex {
         this.firstIndex = trim.first
         let page = list.slice( trim.first, trim.last );
         this.lastIndex = this.firstIndex + ( page.length < 10 ? page.length : 10 );
-        return list
+        return page
       })
     )
   }

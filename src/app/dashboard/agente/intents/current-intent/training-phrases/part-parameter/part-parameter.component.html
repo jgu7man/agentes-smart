@@ -1,9 +1,9 @@
-<div class="row param-row" *ngIf="parte.alias && parte.alias != ''">
+<div class="row param-row" *ngIf="part.alias && part.alias != ''">
 
   <!-- HEADER -->
   <!-- Texto seleccionado -->
   <div class="col l10">
-    <p>"<b>{{parte.text}}</b>"
+    <p>"<b>{{part.text}}</b>"
       <mat-divider [inset]="true"></mat-divider>
     </p>
   </div>
@@ -29,15 +29,14 @@
       <!-- Tipo de dato -->
       <div class="col s6">
         <as-entity-type-selector
-          (tipoSelected)="onTipoSelected($event)"
-          [value]="parte.entityType"
-          [id]="parte.alias"
+          (tipoSelected)="onEntityTypeSelected($event)"
+          [value]="part.entityType"
         ></as-entity-type-selector>
       </div>
 
       <div class="col s6">
-        <button mat-raised-button (click)="onAddTipo()">
-          Crear nuevo tipo de dato
+        <button mat-raised-button (click)="onAddEntityType()">
+          Crear nuevo contexto
         </button>
       </div>
     </div>
@@ -50,7 +49,7 @@
         <!-- Define entity and param -->
         <ng-container *ngIf="!isSystemEntity; else customParam">
           <!-- Add new entity at entityType -->
-          <ng-container *ngIf="toggleAddClase; else select">
+          <ng-container *ngIf="allowAddEntity; else selectEntity">
             <mat-form-field appearance="outline" floatLabel="always">
               <mat-label>Nombre Parámetro</mat-label>
               <input
@@ -63,10 +62,10 @@
             </mat-form-field>
           </ng-container>
           <!-- Select entityType -->
-          <ng-template #select >
+          <ng-template #selectEntity >
             <as-entity-value-selector
-            [entityTypeDisplayName]="parte.entityType || ''"
-            [value]="parte.alias"
+            [entityTypeDisplayName]="part.entityType || ''"
+            [value]="part.alias"
             (selected)="onEntitySelect($event)"
             ></as-entity-value-selector>
           </ng-template>
@@ -90,9 +89,9 @@
 
 
       <div class="col s6" *ngIf="!isSystemEntity" >
-        <ng-container *ngIf="!toggleAddClase; else add">
+        <ng-container *ngIf="!allowAddEntity; else add">
           <button mat-raised-button
-          (click)="toggleAddClase = true" >
+          (click)="allowAddEntity = true" >
             Agregar parámetro
           </button>
         </ng-container>
@@ -109,8 +108,10 @@
       <!-- Valor -->
     <div class="col s6">
       <mat-form-field appearance="outline">
-        <mat-label>Lo que dijo</mat-label>
-        <input matInput type="text" [(ngModel)]="parte.text" readonly disabled />
+        <mat-label>Valor</mat-label>
+        <input matInput type="text" [(ngModel)]="part.text" readonly disabled
+        placeholder="Lo que dijo..."
+        />
       </mat-form-field>
     </div>
 
