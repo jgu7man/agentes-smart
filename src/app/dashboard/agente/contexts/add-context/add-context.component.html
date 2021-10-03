@@ -1,16 +1,15 @@
-<mat-form-field appearence="outline">
+<mat-form-field appearance="outline">
   <mat-label>Nombre del contexto</mat-label>
   <input
-  required
-  lowecase
-  matInput
-  #contextoNuevo
-  type="text"
-  name="contextoNuevo"
-  id="contextoNuevo"
-  [formControl]="contextNameCtrl"
-  (keypress)="text.onlyAllow(['letters', 'backspace'], $event)"
-  (keyup.enter)="onSetContext()"
-  (blur)="contextNameCtrl.valid  ? unfocus.emit(true) : onSetContext()"
+    matInput
+    required
+    type="text"
+    name="contextoNuevo"
+    [formControl]="contextNameCtrl"
+    (keypress)="text.onlyAllow(['letters', 'backspace'], $event)"
+    (keyup.enter)="onSetContext()"
   >
+  <mat-error *ngIf="contextNameCtrl.hasError('required')">
+  Este dato es necesario
+  </mat-error>
 </mat-form-field>

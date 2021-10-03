@@ -12,10 +12,12 @@ import {
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { debounceTime } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { EntityTypeModel, iEntity } from 'src/app/models/entity-type.model';
+import { EntityTypeModel, EntityTypeStateModel, iEntity, iEntityType, iEntityTypeState } from 'src/app/models/entity-type.model';
 import { EntityTypesService } from 'src/app/services/entitiy-types.service';
-import { MxCache } from '@marxa/devkit';
+import { MxAlert, MxCache } from '@marxa/devkit';
 import { EntityComponent } from '../../entity-types/entity-type/entity/entity.component';
+import { CurrentEntityTypeService } from 'src/app/services/current-entity-type.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'as-start-entity-types',
@@ -23,82 +25,90 @@ import { EntityComponent } from '../../entity-types/entity-type/entity/entity.co
   styleUrls: ['./start-entity-types.component.scss'],
 })
 export class StartEntityTypesComponent implements OnInit, OnDestroy {
-  tipo: EntityTypeModel;
-  @ViewChild('editInput') editInput!: ElementRef;
-  @ViewChildren(EntityComponent)
-  ClaseItemList!: QueryList<EntityComponent>;
-  switchAddClase: boolean = false;
-  clases: iEntity[] = [];
-  @Output() tipoAdded = new EventEmitter<any>();
+  entityType?: iEntityType;
+  entityState!: EntityTypeStateModel
+  // @ViewChild('editInput') editInput!: ElementRef;
+  // @ViewChildren(EntityComponent)
+  // ClaseItemList!: QueryList<EntityComponent>;
+  // switchAddClase: boolean = false;
+  // clases: iEntity[] = [];
+  // @Output() tipoAdded = new EventEmitter<any>();
 
-  switchEditTipo: boolean = false;
-  newClaseItem: string = '';
-  ClaseInput: boolean = false;
-  tiposSubcription!: Subscription;
+  // switchEditTipo: boolean = false;
+  // newClaseItem: string = '';
+  // ClaseInput: boolean = false;
+  // tiposSubcription!: Subscription;
 
   constructor (
-    public tipos_: EntityTypesService,
-    private _cache: MxCache
+    public entityTypes: EntityTypesService,
+    private currentEntityType: CurrentEntityTypeService,
+    private _alert: MxAlert,
+    private _router: Router
   ) {
-    this.tipo = new EntityTypeModel( 'palabrasclave', [], 'KIND_LIST');
+    this.entityType = this.entityTypes.list$.value.find( t => t.displayName == 'palabrasclave' )
+    if ( !this.entityType ) {
+      this._alert.error( 'No se pudo encontrar la entityType de palabrasclave, favor de eliminar este agente y crearlo de nuevo', 'start-entity-types#constructor' )
+      this._router.navigate(['/dashboard'])
+    } else {
+      this.entityState = new EntityTypeStateModel(this.entityType)
+      this.currentEntityType.setCurrentTipo( this.entityState )
+    }
+    console.log( this.entityTypes.list$.value )
   }
 
   async ngOnInit() {
-    this.tiposSubcription = this.tipos_.listen()
-      .pipe(debounceTime(1000))
-      .subscribe((tipos) => {
-        if (tipos.length > 0) {
-          let palabrasClave = tipos.find(
-            (t) => t.displayName == 'palabrasclave'
-          );
-          if (palabrasClave) {
-            this.tipo = palabrasClave;
-          }
-        }
-      });
+    // this.tiposSubcription = this.tipos_.listen()
+    //   .pipe(debounceTime(1000))
+    //   .subscribe((tipos) => {
+    //     if (tipos.length > 0) {
+    //       let palabrasClave = tipos.find(
+    //         (t) => t.displayName == 'palabrasclave'
+    //       );
+    //       if (palabrasClave) {
+    //         this.entityType = palabrasClave;
+    //       }
+    //     }
+    //   });
   }
 
   onSave() {
-    console.log(this.tipo);
-    this.tipos_.createTipoContextos(this.tipo).then(() => {
-      this.tipoAdded.emit();
-    });
+    this.currentEntityType.onSave()
   }
 
-  async toEditClase(id: string) {
-    // this.edited.emit(this.tipo)
-    const claseToEdit = this.ClaseItemList.find(
-      (claseItem) => claseItem.claseId == id
-    );
-  }
+  // async toEditClase(id: string) {
+  //   // this.edited.emit(this.tipo)
+  //   const claseToEdit = this.ClaseItemList.find(
+  //     (claseItem) => claseItem.claseId == id
+  //   );
+  // }
 
-  onKindChange(event: MatCheckboxChange) {
-    this.tipo.kind = event.checked ? 'KIND_MAP' : 'KIND_LIST';
-  }
+  // onKindChange(event: MatCheckboxChange) {
+  //   this.entityType.kind = event.checked ? 'KIND_MAP' : 'KIND_LIST';
+  // }
 
-  onExpantionChange(event: MatCheckboxChange) {
-    this.tipo.autoExpansionMode = event.checked
-      ? 'AUTO_EXPANSION_MODE_DEFAULT'
-      : 'AUTO_EXPANSION_MODE_UNSPECIFIED';
-  }
+  // onExpantionChange(event: MatCheckboxChange) {
+  //   this.entityType.autoExpansionMode = event.checked
+  //     ? 'AUTO_EXPANSION_MODE_DEFAULT'
+  //     : 'AUTO_EXPANSION_MODE_UNSPECIFIED';
+  // }
 
-  onFuzzyChange(event: MatCheckboxChange) {
-    this.tipo.enableFuzzyExtraction = event.checked ? true : false;
-  }
+  // onFuzzyChange(event: MatCheckboxChange) {
+  //   this.entityType.enableFuzzyExtraction = event.checked ? true : false;
+  // }
 
-  onAddClase(event: any) {
-    event.target.blur();
-    event.stopPropagation();
-    let clase = { value: this.newClaseItem };
-    this.newClaseItem = '';
-    this.tipo.entities.push(clase);
-  }
+  // onAddClase(event: any) {
+  //   event.target.blur();
+  //   event.stopPropagation();
+  //   let clase = { value: this.newClaseItem };
+  //   this.newClaseItem = '';
+  //   this.entityType.entities.push(clase);
+  // }
 
   onDelClase(claseIndex: number) {
-    this.tipo.entities.splice(claseIndex, 1);
+    // this.entityType.entities.splice(claseIndex, 1);
   }
 
   ngOnDestroy() {
-    this.tiposSubcription.unsubscribe();
+    // this.tiposSubcription.unsubscribe();
   }
 }

@@ -48,8 +48,8 @@ export class EntityTypesService {
     this.listen().subscribe(this.list$)
   }
 
-  projectPath(functionName?: string) {
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
+  projectPath(functionName?: string, project?: string) {
+    const projectId = project || this._cache.getDataKey<string>( 'projectId' )
     const clientId = this._cache.getDataKey<string>( 'userId' )
 
     if ( !clientId ) {
@@ -68,12 +68,13 @@ export class EntityTypesService {
   // # $CREATE TIPO
   /** Prepara la entity para ser creada en el backend, obtiene el ID:name y guarda los datos en firestore */
   public async create(
-    displayName: string
+    displayName: string,
+    projectId?: string,
   ): Promise<iEntityType | undefined> {
 
     const entityType = new EntityTypeModel(this._text.normalize( displayName ))
     const typeList = this.list$.value
-    const typesPath = `${this.projectPath('create')}/entityTypes`
+    const typesPath = `${this.projectPath('create', projectId)}/entityTypes`
     const typeInList = typeList.find(
       (t) => t.displayName === entityType.displayName
     );
@@ -84,10 +85,8 @@ export class EntityTypesService {
     this._loading.toggleWaiting( 'open' );
 
     if (!typeInList) {
-      console.log('nueva entity');
       // create entity API
-      let newEntity = await this._postCreateEntity({ ...entityType });
-      console.log(newEntity);
+      let newEntity = await this._postCreateEntity({ ...entityType }, projectId);
       // Get clean entity Id
       const resourceID = extractTypeId(newEntity.name as string)
       const typeToAdd:iEntityType = { ...entityType, name: newEntity.name };
@@ -104,11 +103,10 @@ export class EntityTypesService {
 
   /** Crea el entity en el backend */
   private _postCreateEntity(
-    entityType: EntityTypeModel
+    entityType: EntityTypeModel,
+    project?: string
   ): Promise<iEntityType> {
-    console.log( { entityType: { ...entityType } } );
-
-    const projectId = this._cache.getDataKey<string>( 'projectId' )
+    const projectId = project || this._cache.getDataKey<string>( 'projectId' )
     if (!projectId) throw new MxErrorAlertModel(`No se encontró el projectId`)
 
     return new Promise( ( resolve, reject ) => {
@@ -118,7 +116,6 @@ export class EntityTypesService {
           { responseType: 'json' }
       ).pipe( take( 1 ) ).toPromise()
         .then( (response: any) => {
-          console.log( response )
           resolve( response['result'] );
         })
         .catch((err) => {

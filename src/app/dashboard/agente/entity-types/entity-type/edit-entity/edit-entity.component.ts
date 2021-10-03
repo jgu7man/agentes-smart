@@ -23,7 +23,7 @@ export class EditEntityComponent implements OnInit, OnDestroy {
   /** Recibe la clase en cuestión */
   @Input() clase!: iEntity;
   /** Recibe el la configuración del tipo */
-  @Input() kind: 'KIND_MAP' | 'KIND_LIST' | "KIND_REGEXP" = 'KIND_MAP';
+  // @Input() kind: 'KIND_MAP' | 'KIND_LIST' | "KIND_REGEXP" = 'KIND_MAP';
   /** Controlador del "Chips Filed" */
   @ViewChild('sinonimosInput') sinonimosInput!: ElementRef;
   /** Emite cuando la clase se editó, agregó o borró */
@@ -73,7 +73,7 @@ export class EditEntityComponent implements OnInit, OnDestroy {
     }
 
     // Si es lista o si es mapa
-    if (this.kind == 'KIND_MAP') {
+    // if (this.kind == 'KIND_MAP') {
       // Desactiva el agregado de clase
       this.tipo_.switchAddClase = false
       // Define la clase nueva para continuar con la edición
@@ -84,9 +84,9 @@ export class EditEntityComponent implements OnInit, OnDestroy {
         this.clase.value,
         'add'
       );
-    } else {
-      this.tipo_.setClase(this.clase);
-    }
+    // } else {
+    //   this.tipo_.setClase(this.clase);
+    // }
   }
 
   /** Cierra la edición de la clase y resetea los campos */

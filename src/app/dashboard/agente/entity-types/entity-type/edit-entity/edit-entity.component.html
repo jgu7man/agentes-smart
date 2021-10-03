@@ -1,12 +1,11 @@
 <!-- AGREGAR CLASES SIN SINÓNIMO -->
 
 <div
-  class="col"
-  [ngClass]="{ s6: kind == 'KIND_LIST', s3: kind == 'KIND_MAP' }"
+  class="col s3"
 >
-  <mat-form-field>
+  <mat-form-field appearance="fill">
     <input
-      placeholder="nueva clase"
+      placeholder="Nuevo parametro"
       type="text"
       name="addClaseItem"
       id="addClaseItem"
@@ -22,7 +21,7 @@
 
 <!-- * AGREGAR SINÓNIMOS -->
 
-<div class="col s7" *ngIf="kind == 'KIND_MAP'">
+<div class="col s8">
   <mat-form-field appearance="outline" class="chip-list" style="width: 100%">
     <mat-chip-list
       class="mat-chip-list-stacked"
@@ -40,7 +39,7 @@
         <mat-icon matChipRemove>cancel</mat-icon>
       </mat-chip>
       <input
-        placeholder="escribe un nuevo sinónimo y luego presiona coma (,) para agregar"
+        placeholder="Escribe un nuevo sinónimo y luego presiona coma (,) para agregar"
         style="max-height: 1em"
         #sinonimosInput
         [matChipInputFor]="newSinonimosList"
@@ -52,11 +51,11 @@
 </div>
 
 <!-- BOTONES DE SALIDA -->
-<div class="col s2">
+<div class="col s1">
   <!-- <button mat-button (click)="setClase()">
     <i class="fas fa-check green-text"></i>
   </button> -->
-  <button mat-button (click)="claseDone.emit(true)">
+  <button mat-icon-button (click)="claseDone.emit(true)">
     <i class="fas fa-times red-text"></i>
   </button>
 </div>

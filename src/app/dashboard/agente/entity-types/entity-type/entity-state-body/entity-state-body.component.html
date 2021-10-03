@@ -3,13 +3,13 @@
   <!-- OPCIONES DE ENTIDAD -->
   <div class="row">
     <div class="col s12" id="tipo-options">
-      <mat-checkbox
+      <!-- <mat-checkbox
         [color]="'primary'"
         (change)="onKindChange($event)"
         [checked]="entity.kind == 'KIND_MAP'"
       >
         Activar sinónimos
-      </mat-checkbox>
+      </mat-checkbox> -->
 
       <mat-checkbox
         [color]="'primary'"
@@ -33,7 +33,7 @@
   <!-- CLASES CRUD -->
   <div class="row">
     <div class="col s12">
-      <h6>Clases del tipo de dato</h6>
+      <h4>Clases del tipo de dato</h4>
 
       <!-- Clases con sinónimos -->
       <mat-card >
@@ -42,10 +42,8 @@
 
           <!-- Table head -->
           <div class="row" id="clases-header">
-            <div class="col s3"><b>Clase</b></div>
-            <div class="col s9"
-            *ngIf="entity.kind == 'KIND_MAP'"
-            ><b>Sinónimos</b></div>
+            <div class="col s3"><b>Parámetro</b></div>
+            <div class="col s9"><b>Sinónimos</b></div>
           </div>
 
           <mat-divider></mat-divider>
@@ -61,11 +59,9 @@
 
             <!-- UPDATE CLASE  -->
               <div class="row">
-                <as-entity
-                  [claseId]="clase.value"
-                  [kind]="entity.kind"
-                ></as-entity>
+                <as-entity [claseId]="clase.value"></as-entity>
               </div>
+              <mat-divider></mat-divider>
             </li>
 
             <mat-divider></mat-divider>
@@ -77,10 +73,9 @@
                 [ngClass]="{ 'collection-item': entity_.switchAddClase }"
               >
                 <div class="row">
-                  <!-- <as-entity
-                    [kind]="entity.kind"
-                  ></as-entity> -->
+                  <as-entity></as-entity>
                 </div>
+                <mat-divider></mat-divider>
               </li>
             </ng-template>
           </ul>
@@ -93,7 +88,7 @@
               (click)="onAddClase()"
               [disabled]="!entity.name"
             >
-              Agregar nueva clase
+              Agregar parámetro
             </button>
           </ng-container>
         </mat-card-content>

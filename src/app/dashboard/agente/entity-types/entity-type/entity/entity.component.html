@@ -2,7 +2,7 @@
   <!-- ## READ CLASE -->
   <ng-container *ngIf="currentEntityType.activatedToEdit != clase.value || activateEdit else editClase">
     <!-- ## SINONIMOS -->
-    <ng-container *ngIf="kind == 'KIND_MAP'; else lista">
+    <!-- <ng-container *ngIf="kind == 'KIND_MAP'; else lista"> -->
       <div class="col s2 m3">
         <span> {{ clase?.value }} </span>
       </div>
@@ -18,15 +18,26 @@
           <i class="fas fa-ellipsis-v"></i>
         </button>
         <mat-menu #claseMenu="matMenu">
-          <button mat-menu-item (click)="currentEntityType.activatedToEdit = clase.value">Editar</button>
-          <button mat-menu-item (click)="onDelClase()">Eliminar</button>
+          <button
+          mat-menu-item
+          (click)="currentEntityType.activatedToEdit = clase.value"
+          >
+            Editar
+          </button>
+
+          <button
+          mat-menu-item
+          (click)="onDelClase()"
+          >
+            Eliminar
+          </button>
         </mat-menu>
       </div>
-    </ng-container>
+    <!-- </ng-container> -->
     <!-- !## SINONIMOS -->
 
     <!-- ## LIST -->
-    <ng-template #lista>
+    <!-- <ng-template #lista>
       <div class="col s10 m11">
         <span> {{ clase.value }} </span>
       </div>
@@ -43,7 +54,7 @@
           </button>
         </mat-menu>
       </div>
-    </ng-template>
+    </ng-template> -->
     <!-- !## LIST -->
   </ng-container>
   <!-- !## READ CLASE -->
@@ -53,10 +64,9 @@
 
 <!-- ## EDIT CLASE -->
 <ng-template #editClase>
-  <!-- <as-edit-entity
+  <as-edit-entity
     [clase]="clase"
-    [kind]="kind"
     (claseDone)="onClaseDone()"
-  ></as-edit-entity> -->
+  ></as-edit-entity>
 </ng-template>
 

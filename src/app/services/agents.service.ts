@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { concatMap, debounceTime, map, mapTo, mergeMap, take, catchError } from 'rxjs/operators';
-import { MxAlert, MxCache, MxErrorAlertModel } from '@marxa/devkit';
+import { MxAlert, MxCache, MxErrorAlertModel, MxLoading } from '@marxa/devkit';
 import { MxAuth } from '@marxa/auth';
 import { MxStorage } from '@marxa/storage';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,6 +24,7 @@ export class AgentsService {
     private _auth: MxAuth,
     private _cache: MxCache,
     private _dialog: MatDialog,
+    private _loading: MxLoading,
     private _http: HttpClient,
     private _router: Router,
     private _storage: MxStorage,
@@ -82,27 +83,29 @@ export class AgentsService {
         }
       } ),
 
-      // SEND TO BACKEND TO CREATE PROJECT AND AGENT
+      /* SEND TO BACKEND TO CREATE PROJECT AND AGENT */
       concatMap<AgenteModel, Observable<AgenteModel>>( agente =>
         this.createNewDialogflowAgent$( agente ).pipe( take( 1 ), mapTo( agente ) ) ),
       catchError(this.handleError)
-      ).subscribe( async ( agente ) => {
+    ).subscribe( async ( agente ) => {
 
-        try {
-          // SAVE IN FIRESTORE
-          let agentePath = `usuarios/${agente.owner}/agentes/${agente.projectId}`
-          await this._af.doc( agentePath ).set( {
-            ...agente, created: new Date()
-          })
+      try {
 
-          this._router.navigate( [ '/dashboard/agentes' ] );
-          createDialog.close();
-        } catch ( error ) {
-          error['agente'] = agente
-          this._alert.error(`No pudo guardarse el agente en firestore`, error)
-          createDialog.close();
-          return console.error(error)
-        }
+        /* SAVE IN FIRESTORE */
+        let agentePath = `usuarios/${agente.owner}/agentes/${agente.projectId}`
+        await this._af.doc( agentePath ).set( {
+          ...agente, created: new Date()
+        })
+
+        /* CREATE FIRST ENTITYTYPE */
+        this._router.navigate( [ '/dashboard' ] );
+        createDialog.close();
+      } catch ( error ) {
+        error['agente'] = agente
+        this._alert.error(`No pudo guardarse el agente en firestore`, error)
+        createDialog.close();
+        return console.error(error)
+      }
     });
 
   }
@@ -138,11 +141,11 @@ export class AgentsService {
    * @returns {*}  {Observable<any>}
    */
   private createNewDialogflowAgent$(agente: AgenteModel): Observable<any> {
-    const _Url = environment.restURL + 'agentes/create';
+    const _Url = environment.restURL + '/agentes/create';
 
     let params = { ...agente };
     return this._http
-      .post<{}>(_Url, params, {
+      .post<any>(_Url, params, {
         responseType: 'json',
         observe: 'body',
       }).pipe(catchError(this.handleError));
@@ -207,7 +210,8 @@ export class AgentsService {
    * @param {string} projectId
    * @returns {*}  {Observable<any>}
    */
-  delete$(projectId: string): Observable<any> {
+  delete$( projectId: string ): Observable<any> {
+    this._loading.toggleWaiting('open')
     const usuario = this._cache.getDataKey<firebase.User>('user');
 
     if (!usuario) {
@@ -224,7 +228,8 @@ export class AgentsService {
           `${this.restURL}/agentes/delete?projectId=${projectId}&clientId=${clientId}`
         ).pipe(
           take( 1 ),
-          catchError((error) => {
+          catchError( ( error ) => {
+            this._loading.toggleWaiting('close')
             throw this._alert.error(
               `No se pudo borrar el agente ${projectId}`,
               error
@@ -232,8 +237,11 @@ export class AgentsService {
           }),
           mergeMap( async ( result ) => {
             try {
-              return await this.removeFromFirestore(usuario.uid, projectId)
-            } catch (error) {
+              await this.removeFromFirestore( usuario.uid, projectId )
+              this._loading.toggleWaiting('close')
+              return
+            } catch ( error ) {
+              this._loading.toggleWaiting('close')
               if ('message' in error) {
                 this._alert.error(error.message, error)
               } else {

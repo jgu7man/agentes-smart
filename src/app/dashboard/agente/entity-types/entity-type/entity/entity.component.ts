@@ -19,7 +19,7 @@ export class EntityComponent implements OnInit, OnDestroy {
   @Input() set claseId(id: string) { this._claseId.next(id); }
   get claseId() { return this._claseId.getValue()}
   /** Recibe y establece el tipo de vista de lista a mapa */
-  @Input() kind: EntityKind = 'KIND_MAP';
+  // @Input() kind: EntityKind = 'KIND_MAP';
   /** Emite evento cuando la clase fue editada */
   @Output() claseEdited = new EventEmitter<iEntity>();
   /** Emite evento cuando la clase fue borrada */
