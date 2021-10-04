@@ -11,10 +11,11 @@
 }
 
 .param-row {
-margin-bottom: 0;
-
+  margin-bottom: 0;
 }
 
-::ng-deep .mat-form-field-underline{
-  opacity: 0;
+.part-parameter-body {
+  .row {
+    margin-bottom: 0;
+  }
 }

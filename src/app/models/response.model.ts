@@ -5,13 +5,15 @@ export class ResponseModel {
   public outputContexts: string[] = []
   public inputContexts: string[] = []
   public asDefault: boolean
-  public conditions?: iCondition[]
+  public nextIntent: string
+  public conditions?: iResponseCondition[]
   constructor(
     public result: iResponseResult,
     public index: number,
     public id?: string,
   ) {
     this.asDefault = false
+    this.nextIntent = '*fin'
   }
 }
 
@@ -22,10 +24,15 @@ export interface iResponseResult {
 }
 
 
-export interface iCondition {
+export interface iResponseCondition {
   parameter: string,
-  condition: string,
+  operator: string,
   value: string | number | any[]
+}
+
+export interface iCondition {
+  displayText: string;
+  operator: string;
 }
 
 

@@ -1,6 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { EntityTypeModel, iSystemEntity } from 'src/app/models/entity-type.model';
-import { ConditionalResponseModel, iCondition, DefaultResponseModel } from 'src/app/models/intent-response.model';
+// import { ConditionalResponseModel, DefaultResponseModel } from 'src/app/models/intent-response.model';
+import { iCondition, iResponseCondition } from 'src/app/models/response.model';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 import { ParametersService } from 'src/app/services/parameters.service';
@@ -10,14 +14,17 @@ import { ParametersService } from 'src/app/services/parameters.service';
   templateUrl: './conditional-response-form.component.html',
   styleUrls: ['./conditional-response-form.component.scss']
 })
-export class ConditionalResponseFormComponent implements OnInit {
+export class ConditionalResponseFormComponent implements OnInit, OnDestroy {
 
   paramSelected: string = '';
   isOriginal: boolean = true;
-  tipoSelected?: EntityTypeModel | iSystemEntity ;
+  tipoSelected?: EntityTypeModel | iSystemEntity;
+  conditionValueCtrl: FormControl = new FormControl( '' )
+  valueSubscription: Subscription
 
-  @Input() result: ConditionalResponseModel;
-  @Output() onRespChanges: EventEmitter<ConditionalResponseModel> = new EventEmitter();
+  @Input() condition!: iResponseCondition;
+  @Output() onChange: EventEmitter<iResponseCondition> = new EventEmitter();
+  @Output() onRemove: EventEmitter<void> = new EventEmitter();
 
   condicionesList: iCondition[] = [
     { displayText: 'igual a', operator: 'igual' },
@@ -36,31 +43,33 @@ export class ConditionalResponseFormComponent implements OnInit {
     private _intent: CurrentIntentService,
     private _entityTypes: EntityTypesService,
   ) {
-    this.result = new ConditionalResponseModel( '', '', '' );
+    this.valueSubscription = this.conditionValueCtrl.valueChanges
+      .pipe(debounceTime( 1000 ))
+      .subscribe( () => { this.onChange.emit(this.condition)})
   }
 
   async ngOnInit() {
-    if (this.result.parametro) {
+    if (this.condition.parameter) {
       this.tipoSelected = this._intent
         .entityTypes$
         .getValue()
-        .find((t) => t && t.displayName == this.result.parametro);
+        .find((t) => t && t.displayName == this.condition.parameter);
     }
   }
 
   get disableValue() {
     return (
-      this.result.condicion == 'existe' ||
-      this.result.condicion == 'no_existe' ||
-      !this.result.condicion
+      this.condition.operator == 'existe' ||
+      this.condition.operator == 'no_existe' ||
+      !this.condition.operator
     );
   }
 
   setParameter() {
-    if (this.result.parametro) {
-      return this.result.parametro.split('$').length >= 2
-        ? this.result.parametro.split('$')[1].split('.')[0]
-        : this.result.parametro.split('$')[0];
+    if (this.condition.parameter) {
+      return this.condition.parameter.split('$').length >= 2
+        ? this.condition.parameter.split('$')[1].split('.')[0]
+        : this.condition.parameter.split('$')[0];
     } else return ''
   }
 
@@ -73,17 +82,12 @@ export class ConditionalResponseFormComponent implements OnInit {
     if (paramFound) {
       this.isOriginal = paramFound.value.split('.').length > 1 ? true : false;
     }
-    this.result.parametro = displayName;
-    // var selectedSplit = selected.value.split('$');
-    // console.log( selectedSplit )
-    // var param = selectedSplit.length > 1 ? selectedSplit[1] : selectedSplit[0];
-    // console.log( param )
-    // console.log( this._mensaje.mensajeTypeEntities$.getValue() )
+    this.condition.parameter = displayName;
     this.tipoSelected = this._intent.entityTypes$.getValue()
       .find((t) => t && t.displayName == displayName);
 
     console.log( this.tipoSelected )
-    this.onRespChanges.emit(this.result);
+    this.onChange.emit(this.condition);
   }
 
   get isntSystem(): EntityTypeModel | false {
@@ -95,16 +99,19 @@ export class ConditionalResponseFormComponent implements OnInit {
     return !this.isOriginal && this.tipoSelected;
   }
 
-  async catchresult(msg: DefaultResponseModel) {
-    this.result.text = msg.text;
-    // await this._loading.waitFor(100)
-    this.onRespChanges.emit(this.result);
+  catchValue( value: any ) {
+    this.condition.value = value;
+    this.onChange.emit(this.condition)
   }
 
   entitiesOf(entityTypeSelected: EntityTypeModel | iSystemEntity) {
     if ('entities' in entityTypeSelected) {
       return entityTypeSelected.entities;
     } else return []
+  }
+
+  ngOnDestroy() {
+    this.valueSubscription.unsubscribe()
   }
 
 }

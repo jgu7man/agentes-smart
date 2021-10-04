@@ -1,7 +1,7 @@
 <!-- Parámetro -->
-<div class="row">
+<div class="row condition" >
   <div class="col s4 resp-label">
-    Si el dato
+    Si parametro
     <i
       class="fas fa-info-circle"
       matTooltip="Elige un parámetro de la lista el cuál comparar"
@@ -10,7 +10,7 @@
   <div class="col s8">
     <as-entity-type-selector
       (tipoSelected)="onParamChange($event)"
-      [value]="result.parametro"
+      [value]="condition.parameter"
     ></as-entity-type-selector>
 
     <!-- <aSmart-param-selector
@@ -18,9 +18,8 @@
           (onParamaSelected)="onParamChange($event)"
       ></aSmart-param-selector> -->
   </div>
-</div>
+
 <!-- Condición -->
-<div class="row">
   <div class="col s4 resp-label">
     es
     <i
@@ -32,9 +31,9 @@
     <mat-form-field appearance="outline">
       <mat-select
         placeholder="condición"
-        [(ngModel)]="result.condicion"
+        [(ngModel)]="condition.operator"
         name="condition"
-        (selectionChange)="onRespChanges.emit(result)"
+        (selectionChange)="onChange.emit(condition)"
       >
         <mat-option
           *ngFor="let condition of condicionesList"
@@ -45,43 +44,41 @@
       </mat-select>
     </mat-form-field>
   </div>
-</div>
 <!-- Valor -->
-<div class="row" *ngIf="!disableValue">
-  <div class="col s4 resp-label">
-    Valor
-    <i
-      class="fas fa-info-circle"
-      matTooltip="El valor contra el que has de comparar el parámetro asignado"
-    ></i>
-  </div>
-  <div class="col s8">
-    <!-- Si no es original muestra las opciones -->
-    <ng-container *ngIf="isntSystem as tipo; else original">
-      <as-entity-value-selector
-        [entityTypeDisplayName]="tipo.displayName"
-        [value]="result.valor"
-        (selected)="result.valor = $event"
-      ></as-entity-value-selector>
-    </ng-container>
+  <ng-container  *ngIf="!disableValue">
+    <div class="col s4 resp-label">
+      Valor
+      <i
+        class="fas fa-info-circle"
+        matTooltip="El valor contra el que has de comparar el parámetro asignado"
+      ></i>
+    </div>
+    <div class="col s8">
+      <!-- Si no es original muestra las opciones -->
+      <ng-container *ngIf="isntSystem as tipo; else original">
+        <as-entity-value-selector
+          [entityTypeDisplayName]="tipo.displayName"
+          [value]="condition.value"
+          (selected)="catchValue($event)"
+        ></as-entity-value-selector>
+      </ng-container>
 
-    <!-- Recibe cualquier valor -->
-    <ng-template #original>
-      <mat-form-field appearance="outline">
-        <input
-          matInput
-          type="text"
-          name="conditionValue"
-          id="conditionValue"
-          [(ngModel)]="result.valor"
-        />
-      </mat-form-field>
-    </ng-template>
-  </div>
+      <!-- Recibe cualquier valor -->
+      <ng-template #original>
+        <mat-form-field appearance="outline">
+          <input
+            matInput
+            type="text"
+            name="conditionValue"
+            id="conditionValue"
+            [formControl]="conditionValueCtrl"
+          />
+        </mat-form-field>
+      </ng-template>
+    </div>
+  </ng-container>
+  <button mat-button color='warn'
+  (click)="onRemove.emit()"
+  >Eliminar condición</button>
 </div>
-<!-- <aSmart-simple [outputRes]="{
-  mensaje:result.respuesta,
-  estiloRespuesta:result.estiloRespuesta
-}"
-(onRespChanges)="catchresult($event)"
-></aSmart-simple> -->
+

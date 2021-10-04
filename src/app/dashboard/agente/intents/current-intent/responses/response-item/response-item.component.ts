@@ -2,13 +2,16 @@ import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, 
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MxAlert, MxCache, MxLoading } from '@marxa/devkit';
 import { pull, uniq } from 'lodash';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { iContext, iContextList, iContextSelected } from 'src/app/models/context.model';
-import { ConditionalResponseModel, iResponseType, ResponseModel, IntentResponseResult, DefaultResponseModel, IntentResponseType, CatchResponseModel, SearchResponseModel } from 'src/app/models/intent-response.model';
+import { iResponseType } from 'src/app/models/intent-response.model';
+// import { ConditionalResponseModel, iResponseType, ResponseModel, IntentResponseResult, DefaultResponseModel, IntentResponseType, CatchResponseModel, SearchResponseModel } from 'src/app/models/intent-response.model';
 import { iIntentState, IntentStateModel } from 'src/app/models/intent.model';
+import { iResponseCondition, iResponseResult, ResponseModel } from 'src/app/models/response.model';
 import { ContextsService } from 'src/app/services/contexts.service';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { IntentsService } from 'src/app/services/intents.service';
@@ -31,7 +34,7 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
   /** Obtiene el tipo de respuesta seleccionado y da estilo a la vista */
   selectedRes?: ResponseModel;
   /** El mensaje de salida */
-  public result: IntentResponseResult;
+  public result: iResponseResult;
   /** Almacena el contexto y permite que se muestre la lista de contextos */
   public currentContext: string;
   /** Almacena la lista de contextos del cache */
@@ -60,37 +63,23 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     private _intents: IntentsService,
     private _afs: AngularFirestore,
   ) {
-    this.result = new DefaultResponseModel( '' );
+    this.result = { response: '', suggestions: [] };
     this.intentSubscription =
       this._intent.state$.subscribe( async mensaje => {
         this.contextLists = await this._cache.getDataKey<any>( 'contextosLists' );
         await this.setNextIntents( this.currentContext );
       } )
     this.currentContext = this._cache.getDataKey<string>( 'currentContexto' ) || ''
-    this.respuesta = new ResponseModel( this.result, 0, '*fin', 'default', [] );
+    this.respuesta = new ResponseModel( this.result, 0 );
   }
 
-  oldTipos: Map<string, IntentResponseType> = new Map( [
-    [ 'simple', 'default' ],
-    [ 'buscar', 'search' ],
-    [ 'condicional', 'conditional' ],
-    [ 'grupo_datos', 'catch' ],
-  ])
+
   async ngOnInit() {
     if ( this.respuesta.result[ 'suggestions' ] ) {
       if ( this.respuesta.result[ 'suggestions' ].length )
         this.sugerenciasActivated = true;
     }
 
-    let nuevo = this.oldTipos.get( this.respuesta.tipo as string )
-    if ( nuevo ) {
-      this.respuesta.tipo  = nuevo
-      // this.updateType()
-    }
-
-    this.responseType = this.typeResponses.find(
-      ( tipo ) => tipo.type == this.respuesta.tipo
-    );
   }
 
   updateType() {
@@ -102,12 +91,6 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
       .update({...this.respuesta})
   }
 
-  validateResult(response: ResponseModel) {
-    if ( 'parametro' in response.result )
-      return response.result as ConditionalResponseModel
-    else
-      return response.result as DefaultResponseModel
-  }
 
   emitOpened() {
     this.switchEditResp = true
@@ -170,296 +153,276 @@ export class ResponseItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  isConditional( result: IntentResponseResult ): false | ConditionalResponseModel {
-    return 'parametro' in result ? result as ConditionalResponseModel : false
+  get activeContextSelector() {
+    if (this.currentContext) {
+      return false;
+    } else return false
   }
 
-  isCatch( result: IntentResponseResult ): false | CatchResponseModel {
-    return 'parametro' in result ?  result as CatchResponseModel : false
+  get isBienvenida() {
+    let intentState = this._intent.state$.getValue()
+    return intentState?.intent.displayName == 'Default Welcome Intent'
   }
 
-  isSearch( result: IntentResponseResult ): false | SearchResponseModel {
-    return 'parametro' in result ? result as SearchResponseModel : false
+  get activeIntentSelector() {
+    if (!this.currentContext) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
-  isDefault( result: IntentResponseResult ): false | DefaultResponseModel {
-    return 'text' in result ? result as DefaultResponseModel : false
+  toggleAsdefault(change: MatSlideToggleChange) {
+    this.respuesta.asDefault = change.checked;
   }
 
-    get activeContextSelector() {
-      if (this.respuesta.tipo == 'default') {
-        return true;
-      } else if (this.currentContext) {
-        return false;
-      } else return false
-    }
+  async catchInputContext(selected: iContextSelected) {
+    const contextName = selected.context;
 
-    get isBienvenida() {
-      let intentState = this._intent.state$.getValue()
-      return intentState?.intent.displayName == 'Default Welcome Intent'
-    }
-
-    get activeIntentSelector() {
-      if (this.respuesta.tipo == 'default') {
-        return false;
-      } else if (this.respuesta.tipo == 'suggests') {
-        return false;
-      } else if (!this.currentContext) {
-        return false;
-      } else {
-        return true;
+    if (contextName) {
+      if (!this.respuesta.inputContexts) {
+        this.respuesta.inputContexts = [];
       }
-    }
-
-    async catchInputContext(selected: iContextSelected) {
-      const contextName = selected.context;
-
-      if (contextName) {
-        if (!this.respuesta.inputContexts) {
-          this.respuesta.inputContexts = [];
-        }
-        if (!this.respuesta.outputContexts) {
-          this.respuesta.outputContexts = [];
-        }
-
-        let prevContext = this.respuesta.inputContexts[0]
-        this.respuesta.inputContexts = [contextName]
-
-        this.respuesta.outputContexts = uniq([
-          contextName,
-          ...this.respuesta.outputContexts.filter(c =>
-            c != prevContext
-          ),
-        ])
-      } else {
-        if ( this.respuesta.inputContexts && this.respuesta.inputContexts.length > 0 ) {
-          const prevContext = this.respuesta.inputContexts[ 0 ] || ''
-          if (!this.respuesta.outputContexts) this.respuesta.outputContexts = []
-          this.respuesta.inputContexts = []
-          this.respuesta.outputContexts = uniq([
-            ...pull(this.respuesta.outputContexts, prevContext),
-            ...this.respuesta.outputContexts
-          ])
-
-        }
-      }
-
-      console.log( this.respuesta.outputContexts )
-    }
-
-    async catchOutputContext(selected: iContextSelected) {
-      const contextName = selected.context;
-      if (contextName) {
-        if (!this.respuesta.outputContexts) {
-          this.respuesta.outputContexts = [];
-        }
-        this.respuesta.outputContexts.push(contextName);
-
-        // Search for nextIntentList
-        if (!this.nextMensajesList || this.nextMensajesList.length < 1) {
-          this.respuesta.nextIntent = '*fin';
-        }
-      } else {
-        console.log( this.contextLists )
-        // this.respuesta.nextIntent = '*fin';
-      }
-      console.log(this.respuesta.outputContexts)
-      return this.respuesta;
-    }
-
-    setPrevContextSelected(contexts?: string[]) {
-      var context: string = '';
-      if (contexts && contexts.length > 0) {
-        if (this.contextLists) {
-          contexts.forEach((c) => {
-            if (c in this.contextLists) context = c;
-          });
-        }
-      }
-      return context;
-    }
-
-    disableEScondition() {
-      return this.respuesta.result['condicion' as keyof IntentResponseResult] == 'no existe' || this.respuesta.result['condicion' as keyof IntentResponseResult] == 'existe'
-    }
-
-    async setNextContext(nextIntent: string) {
-      var nextIntentContext: string | undefined;
-
-      nextIntentContext = Object.keys( this.contextLists ).find( contextName => {
-        let intentFinded = this.contextLists[contextName].find(
-          (intent) => intent.displayName == nextIntent
-        )
-        return intentFinded ? intentFinded.contexto : undefined
-      })
-
-      return nextIntentContext || '';
-    }
-
-    async setNextIntentContext(change: MatSelectChange) {
-      var allIntents = await this._intents.list$.pipe( take( 1 )).toPromise()
-      var intentSelected = allIntents.find((i) => i.displayName === change.value);
-      if (intentSelected) {
+      if (!this.respuesta.outputContexts) {
         this.respuesta.outputContexts = [];
-        if (!this.respuesta.inputContexts) this.respuesta.inputContexts = []
-
-        this.respuesta.outputContexts = [
-          ...intentSelected.intent.inputContextNames.map((c) =>
-            c.slice(c.lastIndexOf('/') + 1)
-          ).filter(c => !this.respuesta.inputContexts?.includes(c)),
-          ...this.respuesta.inputContexts
-        ];
-      } else {
-        this.respuesta.outputContexts = []
       }
-      console.log( this.respuesta.outputContexts )
-    }
 
-    openAddIntent() {
-      const dialog = this._dialog.open(AddIntentDialog, {
-        width: '450px',
-        // minHeight: 450
-      });
+      let prevContext = this.respuesta.inputContexts[0]
+      this.respuesta.inputContexts = [contextName]
 
-      dialog.afterClosed().subscribe((newIntent) => {
-        console.log( newIntent )
-        this.nextMensajesList.push(newIntent);
-      });
-    }
+      this.respuesta.outputContexts = uniq([
+        contextName,
+        ...this.respuesta.outputContexts.filter(c =>
+          c != prevContext
+        ),
+      ])
+    } else {
+      if ( this.respuesta.inputContexts && this.respuesta.inputContexts.length > 0 ) {
+        const prevContext = this.respuesta.inputContexts[ 0 ] || ''
+        if (!this.respuesta.outputContexts) this.respuesta.outputContexts = []
+        this.respuesta.inputContexts = []
+        this.respuesta.outputContexts = uniq([
+          ...pull(this.respuesta.outputContexts, prevContext),
+          ...this.respuesta.outputContexts
+        ])
 
-    /**
-     * Obtiene el tipo de respuesta seleccionado del select
-     * @param {MatSelectChange} tipoSelected - Contiene la propidad valor que es de tipo `TipoEntityType.name`
-     */
-    onTipoSelected(tipoSelected: MatSelectChange) {
-      this.responseType = this.typeResponses.find( ( t ) => t.type == tipoSelected.value );
-      if ( this.responseType ) this.respuesta.tipo = this.responseType.type;
-      switch ( this.respuesta.tipo ) {
-        case 'conditional':
-          this.respuesta.result = new ConditionalResponseModel( '', '', '' )
-          break;
-        case 'catch':
-          this.respuesta.result = new CatchResponseModel( '', '', '' )
-          break;
-        case 'search':
-          this.respuesta.result = new SearchResponseModel( '', '')
       }
     }
 
-    /** Recibe los cambios en los formularios hijos como simple, CODICIONAL, BUSCAR Y GRUPO DE DATOS */
-    catchResult(msg: any) {
-      this.result = msg;
-    }
+    console.log( this.respuesta.outputContexts )
+  }
 
-    /**
-     * Valida la respuesta que se ha de guardar en FIRESTORE
-     *
-     * @param {ResponseModel} response Objeto de respuesta modelado como RespuestaModel
-     * @returns {ResponseModel} Respuesta como objeto sin tipo declarado
-     */
-    async validateRespuesta(response: ResponseModel) {
-      let nextIntentContext = await this.setNextContext(response.nextIntent || '')
-      const responses = await this.respuestas_.getList()
+  addCondition() {
+    if (!this.respuesta.conditions) this.respuesta.conditions = []
+    this.respuesta.conditions.push( { parameter: '', operator: '', value: '' })
+  }
 
-      if ( !response.outputContexts ||
-        response.outputContexts.length == 0
-      ) {
-        response.outputContexts = [nextIntentContext];
+  updateConditions( condition: iResponseCondition, index: number ) {
+    this.respuesta.conditions![index] = condition
+  }
+
+  removeCondition( index: number ) {
+    this.respuesta.conditions?.splice(index, 1)
+  }
+
+  async catchOutputContext(selected: iContextSelected) {
+    const contextName = selected.context;
+    if (contextName) {
+      if (!this.respuesta.outputContexts) {
+        this.respuesta.outputContexts = [];
       }
-      // else {
-      //   respuestaObj.outputContexts.push(nextIntentContext)
-      // }
-      if (response.result.asDefault) {
-        var defaultStored = responses.filter((r) => r.result.asDefault);
-        if (defaultStored.length > 1) {
-          this._alerts.message(
-            'No puedes asignar dos respuestas como "Default"'
-          );
-        }
-      } else response.result.asDefault = false
+      this.respuesta.outputContexts.push(contextName);
 
-      console.log( response, this.result  )
-      response.result = { ...this.result };
-      // let text = output.text || response.result.text
-      // console.log( text )
-      console.log( response.result )
+      // Search for nextIntentList
+      if (!this.nextMensajesList || this.nextMensajesList.length < 1) {
+        this.respuesta.nextIntent = '*fin';
+      }
+    } else {
+      console.log( this.contextLists )
+      // this.respuesta.nextIntent = '*fin';
+    }
+    console.log(this.respuesta.outputContexts)
+    return this.respuesta;
+  }
 
-      if (!response.result.text && response.tipo != 'search') {
-        throw this._alerts.message('Agrega al menos un mensaje de texto');
-      } else if ( response.result[ 'suggestions' ]
-        && response.result[ 'suggestions' ].length == 1 ) {
-        throw this._alerts.message(
-          'Agrega 2 o más sugerencias o desactiva las sugerencias'
+  setPrevContextSelected(contexts?: string[]) {
+    var context: string = '';
+    if (contexts && contexts.length > 0) {
+      if (this.contextLists) {
+        contexts.forEach((c) => {
+          if (c in this.contextLists) context = c;
+        });
+      }
+    }
+    return context;
+  }
+
+
+
+  async setNextContext(nextIntent: string) {
+    var nextIntentContext: string | undefined;
+
+    nextIntentContext = Object.keys( this.contextLists ).find( contextName => {
+      let intentFinded = this.contextLists[contextName].find(
+        (intent) => intent.displayName == nextIntent
+      )
+      return intentFinded ? intentFinded.contexto : undefined
+    })
+
+    return nextIntentContext || '';
+  }
+
+  async setNextIntentContext(change: MatSelectChange) {
+    var allIntents = await this._intents.list$.pipe( take( 1 )).toPromise()
+    var intentSelected = allIntents.find((i) => i.displayName === change.value);
+    if (intentSelected) {
+      this.respuesta.outputContexts = [];
+      if (!this.respuesta.inputContexts) this.respuesta.inputContexts = []
+
+      this.respuesta.outputContexts = [
+        ...intentSelected.intent.inputContextNames.map((c) =>
+          c.slice(c.lastIndexOf('/') + 1)
+        ).filter(c => !this.respuesta.inputContexts?.includes(c)),
+        ...this.respuesta.inputContexts
+      ];
+    } else {
+      this.respuesta.outputContexts = []
+    }
+    console.log( this.respuesta.outputContexts )
+  }
+
+  openAddIntent() {
+    const dialog = this._dialog.open(AddIntentDialog, {
+      width: '450px',
+      // minHeight: 450
+    });
+
+    dialog.afterClosed().subscribe((newIntent) => {
+      console.log( newIntent )
+      this.nextMensajesList.push(newIntent);
+    });
+  }
+
+  /**
+   * Obtiene el tipo de respuesta seleccionado del select
+   * @param {MatSelectChange} tipoSelected - Contiene la propidad valor que es de tipo `TipoEntityType.name`
+   */
+
+
+  /** Recibe los cambios en los formularios hijos como simple, CODICIONAL, BUSCAR Y GRUPO DE DATOS */
+  catchResult(msg: any) {
+    this.result = msg;
+  }
+
+  /**
+   * Valida la respuesta que se ha de guardar en FIRESTORE
+   *
+   * @param {ResponseModel} response Objeto de respuesta modelado como RespuestaModel
+   * @returns {ResponseModel} Respuesta como objeto sin tipo declarado
+   */
+  async validateRespuesta(response: ResponseModel) {
+    let nextIntentContext = await this.setNextContext(response.nextIntent || '')
+    const responses = await this.respuestas_.getList()
+
+    if ( !response.outputContexts ||
+      response.outputContexts.length == 0
+    ) {
+      response.outputContexts = [nextIntentContext];
+    }
+    // else {
+    //   respuestaObj.outputContexts.push(nextIntentContext)
+    // }
+    if (response.asDefault) {
+      var defaultStored = responses.filter((r) => r.asDefault);
+      if (defaultStored.length > 1) {
+        this._alerts.message(
+          'No puedes asignar dos respuestas como "Default"'
         );
-      } else {
-
-        console.log( response )
-        return response;
       }
+    } else response.asDefault = false
+
+    console.log( response, this.result  )
+    response.result = { ...this.result };
+    // let text = output.text || response.result.text
+    // console.log( text )
+    console.log( response.result )
+
+    if (!response.result.response) {
+      throw this._alerts.message('Agrega al menos un mensaje de texto');
+    } else if ( response.result[ 'suggestions' ]
+      && response.result[ 'suggestions' ].length == 1 ) {
+      throw this._alerts.message(
+        'Agrega 2 o más sugerencias o desactiva las sugerencias'
+      );
+    } else {
+
+      console.log( response )
+      return response;
     }
+  }
 
-    /**
-     * Valida y envía la respuesta a guardarse en el servicio de respuestas y prepara nuevamente las variables para una respuesta nueva
-     *
-     */
-    async onSave() {
-      // console.log(this.respuesta.nextIntent);
-      this.respuesta.outputContexts;
-      console.log( this.respuesta )
-      let cleanRespuesta = await this.validateRespuesta(this.respuesta);
-      if (!cleanRespuesta['nextIntent']) {
-        cleanRespuesta['nextIntent'] = '*sug';
-      }
-      // console.log(cleanRespuesta['nextIntent']);
-      this.switchEditResp = false;
-
-      if (cleanRespuesta) await this.respuestas_.set(cleanRespuesta);
-      // this.respuesta.tipo = undefined;
-      // this.respuesta.result = new DefaultResponseModel('');
+  /**
+   * Valida y envía la respuesta a guardarse en el servicio de respuestas y prepara nuevamente las variables para una respuesta nueva
+   *
+   */
+  async onSave() {
+    // console.log(this.respuesta.nextIntent);
+    this.respuesta.outputContexts;
+    console.log( this.respuesta )
+    let cleanRespuesta = await this.validateRespuesta(this.respuesta);
+    if (!cleanRespuesta['nextIntent']) {
+      cleanRespuesta['nextIntent'] = '*sug';
     }
+    // console.log(cleanRespuesta['nextIntent']);
+    this.switchEditResp = false;
 
-    ngOnDestroy() {
-      if (this.intentSubscription) this.intentSubscription.unsubscribe()
-    }
+    if (cleanRespuesta) await this.respuestas_.set(cleanRespuesta);
+    // this.respuesta.tipo = undefined;
+    // this.respuesta.result = new DefaultResponseModel('');
+  }
 
-    /** Lista de tipo de respuestas con sus respectivos estilos */
-    typeResponses: iResponseType[] = [
-      {
-        display: '',
-        type: undefined,
-        color: 'grey',
-        icono: 'fa-plus'
-      },
-      {
-        display: 'Default',
-        type: 'default',
-        color: '#935cff',
-        icono: 'fa-comment-alt',
-      },
-      {
-        display: 'Condicional',
-        type: 'conditional',
-        color: '#42cbff',
-        icono: 'fa-code-branch',
-      },
-      {
-        display: 'Guarda datos',
-        type: 'catch',
-        color: '#26a69a',
-        icono: 'fa-clipboard-list',
-      },
-      {
-        display: 'Buscar',
-        type: 'search',
-        color: '#eadb51',
-        icono: 'fa-search',
-      },
-      // {
-      //     display: 'Sugerencias',
-      //     name: 'suggests',
-      //     color: '#f44336',
-      //     icono: 'fa-list-ul',
-      // },
-    ];
+  ngOnDestroy() {
+    if (this.intentSubscription) this.intentSubscription.unsubscribe()
+  }
+
+  /** Lista de tipo de respuestas con sus respectivos estilos */
+  typeResponses: iResponseType[] = [
+    {
+      display: '',
+      type: undefined,
+      color: 'grey',
+      icono: 'fa-plus'
+    },
+    {
+      display: 'Default',
+      type: 'default',
+      color: '#935cff',
+      icono: 'fa-comment-alt',
+    },
+    {
+      display: 'Condicional',
+      type: 'conditional',
+      color: '#42cbff',
+      icono: 'fa-code-branch',
+    },
+    {
+      display: 'Guarda datos',
+      type: 'catch',
+      color: '#26a69a',
+      icono: 'fa-clipboard-list',
+    },
+    {
+      display: 'Buscar',
+      type: 'search',
+      color: '#eadb51',
+      icono: 'fa-search',
+    },
+    // {
+    //     display: 'Sugerencias',
+    //     name: 'suggests',
+    //     color: '#f44336',
+    //     icono: 'fa-list-ul',
+    // },
+  ];
 
 }

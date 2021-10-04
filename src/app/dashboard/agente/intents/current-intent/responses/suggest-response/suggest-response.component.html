@@ -1,6 +1,32 @@
 <div class="col s4 resp-label">Sugerencias</div>
 <div class="col s8">
-  <div
+  <mat-form-field appearance="outline" class="chip-list" style="width: 100%">
+    <mat-chip-list
+      class="mat-chip-list-stacked"
+      #newSinonimosList
+      aria-label="Sugerencias"
+      [aria-orientation]="'horizontal'"
+    >
+      <mat-chip
+        *ngFor="let sugerencia of sugerencias"
+        [selectable]="true"
+        [removable]="true"
+        (removed)="removeSuggest(sugerencia)"
+      >
+        {{ sugerencia }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+      <input
+        placeholder="Escribe las opciones de respuesta que el cliente puede elegir"
+        style="max-height: 1em"
+        #sinonimosInput
+        [matChipInputFor]="newSinonimosList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="addSuggest($event)"
+      />
+    </mat-chip-list>
+  </mat-form-field>
+  <!-- <div
     class="row align-cols suggest-row"
     *ngFor="let sugerencia of sugerencias; index as i"
   >
@@ -42,16 +68,6 @@
         </div>
       </div>
     </mat-card-content>
-    <!-- <mat-card-actions
-        style="display: flex; justify-content: space-around;">
-            <button mat-raised-button
 
-            >Cerrar</button>
-            <button mat-raised-button
-            color="primary"
-            #add="matButton"
-            (click)="addText()"
-            >Agregar</button>
-        </mat-card-actions> -->
-  </mat-card>
+  </mat-card> -->
 </div>

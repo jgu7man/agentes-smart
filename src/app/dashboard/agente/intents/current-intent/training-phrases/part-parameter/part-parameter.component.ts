@@ -1,13 +1,11 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MxCache, MxLoading, MxText } from '@marxa/devkit';
-import { Subscription } from 'rxjs';
+import { MxText } from '@marxa/devkit';
 import { take } from 'rxjs/operators';
 import { AddEntityTypeComponent } from 'src/app/dashboard/agente/entity-types/entity-type/add-entity-type/add-entity-type.component';
 import { EntityTypeModel, iEntity } from 'src/app/models/entity-type.model';
 import { iParameter, iPhrasePart } from 'src/app/models/intent.model';
-import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { EntityTypesService } from 'src/app/services/entitiy-types.service';
 import { ParametersService } from 'src/app/services/parameters.service';
 import { TrainingPhrasesService } from 'src/app/services/training-phrases.service';
@@ -17,7 +15,7 @@ import { TrainingPhrasesService } from 'src/app/services/training-phrases.servic
   templateUrl: './part-parameter.component.html',
   styleUrls: ['./part-parameter.component.scss']
 })
-export class PartParameterComponent implements OnInit, OnDestroy {
+export class PartParameterComponent implements OnInit {
 
   @Input() part!: iPhrasePart;
   @Input() index!: number;
@@ -40,19 +38,16 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
   constructor(
     private _params: ParametersService,
-    private _loading: MxLoading,
-    private _currentIntent: CurrentIntentService,
     public  _frases: TrainingPhrasesService,
     public text: MxText,
     private _dialog: MatDialog,
-    private _cache: MxCache,
     private _entityTypes: EntityTypesService
   ) {}
 
   ngOnInit(): void {
     if (this.part) {
       this.paramNameCtrl.patchValue(
-        this.part.alias == true ? '' : this.part.alias
+        this.part.alias ? '' : this.part.alias
       )
     }
   }
@@ -77,14 +72,18 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   }
 
 
-  onEntityTypeSelected(entityTypeSelected: string) {
-    this.part.entityType = entityTypeSelected.startsWith('@')
-      ? entityTypeSelected : `@${entityTypeSelected}`
-    if (this.part.entityType === '@productos') {
-      this.part.alias = 'producto'
-      this.paramNameCtrl.patchValue('producto')
-    } else {
-      this.paramNameCtrl.patchValue( this.part.text )
+  onEntityTypeSelected( entityTypeSelected: string ) {
+    let rawEntity = entityTypeSelected.startsWith('@')
+    ? entityTypeSelected.substring(1) : entityTypeSelected
+    this.part.entityType = `@${rawEntity}`
+
+    this.paramNameCtrl.patchValue( rawEntity )
+    this.part.alias = rawEntity
+
+    this.param = {
+      displayName: rawEntity,
+      value: this.param?.value || '',
+      entityTypeDisplayName: `@${rawEntity}`,
     }
   }
 
@@ -153,7 +152,6 @@ export class PartParameterComponent implements OnInit, OnDestroy {
       )
 
       this.addParameter()
-      // return this.entitySelected
     }
   }
 
@@ -199,7 +197,5 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
   }
 
-  ngOnDestroy() {
-  }
 
 }

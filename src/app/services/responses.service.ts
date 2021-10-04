@@ -4,7 +4,8 @@ import { MxAlert, MxCache, MxCommonsService, MxErrorAlertModel, MxLoading } from
 import { Observable } from 'rxjs';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { distinct, map, mergeMap, take, tap } from 'rxjs/operators';
-import { ResponseModel, IntentResponseResult } from '../models/intent-response.model';
+import { ResponseModel } from '../models/response.model';
+// import { ResponseModel, IntentResponseResult } from '../models/intent-response.model';
 import { CurrentIntentService } from './current-intent.service';
 
 @Injectable({
@@ -113,14 +114,14 @@ export class ResponsesService {
     } else {
       console.log('create');
 
-      if ( respuesta.tipo &&
-        respuesta.tipo != 'conditional' &&
-        (await this.checkKindResponses(respuesta.tipo) > 1)
-      ) {
-        this._alerts.message(
-          'No puedes agregar más de una respuesta de tipo ' + respuesta.tipo
-        );
-      } else {
+      // if ( respuesta.tipo &&
+      //   respuesta.tipo != 'conditional' &&
+      //   (await this.checkKindResponses(respuesta.tipo) > 1)
+      // ) {
+      //   this._alerts.message(
+      //     'No puedes agregar más de una respuesta de tipo ' + respuesta.tipo
+      //   );
+      // } else {
         console.log(respuesta);
         // Object.keys(respuesta).forEach(key => { if (respuesta[key] == undefined) delete respuesta[key]})
         // Object.keys(respuesta.result).forEach(key => { if (respuesta.result[key] == undefined) delete respuesta.result[key]})
@@ -129,17 +130,17 @@ export class ResponsesService {
           if (respuesta[key as keyof ResponseModel] === undefined) delete respuesta[key as keyof ResponseModel];
         }
         let result = respuesta.result;
-        for (let [key, value] of Object.entries(result)) {
-          console.log(result[key as keyof IntentResponseResult]);
-          if (result[key as keyof IntentResponseResult] === undefined) delete result[key as keyof IntentResponseResult];
-        }
+        // for (let [key, value] of Object.entries(result)) {
+        //   console.log(result[key as keyof IntentResponseResult]);
+        //   if (result[key as keyof IntentResponseResult] === undefined) delete result[key as keyof IntentResponseResult];
+        // }
         respuesta.result = {...result};
 
         console.log( respuesta )
         let res = await intentRef.collection( 'responses' ).add( { ...respuesta } )
         await res.update({ id: res.id })
         delete this.emptyResponse
-      }
+      // }
     }
 
     return this.onResponsesChanged.next(true);
@@ -158,7 +159,8 @@ export class ResponsesService {
     const list = await this.getList();
     await this._loading.asyncForEach(
       list, (res: ResponseModel) => {
-        if (res.tipo == kind) resCant.push(true);
+        // if ( res.tipo == kind )
+          resCant.push( true );
       }
     );
     return resCant.length;

@@ -10,15 +10,16 @@ import {
   ViewChildren,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  ResponseModel,
-  DefaultResponseModel,
-} from 'src/app/models/intent-response.model';
+// import {
+//   ResponseModel,
+//   DefaultResponseModel,
+// } from 'src/app/models/intent-response.model';
 import { ResponsesService } from 'src/app/services/responses.service';
 import { MxLoading } from '@marxa/devkit';
 import { CurrentIntentService } from 'src/app/services/current-intent.service';
 import { ResponseItemComponent } from './response-item/response-item.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { iResponseResult, ResponseModel } from 'src/app/models/response.model';
 
 @Component({
   selector: 'as-responses',
@@ -29,7 +30,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
   /** Respuestas obtenidas de la función de obtener respuestas */
   respuestasList: ResponseModel[] = [];
   /** Modelo de inicio para crear una nueva respuesta simple */
-  newOutputMensaje: DefaultResponseModel;
+  newOutputMensaje: iResponseResult;
   /** Suscripción a los cambios de la lista de respuestas */
   respuestasChangesSubs!: Subscription;
   /** Lista de componentes de respuestas */
@@ -47,14 +48,14 @@ export class ResponsesComponent implements OnInit, OnDestroy {
     private _loading: MxLoading,
     public currentIntent: CurrentIntentService
   ) {
-    this.newOutputMensaje = new DefaultResponseModel('', []);
+    this.newOutputMensaje = { response: '', suggestions: [] };
     // this._respuestas.getDataForRespuestas();
   }
 
   ngOnInit(): void {
     this.respuestasChangesSubs = this.responses_.onResponsesChanged.subscribe(
       () => {
-        this.newOutputMensaje = new DefaultResponseModel('', []);
+        this.newOutputMensaje = { response: '', suggestions: [] };
       }
     );
   }
@@ -67,7 +68,7 @@ export class ResponsesComponent implements OnInit, OnDestroy {
     let lastIndex = (await this.responses_.getList()).length;
 
     this.responses_.emptyResponse =
-      new ResponseModel(this.newOutputMensaje, lastIndex, '*fin', undefined),
+      new ResponseModel(this.newOutputMensaje, lastIndex),
 
       await this._loading.waitFor( 500 );
     if ( this.blankResponse ) {

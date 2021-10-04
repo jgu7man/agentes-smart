@@ -20,59 +20,18 @@
         <!-- SIGUIENTE MENSAJE -->
         <div class="row align-cols">
           <div class="col s10 res-ref" (click)="emitOpened()">
-            <div [ngSwitch]="respuesta.tipo">
-              <div [ngSwitch]="respuesta.nextIntent">
-                <div *ngSwitchCase="'*fin'">
-                  <span><b>Termina conversación</b></span>
-                </div>
-                <div *ngSwitchCase="'*sug'">
-                  <span><b>Sugerencias</b></span>
-                </div>
-                <div *ngSwitchDefault>
-                  <div *ngIf="respuesta.tipo == 'default'">
-                    <span style="font-size: x-small"
-                      >Siguiente conversacion</span
-                    >
-                    <br />
-                  </div>
-                  <b>{{ respuesta["nextIntent"] }}</b>
-                </div>
-
-                <!-- Características -->
-                <div [ngSwitch]="respuesta.tipo">
-
-
-                  <div *ngSwitchCase="'conditional'" >
-                    <span *ngIf="isConditional(respuesta.result) as result" style="font-size: x-small">
-                      Si {{ result.parametro }}
-                      <span *ngIf="!disableEScondition()">es</span>
-                      {{  result["condicion"] }}
-                      {{  result["valor"] }}
-                    </span>
-                  </div>
-
-                  <div *ngSwitchCase="'catch'">
-                    <span *ngIf="isCatch(respuesta.result) as result"  style="font-size: x-small">
-                      Guarda {{ result["key"] }} en
-                      {{ result["coleccion"] }}
-                    </span>
-                  </div>
-
-                  <div *ngSwitchCase="'search'">
-                    <span style="font-size: x-small"
-                    *ngIf="isSearch(respuesta.result) as result" >
-                      Busca {{ result["parametro"] }} en
-                      {{ result["database"] }}
-                    </span>
-                  </div>
-
-                  <div *ngSwitchDefault>
-                  </div>
-                </div>
+            <div [ngSwitch]="respuesta.nextIntent">
+              <div *ngSwitchCase="'*fin'">
+                <span><b>Termina conversación</b></span>
               </div>
-
-              <!-- SIGUIENTE MENSAJE NO ASIGNADO -->
-              <ng-template #noNext> </ng-template>
+              <div *ngSwitchCase="'*sug'">
+                <span><b>Sugerencias</b></span>
+              </div>
+              <div *ngSwitchDefault>
+                <span style="font-size: x-small">Siguiente conversacion</span>
+                <br>
+                <b>{{ respuesta["nextIntent"] }}</b>
+              </div>
             </div>
           </div>
 
@@ -92,30 +51,9 @@
 
       <!-- TARJETA ABIERTA -->
       <ng-template #editResp>
-        <!-- TIPO DE RESPUESTA -->
-        <div class="row" id="tipo-select">
-          <div class="col s4 resp-label">Tipo</div>
-          <div class="col s8">
-            <mat-form-field appearance="outline">
-              <mat-select
-                [(ngModel)]="respuesta.tipo"
-                placeholder="Tipo de respuesta"
-                name="tipoRes"
-                (selectionChange)="onTipoSelected($event)"
-              >
-                <mat-option
-                  *ngFor="let typeResponse of typeResponses"
-                  [value]="typeResponse.type"
-                >
-                  {{ typeResponse.display }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
 
         <!-- CONTENIDO DE LA TARJETA -->
-        <mat-card-content *ngIf="respuesta.tipo">
+        <mat-card-content>
 
           <!-- INPUT CONTEXT -->
           <ng-container *ngIf="!isBienvenida">
@@ -136,40 +74,56 @@
             </div>
           </ng-container>
 
-          <!-- SWITCH TIPO RESPUESAS -->
-          <div [ngSwitch]="respuesta.tipo">
-
-            <div *ngSwitchCase="'conditional'">
-              <as-conditional-response-form
-              *ngIf="isConditional(respuesta.result) as result"
-                [result]="result"
-                (onRespChanges)="catchResult($event)"
-              ></as-conditional-response-form>
+          <!-- CONDICIONES -->
+          <div id="conditionals" class="row">
+            <div class="col s4 resp-label">
+              <p>Condiciones
+                <i
+                  style="font-size: smaller"
+                  class="fas fa-info-circle"
+                  matTooltip="Implementa condiciones para que esta respuesta pueda ser usada por el agente"
+                ></i></p>
             </div>
 
-            <div *ngSwitchCase="'catch'">
-              <as-catch-response-form
-              *ngIf="isCatch(respuesta.result) as result"
-                [RegistroDatosForm]="result"
-                (edited)="catchResult($event)"
-              ></as-catch-response-form>
+            <div class="col s8">
+              <button mat-raised-button color='accent'
+              (click)="addCondition()"
+              >Agregar condición</button>
             </div>
 
-            <div *ngSwitchCase="'search'">
-              <as-search-response-form
-              *ngIf="isSearch(respuesta.result) as result"
-                [BuscarRes]="result"
-                (onRespChanges)="catchResult($event)"
-              ></as-search-response-form>
+            <div class="col s12">
+              <ng-container *ngFor="let condition of respuesta.conditions, index as i">
+                <as-conditional-response-form
+                [condition]="condition"
+                (onChange)="updateConditions($event, i)"
+                (onRemove)="removeCondition(i)"
+                ></as-conditional-response-form>
+              </ng-container>
             </div>
+          </div>
 
-            <as-default-response-form
-            *ngIf="isDefault(respuesta.result) as result"
-              [result]="result"
-              (onRespChanges)="catchResult($event)"
-              (toggleSugerencias)="sugerenciasActivated = $event"
-            >
-            </as-default-response-form>
+
+
+
+          <as-default-response-form
+            [result]="result"
+            (onRespChanges)="catchResult($event)"
+            (toggleSugerencias)="sugerenciasActivated = $event"
+          >
+          </as-default-response-form>
+
+
+          <div class="row" id="asDefault">
+            <div class="col s10 resp-label">
+                Como default
+                <i style="font-size:smaller" class="fas fa-info-circle"
+                matTooltip="Si activas esta opción, esta respuesta sólo se mostrará si alguna otra no se reconoce"
+                ></i>
+            </div>
+            <div class="col s2 toggle" >
+                <mat-slide-toggle [checked]="respuesta.asDefault"
+                (change)="toggleAsdefault($event)" ></mat-slide-toggle>
+            </div>
           </div>
 
           <!-- OUTPUT CONTEXT -->
@@ -231,38 +185,6 @@
             </div>
           </div>
 
-          <!-- ACCIONES -->
-          <!-- <div class="row card-row" id="acciones">
-                    <div class="col s10 resp-label">
-                        Activar Acción
-                        <i class="fas fa-info-circle"
-                        style="font-size:smaller"
-                        matTooltip="[BETA] Alguna acción a realizar junto con la respuesta"
-                        ></i>
-                    </div>
-                    <div class="col s2 right toggle">
-                        <mat-slide-toggle [(ngModel)]="activateAccion"></mat-slide-toggle>
-                    </div>
-                </div>
-                <ng-container *ngIf="activateAccion">
-                    <div class="row card-row">
-                        <div class="col s4">
-                            <mat-select
-                            placeholder="Acción"
-                            [(ngModel)]="respuesta.accion"
-                            name="contexto">
-                                <mat-option *ngFor="let action of respuestas_.acciones" [value]="action">
-                                    {{action.accion}}
-                                </mat-option>
-                            </mat-select>
-                        </div>
-                        <div class="col s8">
-                            <mat-form-field>
-                                <input matInput placeholder="Ruta" class="resp-input">
-                            </mat-form-field>
-                        </div>
-                    </div>
-                </ng-container> -->
         </mat-card-content>
 
         <!-- ACTION BUTTTONS -->
