@@ -174,7 +174,7 @@ export class EntityTypesService {
         throw new MxErrorAlertModel( `No se encontró el tipo de dato al que quieres agregar esta entidad`, 'tipos.service#putEntityOnType')
       }
 
-    } catch ( error ) {
+    } catch ( error: any ) {
       if ( 'message' in error ) {
         this._alerts.error( error.message, error)
       } else {

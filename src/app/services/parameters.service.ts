@@ -37,7 +37,7 @@ export class ParametersService {
     private _afs: AngularFirestore,
     private _cache: MxCache,
     private _currentAgent: CurrentAgentService,
-    private _contexts: ContextsService
+    private _contexts: ContextsService,
   ) {
     this.list$ = this.listen$()
   }
@@ -72,15 +72,7 @@ export class ParametersService {
     const path = `${ this.projectPath( 'add' ) }/params`
     const intentState = this._currentIntent.state$.value
     const contextList = await this._contexts.listen$().pipe(take( 1 )).toPromise()
-    const context = entityType?.startsWith( '@' )
-      ? entityType.substring( 1 )
-      : entityType
-    const color = contextList.find( c => c.name == context )?.color
-    const brightColor = color?.split( ',' ).map( (prop, i) => {
-      if ( i === 0 ) return prop
-      else if ( i === 1 ) return '60%'
-      else return '90%'
-    } ).join( ',' );
+    const brightColor = this._color.generateBrightColor()
     console.log( {brightColor} )
 
     if ( intentState ) {

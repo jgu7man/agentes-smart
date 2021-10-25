@@ -155,7 +155,9 @@ export class AgenteComponent implements OnInit, OnDestroy {
   agentLinks:iNavlink[] = [
     { path: 'interaccion/welcome', label: 'Filtro', icon: 'fa-filter' },
     { path: 'flujo', label: 'Flujo', icon:'fa-sitemap' },
-    { path: 'entidades', label: 'Entidades', icon:'fa-list-alt' },
+    { path: 'entidades', label: 'Entidades', icon: 'fa-list-alt' },
+    { path: 'interaccion/fallback', label: 'Default', icon: 'fa-comment-slash' },
+
     // { path: 'configuraciones', label: 'Configuración', icon: 'fa-cog' },
     // { path: 'integraciones', label: 'Integraciones', icon: 'fa-plug' },
     // { path: 'conversasiones', label: 'Conversaciones', icon: 'fa-comment-dots' },

@@ -9,30 +9,46 @@
         <div class="row intent-content" strechHeight>
 
           <!-- INTENT HEADER -->
-          <ng-container *ngIf="routeIntentName !== 'Default Welcome Intent'; else welcome">
-            <as-intent-header></as-intent-header>
-          </ng-container>
-          <ng-template #welcome >
-            <div id="intent-header">
-              <div class="row align-cols" >
-                <div class="col s10">
-                  <h2 class="intent-title"> Primera interacción </h2>
-                </div>
-                <div class="col s2">
-                  <button style="float: right;" mat-raised-button color="primary"
-                  (keydown.enter)="$event.preventDefault()"
-                  (keydown.enter)="$event.stopImmediatePropagation()"
-                  (click)="_intent.saveChanges()"
-                  [disabled]="!intentState.unsaved"
-                  >Guardar</button>
+          <ng-container *ngIf="
+            routeIntentName == 'Default Welcome Intent' ||
+            routeIntentName == 'Default Fallback Intent';
+          else default">
+              <div id="intent-header">
+                <div class="row align-cols" >
+                  <div class="col s10">
+                    <h2 class="intent-title">
+                      <ng-container *ngIf="routeIntentName == 'Default Welcome Intent'; else fallback">
+                        Primera interacción
+                      </ng-container>
+                      <ng-template #fallback>
+                        Interacción de soporte
+                      </ng-template>
+                    </h2>
+                  </div>
+                  <div class="col s2">
+                    <button style="float: right;" mat-raised-button color="primary"
+                    (keydown.enter)="$event.preventDefault()"
+                    (keydown.enter)="$event.stopImmediatePropagation()"
+                    (click)="_intent.saveChanges()"
+                    [disabled]="!intentState.unsaved"
+                    >Guardar</button>
+                  </div>
                 </div>
               </div>
-            </div>
+          </ng-container>
+          <ng-template #default >
+            <as-intent-header></as-intent-header>
           </ng-template>
 
           <!-- INTENT BODY -->
-          <as-training-phrases></as-training-phrases>
-          <as-parameters></as-parameters>
+          <ng-container *ngIf="routeIntentName !== 'Default Fallback Intent'; else fall">
+            <as-training-phrases></as-training-phrases>
+            <as-parameters></as-parameters>
+          </ng-container>
+          <ng-template #fall>
+            <p class="center">Para evitar confusiones o cuando una comentario de un cliente no puede ser comprendido por el AGENTE, puedes configurar esta interacción para que muestre respuestas para ceder la conversación</p>
+          </ng-template>
+
         </div>
       </div>
     </div>

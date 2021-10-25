@@ -2,6 +2,7 @@
     // scroll-snap-type: y mandatory;
     // height: 100vh;
     // overflow-y: scroll;
+    background: aliceblue;
     .home_sec {
         align-items: center;
         display: flex;
@@ -43,9 +44,19 @@
 }
 
 h1 {
-  font-size: 4em;
+  font-size: 5em !important;
   font-weight: 900;
-  line-height: 1
+  line-height: 1 !important;
+  text-shadow: 3px -1px 2px rgb(0 0 0 / 40%);
+  color: #231e66;
+}
+
+h3 {
+  font-size: 3em !important;
+}
+
+p {
+  font-size: 20px;
 }
 
 

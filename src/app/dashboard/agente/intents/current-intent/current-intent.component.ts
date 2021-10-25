@@ -43,7 +43,11 @@ export class CurrentIntentComponent implements OnInit, OnDestroy {
 
   getCurrentIntent() {
     const route = this._route.snapshot.params[ 'name' ]
-    this.routeIntentName = route !== 'welcome' ? route : 'Default Welcome Intent'
+    this.routeIntentName = route == 'welcome' || route == 'fallback'
+      ? route == 'welcome'
+        ? 'Default Welcome Intent'
+        : 'Default Fallback Intent'
+      : route
     this.currentContext = this._route.snapshot.queryParams[ 'contexto' ]
     this._intent.set(this.routeIntentName, this.currentContext)
 

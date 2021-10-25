@@ -88,18 +88,18 @@
       </div>
 
 
-      <div class="col s6" *ngIf="!isSystemEntity" >
+      <div class="col s6" *ngIf="!isSystemEntity; else add" >
         <ng-container *ngIf="!allowAddEntity; else add">
           <button mat-raised-button
           (click)="allowAddEntity = true" >
             Agregar parámetro
           </button>
         </ng-container>
-        <ng-template #add >
-          <button mat-raised-button
-          (click)="setNewEntity()">Agregar</button>
-        </ng-template>
       </div>
+      <ng-template #add >
+        <button mat-raised-button
+        (click)="setNewEntity()">Agregar</button>
+      </ng-template>
     </div>
 
 

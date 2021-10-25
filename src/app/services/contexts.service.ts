@@ -148,7 +148,7 @@ export class ContextsService {
         batch.update(contextsRef.doc(id),{index});
       });
       await batch.commit()
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alerts.error(error.message, error)
       } else {

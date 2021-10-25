@@ -144,7 +144,7 @@ export class ChatService {
   }
 
   reciveMessage(respuestas: IntentResponseResult[]) {
-    if (respuestas.length > 0) {
+    if (respuestas && respuestas.length > 0) {
       respuestas.forEach((resp: IntentResponseResult) => {
         if (resp != null) {
           console.log(resp);

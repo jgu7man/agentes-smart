@@ -71,7 +71,7 @@ export class EntityTypeSelectorComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy() {
-    this.listSubscription.unsubscribe()
+    if (this.listSubscription) this.listSubscription.unsubscribe()
   }
 
 }

@@ -4,6 +4,7 @@
 @import '~@marxa/devkit/styles/all.scss';
 @import '~@angular/material/theming';
 @import './assets/as-palette.scss';
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&display=swap');
 @include mat-core();
 
 $agente-smart-primary: mat-palette($as-blueagent,500, 800, A400);
@@ -40,10 +41,10 @@ html, body {
   padding: 0;
   margin: 0;
   overflow-x: hidden;
+  font-family: "Montserrat", sans-serif !important;
 }
 body {
   margin: 0;
-  font-family: "Montserrat", sans-serif;
 }
 
 h1 { font: 800 3em/3em "Montserrat", sans-serif !important; }

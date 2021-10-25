@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, 
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MxCache, MxLoading, MxText } from '@marxa/devkit';
+import { replace } from 'lodash';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { AddEntityTypeComponent } from 'src/app/dashboard/agente/entity-types/entity-type/add-entity-type/add-entity-type.component';
@@ -121,7 +122,7 @@ export class PartParameterComponent implements OnInit, OnDestroy {
       }
     }
 
-    if ( this.param ) {
+    if ( this.param && !this.isSystemEntity ) {
       this._entityTypes.putEntityOnType(this.param.entityTypeDisplayName, {
         value: paramDisplayName,
         synonyms: [this.part.text]
@@ -135,7 +136,12 @@ export class PartParameterComponent implements OnInit, OnDestroy {
 
 
   onEntitySelect(entitySelected: string) {
-    this.part.alias = this.text.normalize( entitySelected );
+    this.part.alias = this.text.normalize( entitySelected )
+      .replace( /\s/g, '' )
+      .replace( /\//g, '' )
+      .replace( /\-/g, '' )
+      .replace( /\_/g, '' )
+    console.log( this.part.alias )
 
     this.param = {
       displayName: this.part.alias,
@@ -182,11 +188,11 @@ export class PartParameterComponent implements OnInit, OnDestroy {
   setSinonimo() {
     console.log( this.part )
     const synonym = this.part.text
-    if ( this.part.entityType ) {
-      console.log( this.entitySelected$ )
+    if ( this.part.entityType && !this.isSystemEntity) {
+      // console.log( this.entitySelected$ )
       if ( this.entitySelected$ ) {
         if ( !this.entitySelected$.synonyms ) this.entitySelected$.synonyms = []
-        console.log( this.entitySelected$.synonyms.some(s => s === synonym) )
+        // console.log( this.entitySelected$.synonyms.some(s => s === synonym) )
         if (!this.entitySelected$.synonyms.some(s => s === synonym)) {
           this.entitySelected$.synonyms.push(synonym)
           console.log( this.entitySelected$ )
