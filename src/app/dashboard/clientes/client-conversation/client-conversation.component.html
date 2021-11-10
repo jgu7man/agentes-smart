@@ -1,0 +1,30 @@
+<mat-drawer-container [hasBackdrop]="false" id="conversation-container">
+  <mat-drawer-content>
+    <mat-chip-list class="chips" aria-orientation="vertical">
+
+      <ng-container *ngFor="let inter of conversation$ | async">
+        <span class="timestamp">{{inter.time | mxTimestamp | date: 'short'}}</span>
+        <mat-divider [inset]="true"></mat-divider>
+        <mat-chip class="client-message" >{{inter.client || inter.usuario}}</mat-chip>
+
+        <ng-container *ngFor="let message of inter.agente || inter.agent">
+          <mat-chip selected class="agent-message">{{message}}</mat-chip>
+        </ng-container>
+      </ng-container>
+    </mat-chip-list>
+  </mat-drawer-content>
+
+  <mat-drawer class="client-info" #clientInfo="matDrawer"
+  [position]="'end'"
+  [mode]="'side'"
+  [opened]="true"
+  [disableClose]="true">
+
+    <as-client-card
+    *ngIf="cid"
+    [cid]="cid"
+    (deleted)="afterDeleted()"
+    ></as-client-card>
+
+  </mat-drawer>
+</mat-drawer-container>

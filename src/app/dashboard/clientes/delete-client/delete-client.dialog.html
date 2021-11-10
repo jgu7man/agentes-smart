@@ -1,0 +1,11 @@
+<p mat-dialog-title>¿Seguro deseas eliminar este cliente?</p>
+<mat-dialog-actions
+style="display: flex; justify-content: space-around;">
+    <button mat-raised-button
+    (click)="dialog.close(false)"
+    >Cancelar</button>
+    <button mat-raised-button
+    (click)="onSubmit()"
+    color="warn"
+    >Eliminar</button>
+</mat-dialog-actions>

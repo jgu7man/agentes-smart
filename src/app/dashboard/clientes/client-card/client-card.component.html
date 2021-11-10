@@ -1,0 +1,38 @@
+<div *ngIf="cliente" class="client-panel">
+
+  <mat-card class="mat-elevation-z0">
+    <mat-card-title-group class="client-header">
+      <mat-card-title> {{cliente.name}} </mat-card-title>
+      <mat-card-subtitle>
+
+        <b><i class="fas fa-envelope"></i></b>
+        {{cliente.email}} <br>
+
+        <b><i class="fas fa-phone"></i></b>
+        {{cliente.phone}} <br>
+
+        <b><i class="fab fa-facebook-messenger"></i></b>
+        {{cliente.messengerId}} <br>
+
+        <b><i class="fab fa-whatsapp"></i></b>
+        {{cliente.whatsappId}}
+      </mat-card-subtitle>
+      <img mat-card-sm-image [src]="cliente.photoURL || defaultAvatar" alt="">
+    </mat-card-title-group>
+    <mat-card-content>
+      <b>Data registrada:</b> <br>
+      <code class="code-box">
+        {{cliente.data | json}}
+      </code>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button color="primary"
+      (click)="openEdit()">Editar</button>
+
+      <button mat-button color="warn"
+      (click)="openDelete()">Eliminar</button>
+
+    </mat-card-actions>
+  </mat-card>
+
+</div>

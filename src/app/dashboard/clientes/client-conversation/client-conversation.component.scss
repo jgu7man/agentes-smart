@@ -1,0 +1,34 @@
+.client-info {
+  width: 33%;
+}
+
+#conversation-container {
+  height: 98vh;
+  mat-drawer-content {
+    overflow-x: hidden;
+  }
+}
+
+.timestamp {
+  font-size: smaller;
+  color: #ccc
+}
+
+.chips {
+  ::ng-deep {
+    .mat-chip-list-wrapper {
+      flex-direction: column;
+      padding: 1em;
+      .client-message {
+        align-self: flex-start;
+      }
+      .agent-message {
+        align-self: flex-end;
+      }
+      mat-chip {
+        height:auto;
+      }
+    }
+  }
+}
+

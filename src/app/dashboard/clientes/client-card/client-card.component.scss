@@ -1,0 +1,21 @@
+.client-header {
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+
+.code-box {
+  padding: .5em;
+  background-color: #eee;
+  border-radius: 3px;
+  box-shadow: inset -1px -1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.client-panel {
+  line-height: 2;
+}
+
+mat-card-title {
+  font-size: small;
+  font-weight: bold;
+}

@@ -1,0 +1,22 @@
+#conversation-container {
+  width: 75%;
+}
+
+#conversation-list {
+  height: 98vh
+}
+
+.profile-card {
+  mat-card-title, mat-card-subtitle {
+    font-size: small;
+  }
+  cursor: pointer;
+}
+
+.no-conv {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}

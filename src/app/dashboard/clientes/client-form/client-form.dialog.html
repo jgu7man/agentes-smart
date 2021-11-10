@@ -1,0 +1,61 @@
+<p mat-dialog-title>Editar cliente</p>
+<mat-dialog-content *ngIf="clientForm">
+
+  <form  class="row" [formGroup]="clientForm">
+
+    <mat-form-field appearance="outline" class="col s12">
+      <mat-label>Nombre</mat-label>
+      <input
+      matInput
+      type="text"
+      name="name"
+      formControlName="name"
+      >
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="col s12">
+      <mat-label>Email</mat-label>
+      <input
+      matInput
+      type="text"
+      name="email"
+      formControlName="email"
+      >
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="col s12">
+      <mat-label>Teléfono</mat-label>
+      <input
+      matInput
+      type="text"
+      name="phone"
+      formControlName="phone"
+      >
+    </mat-form-field>
+
+
+    <mat-form-field class="col s12" appearance="outline">
+      <mat-label>Data</mat-label>
+      <textarea
+      class="data-textarea"
+      matInput
+      name="data"
+      formControlName="data"
+      cols="30"
+      rows="5"
+      [mat-autosize]="true"
+      ></textarea>
+      <mat-hint>{{hintMessage}}</mat-hint>
+    </mat-form-field>
+
+  </form>
+
+</mat-dialog-content>
+<mat-dialog-actions
+style="display: flex; justify-content: space-around;">
+    <button mat-raised-button
+    (click)="dialog.close()"
+    >Cerrar</button>
+    <button mat-raised-button
+    (click)="onSubmit()"
+    color="primary"
+    >Guardar</button>
+</mat-dialog-actions>

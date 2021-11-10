@@ -1,0 +1,23 @@
+<div class="row">
+  <div class="col s12 l4">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Resumen de clientes</mat-card-title>
+        <mat-card-subtitle></mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        Total: <span class="indigo-text"><b>{{total}}</b></span> <br>
+        Nuevos: <span class="green-text"><b>{{nuevos}}</b></span> <br>
+        Fallos: <span class="red-text"><b>{{fallbacked}}</b></span>
+      </mat-card-content>
+      <mat-card-actions [align]="'end'"
+      style="display: flex; justify-content: center;">
+          <button mat-button
+          color="accent"
+          [routerLink]="['/dashboard/clientes']"
+          >Ver clientes</button>
+      </mat-card-actions>
+    </mat-card>
+
+  </div>
+</div>

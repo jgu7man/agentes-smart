@@ -115,7 +115,7 @@ export class IntentsService {
         return intentState
       } else throw new MxErrorAlertModel(`No se encontró el projectId`, 'create')
 
-    } catch (error) {
+    } catch (error: any) {
       this._loading.toggleWaiting('close');
       this.catchCreateErrors(error)
       throw console.error( error );
@@ -199,7 +199,7 @@ export class IntentsService {
   public get list(): Promise<iIntentState[]>{
     try {
       return this.list$.pipe( take( 1 )).toPromise()
-    } catch (error) {
+    } catch (error: any) {
       if ('mensaje' in error) {
         this._alert.error(error.message, error)
       } else {
@@ -302,7 +302,7 @@ export class IntentsService {
   async find( displayNameOrName: string ): Promise<iIntentState | null> {
     try {
       return await this.find$(displayNameOrName).pipe( take( 1 )).toPromise()
-    } catch (error) {
+    } catch (error: any) {
       this.handleIntentErrors( error )
       return null
     }
@@ -379,7 +379,7 @@ export class IntentsService {
           throw new MxErrorAlertModel( 'Error de firebase para actualizar el intent', 'intent.service#update', error )
         } )
 
-    } catch (error) {
+    } catch (error: any) {
       this.handleIntentErrors(error)
       return console.error(error)
     }
@@ -409,7 +409,7 @@ export class IntentsService {
 
       return batch.commit()
 
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
@@ -457,7 +457,7 @@ export class IntentsService {
         this._loading.toggleWaiting('close');
         this._alert.notify(displayName + ' creado');
 
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
@@ -491,7 +491,7 @@ export class IntentsService {
       await batch.commit()
 
       return;
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
@@ -534,7 +534,7 @@ export class IntentsService {
       })
 
       return
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
@@ -636,7 +636,7 @@ export class DialogflowIntentsService {
 
       ).toPromise()
 
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {

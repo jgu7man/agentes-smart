@@ -63,6 +63,12 @@ import { EntityValueSelectorComponent } from './agente/entity-types/entity-value
 import { EntityStateBodyComponent } from './agente/entity-types/entity-type/entity-state-body/entity-state-body.component';
 import { IntentBreadcumsComponent } from './agente/intents/current-intent/intent-breadcums/intent-breadcums.component';
 import { PhraseInputComponent } from './agente/intents/current-intent/training-phrases/phrase-input/phrase-input.component';
+import { ClientesComponent } from './clientes/clientes.component';
+import { ClientConversationComponent } from './clientes/client-conversation/client-conversation.component';
+import { ClientCardComponent } from './clientes/client-card/client-card.component';
+import { ClientFormDialog } from './clientes/client-form/client-form.dialog';
+import { DeleteClientDialog } from './clientes/delete-client/delete-client.dialog';
+import { ClientesResumenComponent } from './clientes/clientes-resumen/clientes-resumen.component';
 
 
 @NgModule({
@@ -129,6 +135,12 @@ import { PhraseInputComponent } from './agente/intents/current-intent/training-p
     EntityStateBodyComponent,
     IntentBreadcumsComponent,
     PhraseInputComponent,
+    ClientesComponent,
+    ClientConversationComponent,
+    ClientCardComponent,
+    ClientFormDialog,
+    DeleteClientDialog,
+    ClientesResumenComponent,
   ],
   imports: [
     CommonModule,

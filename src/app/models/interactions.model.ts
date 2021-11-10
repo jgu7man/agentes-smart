@@ -1,11 +1,20 @@
+import firebase from 'firebase/app'
+
+enum messageKey {
+  agent, agente}
+type agentMessage = {
+  [agent: string]: string[]
+}
 export interface iAgentInteraction {
-  usuario: string;
+  client: string;
   agente: string[];
+  agent: string[];
+  // [agent: string]: string[]
   intent: IntentInteraction;
   checked: boolean;
-  time: Date;
-  clientId: string;
+  time: Date | firebase.firestore.Timestamp;
   id: string;
+  usuario: string;
 }
 
 export interface IntentInteraction {

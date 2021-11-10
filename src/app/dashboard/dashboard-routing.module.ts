@@ -12,6 +12,8 @@ import { EntityTypesComponent } from './agente/entity-types/entity-types.compone
 import { ConfigComponent } from './agente/config/config.component';
 import { IntegrationsComponent } from './agente/integrations/integrations.component';
 import { InteractionsComponent } from './agente/interactions/interactions.component';
+import { ClientesComponent } from './clientes/clientes.component';
+import { ClientConversationComponent } from './clientes/client-conversation/client-conversation.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent, children: [
@@ -38,7 +40,9 @@ const routes: Routes = [
     // { path: 'importar', component: ImportarComponent },
     // { path: 'products/add', component: AddProductComponent },
     // { path: 'products/edit/:id',component: EditProductComponent },
-    // { path: 'clientes', component: ClientesComponent },
+    { path: 'clientes', component: ClientesComponent, children: [
+      { path: 'conv/:cid', component: ClientConversationComponent },
+    ] },
   ] }
 ];
 

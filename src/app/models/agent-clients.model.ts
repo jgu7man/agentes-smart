@@ -1,3 +1,5 @@
+import firebase from 'firebase/app'
+
 export class ClienteModel {
   constructor(
     public clientId?: string,
@@ -12,11 +14,10 @@ export class ClienteModel {
 }
 
 export interface iClient extends ClienteModel {
-  clientId: string,
-  messengerId?: string,
-  whatsappId?: string,
-  name?: string,
-  photoURL?: string,
-  email?: string,
-  phone?: string,
+  data?: any,
+  lastUpdate: firebase.firestore.Timestamp,
+  session?: any,
+  isNew?: boolean,
+  wasFalback?: boolean,
 }
+

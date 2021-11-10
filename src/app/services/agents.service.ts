@@ -100,7 +100,7 @@ export class AgentsService {
         /* CREATE FIRST ENTITYTYPE */
         this._router.navigate( [ '/dashboard' ] );
         createDialog.close();
-      } catch ( error ) {
+      } catch ( error: any) {
         error['agente'] = agente
         this._alert.error(`No pudo guardarse el agente en firestore`, error)
         createDialog.close();
@@ -240,7 +240,7 @@ export class AgentsService {
               await this.removeFromFirestore( usuario.uid, projectId )
               this._loading.toggleWaiting('close')
               return
-            } catch ( error ) {
+            } catch ( error: any) {
               this._loading.toggleWaiting('close')
               if ('message' in error) {
                 this._alert.error(error.message, error)
@@ -324,7 +324,7 @@ private async removeFromFirestore( uid: string, projectId: string) {
         await batch.commit()
         return
       }
-    } catch (error) {
+    } catch (error: any) {
       if ('message' in error) {
         this._alert.error(error.message, error)
       } else {
