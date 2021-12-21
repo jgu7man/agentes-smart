@@ -1,13 +1,14 @@
 import { CardButton } from "../models/dialogflow-responses.model"
 
 export class ChatSessionModel {
-  constructor(
+  constructor (
+    public debug: boolean,
     public projectId: string,
     public clientId: string,
     public userIDs: iUserIDs,
     public textInput: string,
     public sessionId?: string,
-    public inputContexts?: any
+    public inputContexts?: any,
   ){}
 }
 

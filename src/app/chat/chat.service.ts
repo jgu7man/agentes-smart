@@ -1,18 +1,6 @@
 import { Injectable } from '@angular/core';
-// import { Interaction, QuickResponse } from '../store/chat.model';
-// import { Store } from '@ngrx/store';
-// import * as actions from '../store/chat.actions';
-import {
-  map,
-  switchMap,
-  take,
-  pluck,
-  distinctUntilChanged,
-  tap,
-  catchError,
-} from 'rxjs/operators';
-import { BehaviorSubject, Subject, Subscription, throwError } from 'rxjs';
-// import { AppState } from '../../app.state';
+import { map, take, catchError} from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import {
   IntentResponseResult,
@@ -40,6 +28,7 @@ export class ChatService {
   private _localhost =
     'http://localhost:5001/main-agentesmart/us-central1/rest/';
   private _url = environment.restURL + '/session';
+  private debugmode = environment.debugMode;
   private _sessionId?: string | null;
 
 
@@ -93,7 +82,7 @@ export class ChatService {
 
           // BUILD BODY REQUEST
           let request = new ChatSessionModel(
-            projectId, userId, { clientId }, message
+            this.debugmode, projectId, userId, { clientId }, message,
           )
           // search for sessionId in storage
           this._sessionId = this._cache.getDataKey<string>( 'currentSession' );
